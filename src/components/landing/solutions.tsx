@@ -142,7 +142,6 @@ const SolutionDialogContent = ({ solution }: { solution: (typeof solutions)[0] }
 
 const DesktopSolutions = () => {
     const [activeIndex, setActiveIndex] = React.useState(0);
-    const [isHovered, setIsHovered] = React.useState(false);
     const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
     const scheduleRotation = React.useCallback(() => {
@@ -153,26 +152,15 @@ const DesktopSolutions = () => {
     }, []);
 
     React.useEffect(() => {
-        if (!isHovered) {
-            scheduleRotation();
-        } else {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-        }
+        scheduleRotation();
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    }, [isHovered, scheduleRotation]);
+    }, [scheduleRotation]);
 
-    const handleMouseEnter = (index?: number) => {
-        setIsHovered(true);
-        if (index !== undefined) {
-             if (intervalRef.current) clearInterval(intervalRef.current);
-             setActiveIndex(index);
-        }
-    };
-
-    const handleMouseLeave = () => {
-        setIsHovered(false);
+    const handleSolutionClick = (index: number) => {
+        setActiveIndex(index);
+        scheduleRotation(); // Reset timer on manual interaction
     };
     
     const orderedSolutions = React.useMemo(() => {
@@ -188,8 +176,6 @@ const DesktopSolutions = () => {
     return (
         <div 
             className="hidden md:grid md:grid-cols-3 gap-8 min-h-[450px]"
-            onMouseEnter={() => handleMouseEnter()}
-            onMouseLeave={handleMouseLeave}
         >
             <AnimatePresence initial={false}>
                 <Dialog>
@@ -199,7 +185,7 @@ const DesktopSolutions = () => {
                             className="md:col-span-2 p-8 rounded-lg border bg-card shadow-sm flex flex-col justify-between cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1"
                             initial={{ opacity: 0.5, x: -50, scale: 0.95 }}
                             animate={{ opacity: 1, x: 0, scale: 1, transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] } }}
-                            exit={{ opacity: 0.5, x: 50, scale: 0.95, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }}
+                            exit={{ opacity: 0.5, x: 50, scale: 0.95, position: 'absolute', transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }}
                         >
                             <div>
                                 <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-muted mb-6">
@@ -226,11 +212,10 @@ const DesktopSolutions = () => {
                                 <DialogTrigger asChild>
                                     <motion.div
                                         className="p-4 rounded-lg border bg-card/70 shadow-sm flex items-center gap-4 cursor-pointer transition-all hover:bg-card hover:shadow-md"
-                                        onClick={() => setActiveIndex(originalIndex)}
-                                        onMouseEnter={() => handleMouseEnter(originalIndex)}
+                                        onClick={() => handleSolutionClick(originalIndex)}
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0, transition: { duration: 0.5, delay: index * 0.05, ease: [0.4, 0, 0.2, 1] } }}
-                                        exit={{ opacity: 0, x: -20, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }}
+                                        exit={{ opacity: 0, x: -20, position: 'absolute', transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }}
                                     >
                                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted flex-shrink-0">
                                             {solution.icon}
