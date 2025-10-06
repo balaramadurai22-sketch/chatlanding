@@ -1,50 +1,57 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
-import { Button } from "../ui/button";
-import { cn } from "@/lib/utils";
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, X } from 'lucide-react';
+import { Button } from '../ui/button';
+import { cn } from '@/lib/utils';
 
 const navLinks = [
-  { name: "Home", href: "#home" },
-  { name: "About", href: "#about" },
-  { name: "Solutions", href: "#solutions" },
-  { name: "Research", href: "#research" },
-  { name: "Projects", href: "#projects" },
-  { name: "AI Lab", href: "#ai-lab" },
-  { name: "Contact", href: "#contact" },
+  { name: 'Home', href: '/' },
+  { name: 'About', href: '/about' },
+  { name: 'Solutions', href: '#solutions' },
+  { name: 'Research', href: '#research' },
+  { name: 'Projects', href: '#projects' },
+  { name: 'AI Lab', href: '#ai-lab' },
+  { name: 'Contact', href: '#contact' },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("home");
+  const [activeSection, setActiveSection] = useState('');
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
+      
+      if (pathname === '/') {
+        const sections = navLinks.filter(l => l.href.startsWith('/#')).map(link => document.getElementById(link.href.substring(2)));
+        let currentSection = '';
 
-      const sections = navLinks.map(link => document.getElementById(link.href.substring(1)));
-      let currentSection = "home";
-
-      for (const section of sections) {
-        if (section) {
-          const rect = section.getBoundingClientRect();
-          if (rect.top <= 100 && rect.bottom >= 100) {
-            currentSection = section.id;
-            break;
+        for (const section of sections) {
+          if (section) {
+            const rect = section.getBoundingClientRect();
+            if (rect.top <= 100 && rect.bottom >= 100) {
+              currentSection = section.id;
+              break;
+            }
           }
         }
+        setActiveSection(currentSection);
+      } else {
+        setActiveSection('');
       }
-      setActiveSection(currentSection);
     };
 
-    window.addEventListener("scroll", handleScroll);
-    handleScroll(); 
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
 
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [pathname]);
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -58,31 +65,41 @@ export default function Navbar() {
     setIsMenuOpen(false);
   };
 
+  const getIsActive = (link: {href: string}) => {
+    if (link.href.startsWith('/#')) {
+      if (pathname === '/') {
+         return activeSection === link.href.substring(2);
+      }
+      return false;
+    }
+    return pathname === link.href;
+  }
+
 
   return (
     <>
       <header
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-          scrolled ? "bg-background/80 backdrop-blur-sm border-b" : "bg-transparent"
+          'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+          scrolled || isMenuOpen || pathname !== '/' ? 'bg-background/80 backdrop-blur-sm border-b' : 'bg-transparent'
         )}
       >
         <div className="container mx-auto flex h-20 items-center justify-between">
-          <a href="#home" className="font-headline text-xl font-bold animated-gradient-text">
+          <Link href="/" className="font-headline text-xl font-bold animated-gradient-text">
             TECHismust AI
-          </a>
+          </Link>
           <nav className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
                 href={link.href}
                 className={cn(
-                    "text-sm font-medium transition-colors text-foreground/80 hover:text-foreground",
-                    activeSection === link.href.substring(1) && "text-primary"
+                    'text-sm font-medium transition-colors text-foreground/80 hover:text-foreground',
+                    getIsActive(link) && 'text-primary'
                 )}
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
           </nav>
           <div className="hidden md:block">
@@ -112,9 +129,9 @@ export default function Navbar() {
             className="fixed inset-0 z-50 bg-background/95 backdrop-blur-lg"
           >
             <div className="container mx-auto flex h-20 items-center justify-between">
-               <a href="#home" className="font-headline text-xl font-bold animated-gradient-text" onClick={handleMenuLinkClick}>
+               <Link href="/" className="font-headline text-xl font-bold animated-gradient-text" onClick={handleMenuLinkClick}>
                 TECHismust AI
-              </a>
+              </Link>
               <Button
                 variant="ghost"
                 size="icon"

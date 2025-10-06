@@ -1,23 +1,24 @@
-"use client";
+'use client';
 
-import { ArrowUp } from "lucide-react";
-import { Button } from "../ui/button";
+import { ArrowUp } from 'lucide-react';
+import { Button } from '../ui/button';
+import Link from 'next/link';
 
 const navLinks = [
-  { name: "Home", href: "#home" },
-  { name: "About", href: "#about" },
-  { name: "Solutions", href: "#solutions" },
-  { name: "Research", href: "#research" },
-  { name: "Projects", href: "#projects" },
-  { name: "AI Lab", href: "#ai-lab" },
-  { name: "Contact", href: "#contact" },
+  { name: 'Home', href: '/' },
+  { name: 'About', href: '/about' },
+  { name: 'Solutions', href: '#solutions' },
+  { name: 'Research', href: '#research' },
+  { name: 'Projects', href: '#projects' },
+  { name: 'AI Lab', href: '#ai-lab' },
+  { name: 'Contact', href: '#contact' },
 ];
 
 export default function Footer() {
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth",
+      behavior: 'smooth',
     });
   };
 
@@ -35,13 +36,13 @@ export default function Footer() {
           </div>
           <nav className="flex flex-wrap justify-center gap-4 md:gap-6">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
                 href={link.href}
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
           </nav>
         </div>
