@@ -2,36 +2,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowRight, Beaker, BrainCircuit, Dna, Rocket, TestTube, Loader, Paperclip } from 'lucide-react';
+import { ArrowRight, Beaker, BrainCircuit, Dna, Rocket, TestTube } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import Navbar from '@/components/landing/navbar';
 import Footer from '@/components/landing/footer';
 import Particles from '@/components/landing/particles';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { researchExperiments } from '@/lib/research';
@@ -59,59 +35,7 @@ const researchPillars = [
     },
 ];
 
-const fellowshipSchema = z.object({
-  fullName: z.string().min(2, "Full name must be at least 2 characters."),
-  email: z.string().email("Invalid email address."),
-  affiliation: z.string().min(2, "Please enter your affiliation."),
-  areaOfInterest: z.string().min(3, "Please specify your area of interest."),
-  cv: z.any().optional(),
-  motivation: z.string().min(10, "Please provide a motivation statement."),
-});
-
-const contactSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
-  email: z.string().email("Invalid email address."),
-  subject: z.string().min(3, "Subject must be at least 3 characters."),
-  message: z.string().min(10, "Message must be at least 10 characters."),
-});
-
 export default function ResearchPage() {
-    const { toast } = useToast();
-    const [isFellowshipOpen, setFellowshipOpen] = useState(false);
-    const [isContactOpen, setContactOpen] = useState(false);
-
-    const fellowshipForm = useForm<z.infer<typeof fellowshipSchema>>({
-        resolver: zodResolver(fellowshipSchema),
-        defaultValues: { fullName: "", email: "", affiliation: "", areaOfInterest: "", motivation: "" },
-    });
-
-    const contactForm = useForm<z.infer<typeof contactSchema>>({
-        resolver: zodResolver(contactSchema),
-        defaultValues: { name: "", email: "", subject: "", message: "" },
-    });
-
-    const handleFellowshipSubmit = async (data: z.infer<typeof fellowshipSchema>) => {
-        console.log("Fellowship Application Submitted:", data);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setFellowshipOpen(false);
-        fellowshipForm.reset();
-        toast({
-            title: "Application Sent!",
-            description: "Thank you for your interest. We'll be in touch soon.",
-        });
-    };
-
-    const handleContactSubmit = async (data: z.infer<typeof contactSchema>) => {
-        console.log("Contact Form Submitted:", data);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setContactOpen(false);
-        contactForm.reset();
-        toast({
-            title: "Message Sent!",
-            description: "We've received your message and will get back to you shortly.",
-        });
-    };
-
     return (
         <>
             <Navbar />
@@ -237,78 +161,12 @@ export default function ResearchPage() {
                                     Whether you’re a researcher, developer, or dreamer—our lab is open to those who dare to explore.
                                 </p>
                                 <div className="mt-8 flex justify-center gap-4">
-                                    <Dialog open={isFellowshipOpen} onOpenChange={setFellowshipOpen}>
-                                        <DialogTrigger asChild>
-                                            <Button size="lg">Apply for Fellowship</Button>
-                                        </DialogTrigger>
-                                        <DialogContent className="max-w-lg">
-                                            <DialogHeader>
-                                                <DialogTitle>Apply for Fellowship</DialogTitle>
-                                                <DialogDescription>Join our team of innovators and contribute to groundbreaking research.</DialogDescription>
-                                            </DialogHeader>
-                                            <Form {...fellowshipForm}>
-                                                <form onSubmit={fellowshipForm.handleSubmit(handleFellowshipSubmit)} className="space-y-4">
-                                                    <FormField control={fellowshipForm.control} name="fullName" render={({ field }) => (
-                                                        <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="Your Full Name" {...field} /></FormControl><FormMessage /></FormItem>
-                                                    )} />
-                                                    <FormField control={fellowshipForm.control} name="email" render={({ field }) => (
-                                                        <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="your.email@example.com" {...field} /></FormControl><FormMessage /></FormItem>
-                                                    )} />
-                                                    <FormField control={fellowshipForm.control} name="affiliation" render={({ field }) => (
-                                                        <FormItem><FormLabel>Affiliation/Organization</FormLabel><FormControl><Input placeholder="University or Company" {...field} /></FormControl><FormMessage /></FormItem>
-                                                    )} />
-                                                    <FormField control={fellowshipForm.control} name="areaOfInterest" render={({ field }) => (
-                                                        <FormItem><FormLabel>Area of Interest</FormLabel><FormControl><Input placeholder="e.g., Quantum AI, NLP, Ethics" {...field} /></FormControl><FormMessage /></FormItem>
-                                                    )} />
-                                                    <FormField control={fellowshipForm.control} name="motivation" render={({ field }) => (
-                                                        <FormItem><FormLabel>Motivation Statement</FormLabel><FormControl><Textarea placeholder="Tell us why you want to join..." {...field} /></FormControl><FormMessage /></FormItem>
-                                                    )} />
-                                                    <FormField control={fellowshipForm.control} name="cv" render={({ field }) => (
-                                                        <FormItem><FormLabel>CV/Resume</FormLabel><FormControl><Input type="file" {...fellowshipForm.register("cv")} /></FormControl><FormMessage /></FormItem>
-                                                    )} />
-                                                    <DialogFooter>
-                                                        <Button type="submit" disabled={fellowshipForm.formState.isSubmitting}>
-                                                          {fellowshipForm.formState.isSubmitting && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                                                          Submit Application
-                                                        </Button>
-                                                    </DialogFooter>
-                                                </form>
-                                            </Form>
-                                        </DialogContent>
-                                    </Dialog>
-                                    <Dialog open={isContactOpen} onOpenChange={setContactOpen}>
-                                        <DialogTrigger asChild>
-                                            <Button size="lg" variant="outline">Contact Research Team</Button>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                            <DialogHeader>
-                                                <DialogTitle>Contact Research Team</DialogTitle>
-                                                <DialogDescription>Have a question or a collaboration idea? We'd love to hear from you.</DialogDescription>
-                                            </DialogHeader>
-                                            <Form {...contactForm}>
-                                                <form onSubmit={contactForm.handleSubmit(handleContactSubmit)} className="space-y-4">
-                                                    <FormField control={contactForm.control} name="name" render={({ field }) => (
-                                                        <FormItem><FormLabel>Name</FormLabel><FormControl><Input placeholder="Your Name" {...field} /></FormControl><FormMessage /></FormItem>
-                                                    )} />
-                                                    <FormField control={contactForm.control} name="email" render={({ field }) => (
-                                                        <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="your.email@example.com" {...field} /></FormControl><FormMessage /></FormItem>
-                                                    )} />
-                                                     <FormField control={contactForm.control} name="subject" render={({ field }) => (
-                                                        <FormItem><FormLabel>Subject</FormLabel><FormControl><Input placeholder="Inquiry about..." {...field} /></FormControl><FormMessage /></FormItem>
-                                                    )} />
-                                                    <FormField control={contactForm.control} name="message" render={({ field }) => (
-                                                        <FormItem><FormLabel>Message</FormLabel><FormControl><Textarea placeholder="Your message..." {...field} /></FormControl><FormMessage /></FormItem>
-                                                    )} />
-                                                    <DialogFooter>
-                                                        <Button type="submit" disabled={contactForm.formState.isSubmitting}>
-                                                           {contactForm.formState.isSubmitting && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                                                           Send Message
-                                                        </Button>
-                                                    </DialogFooter>
-                                                </form>
-                                            </Form>
-                                        </DialogContent>
-                                    </Dialog>
+                                    <Button asChild size="lg">
+                                        <Link href="/contact">Apply for Fellowship</Link>
+                                    </Button>
+                                    <Button asChild size="lg" variant="outline">
+                                        <Link href="/contact">Contact Research Team</Link>
+                                    </Button>
                                 </div>
                             </motion.div>
                         </div>
