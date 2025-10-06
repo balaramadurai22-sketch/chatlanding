@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 const navLinks = [
   { name: 'Home', href: '/' },
   { name: 'About', href: '/about' },
-  { name: 'Solutions', href: '#solutions' },
+  { name: 'Solutions', href: '/solutions' },
   { name: 'Research', href: '#research' },
   { name: 'Projects', href: '#projects' },
   { name: 'AI Lab', href: '#ai-lab' },
@@ -74,15 +74,19 @@ export default function Navbar() {
       }
       return false;
     }
-    return pathname === link.href;
+    // For non-hash links, check if the pathname starts with the href.
+    // This makes parent routes active for nested routes (e.g. /solutions is active for /solutions/predictive)
+    return pathname.startsWith(link.href) && link.href !== '/';
   }
+
+  const isHomePage = pathname === '/';
 
   return (
     <>
       <header
         className={cn(
           'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-          scrolled || isMenuOpen || pathname !== '/' ? 'bg-background/80 backdrop-blur-sm border-b' : 'bg-transparent'
+          scrolled || isMenuOpen || !isHomePage ? 'bg-background/80 backdrop-blur-sm border-b' : 'bg-transparent'
         )}
       >
         <div className="container mx-auto flex h-20 items-center justify-between">
@@ -90,21 +94,27 @@ export default function Navbar() {
             TECHismust AI
           </Link>
           <nav className="hidden md:flex items-center gap-6">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className={cn(
-                    'text-sm font-medium transition-colors text-foreground/80 hover:text-foreground',
-                    getIsActive(link) ? 'text-primary' : ''
-                )}
-              >
-                {link.name}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              // Only render hash links on the homepage
+              if (link.href.startsWith('/#') && !isHomePage) {
+                return null;
+              }
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={cn(
+                      'text-sm font-medium transition-colors text-foreground/80 hover:text-foreground',
+                      getIsActive(link) ? 'text-primary' : ''
+                  )}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
           </nav>
           <div className="hidden md:block">
-            <a href="#ai-lab">
+            <a href={isHomePage ? "#ai-lab" : "/#ai-lab"}>
               <Button variant="ghost" className="transition-all hover:bg-foreground/10">Explore AI</Button>
             </a>
           </div>
@@ -142,25 +152,30 @@ export default function Navbar() {
               </Button>
             </div>
             <nav className="mt-8 flex flex-col items-center gap-8">
-              {navLinks.map((link, i) => (
-                <motion.a
-                  key={link.name}
-                  href={link.href}
-                  onClick={handleMenuLinkClick}
-                  className="text-2xl font-medium transition-colors hover:text-primary"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * i, duration: 0.5 }}
-                >
-                  {link.name}
-                </motion.a>
-              ))}
+              {navLinks.map((link, i) => {
+                 if (link.href.startsWith('/#') && !isHomePage) {
+                    return null;
+                 }
+                return (
+                  <motion.a
+                    key={link.name}
+                    href={link.href}
+                    onClick={handleMenuLinkClick}
+                    className="text-2xl font-medium transition-colors hover:text-primary"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * i, duration: 0.5 }}
+                  >
+                    {link.name}
+                  </motion.a>
+                )
+              })}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * navLinks.length, duration: 0.5 }}
                 >
-                    <a href="#ai-lab" onClick={handleMenuLinkClick}>
+                    <a href={isHomePage ? "#ai-lab" : "/#ai-lab"} onClick={handleMenuLinkClick}>
                         <Button variant="outline" size="lg">Explore AI</Button>
                     </a>
                 </motion.div>
