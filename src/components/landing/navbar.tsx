@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
@@ -9,25 +8,39 @@ import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
-  { name: "Solutions", href: "/solutions" },
-  { name: "Research", href: "/research" },
-  { name: "Projects", href: "/projects" },
-  { name: "AI Lab", href: "/ai-lab" },
-  { name: "Contact", href: "/contact" },
+  { name: "Home", href: "#home" },
+  { name: "About", href: "#about" },
+  { name: "Solutions", href: "#solutions" },
+  { name: "Research", href: "#research" },
+  { name: "Projects", href: "#projects" },
+  { name: "AI Lab", href: "#ai-lab" },
+  { name: "Contact", href: "#contact" },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const pathname = usePathname();
+  const [activeSection, setActiveSection] = useState('home');
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
+      
+      const sections = navLinks.map(link => document.getElementById(link.href.substring(1))).filter(s => s);
+      const scrollPosition = window.scrollY + window.innerHeight / 2;
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const section = sections[i];
+        if (section && scrollPosition >= section.offsetTop) {
+          setActiveSection(section.id);
+          break;
+        }
+      }
     };
+
     window.addEventListener("scroll", handleScroll);
+    handleScroll(); 
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -39,6 +52,21 @@ export default function Navbar() {
     }
   }, [isMenuOpen]);
 
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith("#")) {
+      e.preventDefault();
+      const targetId = href.substring(1);
+      const targetElement = document.getElementById(targetId);
+      if (targetElement) {
+        window.scrollTo({
+          top: targetElement.offsetTop,
+          behavior: 'smooth',
+        });
+      }
+      setIsMenuOpen(false);
+    }
+  };
+
   return (
     <>
       <header
@@ -48,27 +76,28 @@ export default function Navbar() {
         )}
       >
         <div className="container mx-auto flex h-20 items-center justify-between">
-          <Link href="/" className="font-headline text-xl font-bold animated-gradient-text">
+          <Link href="#home" onClick={(e) => handleNavClick(e, '#home')} className="font-headline text-xl font-bold animated-gradient-text">
             TECHismust AI
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
-              <Link
+              <a
                 key={link.name}
                 href={link.href}
+                onClick={(e) => handleNavClick(e, link.href)}
                 className={cn(
                     "text-sm font-medium transition-colors text-foreground/80 hover:text-foreground",
-                    pathname === link.href && "text-primary"
+                    activeSection === link.href.substring(1) && "text-primary"
                 )}
               >
                 {link.name}
-              </Link>
+              </a>
             ))}
           </nav>
           <div className="hidden md:block">
-            <Link href="/ai-lab">
+            <a href="#ai-lab" onClick={(e) => handleNavClick(e, '#ai-lab')}>
               <Button variant="ghost" className="transition-all hover:bg-foreground/10">Explore AI</Button>
-            </Link>
+            </a>
           </div>
           <div className="md:hidden">
             <Button
@@ -92,9 +121,9 @@ export default function Navbar() {
             className="fixed inset-0 z-50 bg-background/95 backdrop-blur-lg"
           >
             <div className="container mx-auto flex h-20 items-center justify-between">
-               <Link href="/" className="font-headline text-xl font-bold animated-gradient-text" onClick={() => setIsMenuOpen(false)}>
+               <a href="#home" className="font-headline text-xl font-bold animated-gradient-text" onClick={(e) => handleNavClick(e, '#home')}>
                 TECHismust AI
-              </Link>
+              </a>
               <Button
                 variant="ghost"
                 size="icon"
@@ -108,7 +137,7 @@ export default function Navbar() {
                 <motion.a
                   key={link.name}
                   href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={(e) => handleNavClick(e, link.href)}
                   className="text-2xl font-medium transition-colors hover:text-primary"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -122,9 +151,9 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * navLinks.length, duration: 0.5 }}
                 >
-                    <Link href="/ai-lab">
-                        <Button variant="outline" size="lg" onClick={() => setIsMenuOpen(false)}>Explore AI</Button>
-                    </Link>
+                    <a href="#ai-lab" onClick={(e) => handleNavClick(e, '#ai-lab')}>
+                        <Button variant="outline" size="lg">Explore AI</Button>
+                    </a>
                 </motion.div>
             </nav>
           </motion.div>

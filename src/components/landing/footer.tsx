@@ -5,16 +5,34 @@ import { Button } from "../ui/button";
 import Link from 'next/link';
 
 const navLinks = [
-  { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
-  { name: "Solutions", href: "/solutions" },
-  { name: "Research", href: "/research" },
-  { name: "Projects", href: "/projects" },
-  { name: "AI Lab", href: "/ai-lab" },
-  { name: "Contact", href: "/contact" },
+  { name: "Home", href: "#home" },
+  { name: "About", href: "#about" },
+  { name: "Solutions", href: "#solutions" },
+  { name: "Research", href: "#research" },
+  { name: "Projects", href: "#projects" },
+  { name: "AI Lab", href: "#ai-lab" },
+  { name: "Contact", href: "#contact" },
 ];
 
 export default function Footer() {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith("#")) {
+      e.preventDefault();
+      const targetId = href.substring(1);
+      if (targetId === "home") {
+         window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+            window.scrollTo({
+            top: targetElement.offsetTop,
+            behavior: 'smooth',
+            });
+        }
+      }
+    }
+  };
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -27,22 +45,23 @@ export default function Footer() {
       <div className="container relative py-8">
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           <div className="text-center md:text-left">
-            <Link href="/" className="font-headline text-lg font-bold animated-gradient-text">
+            <a href="#home" onClick={(e) => handleNavClick(e, '#home')} className="font-headline text-lg font-bold animated-gradient-text">
               TECHismust AI
-            </Link>
+            </a>
             <p className="mt-1 text-sm text-muted-foreground">
               &copy; {new Date().getFullYear()} TECHismust. All rights reserved.
             </p>
           </div>
           <nav className="flex flex-wrap justify-center gap-4 md:gap-6">
             {navLinks.map((link) => (
-              <Link
+              <a
                 key={link.name}
                 href={link.href}
+                onClick={(e) => handleNavClick(e, link.href)}
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
               >
                 {link.name}
-              </Link>
+              </a>
             ))}
           </nav>
         </div>

@@ -2,7 +2,12 @@
 
 import { useState } from 'react';
 import Hero from '@/components/landing/hero';
+import About from '@/components/landing/about';
+import Solutions from '@/components/landing/solutions';
+import Research from '@/components/landing/research';
+import Projects from '@/components/landing/projects';
 import Chat from '@/components/landing/chat';
+import Contact from '@/components/landing/contact';
 
 export default function Home() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -23,7 +28,12 @@ export default function Home() {
   return (
     <>
       <Hero onChatSubmit={handleOpenChat} />
+      <About />
+      <Solutions />
+      <Research />
+      <Projects />
       <Chat isOpen={isChatOpen} onOpenChange={handleCloseChat} initialQuery={initialQuery} onTriggerClick={() => handleOpenChat()} />
+      <Contact />
     </>
   );
 }
