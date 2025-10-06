@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "project-1",
+      "description": "Abstract technology background",
+      "imageUrl": "https://images.unsplash.com/photo-1562575214-da9fcf59b907?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YWJzdHJhY3QlMjB0ZWNofGVufDB8fHx8MTc1OTY1MDU4NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract tech"
+    },
+    {
+      "id": "project-2",
+      "description": "AI brain visualization",
+      "imageUrl": "https://images.unsplash.com/photo-1709651669999-57741c9bf085?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxhaSUyMGJyYWlufGVufDB8fHx8MTc1OTcyMzIyMnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "ai brain"
+    },
+    {
+      "id": "project-3",
+      "description": "Data visualization dashboard",
+      "imageUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxkYXRhJTIwdmlzdWFsaXphdGlvbnxlbnwwfHx8fDE3NTk2NTM0Nzl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "data visualization"
+    },
+    {
+      "id": "project-4",
+      "description": "Automation process flow",
+      "imageUrl": "https://images.unsplash.com/photo-1663688762323-2bc6d8a034e5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhdXRvbWF0aW9uJTIwZmxvd3xlbnwwfHx8fDE3NTk3MjY2MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "automation flow"
+    },
+    {
+      "id": "project-5",
+      "description": "Futuristic user interface",
+      "imageUrl": "https://images.unsplash.com/photo-1720962158812-d16549f1e5a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxmdXR1cmlzdGljJTIwdWl8ZW58MHx8fHwxNzU5NjQyOTU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "futuristic ui"
+    },
+    {
+      "id": "project-6",
+      "description": "Smart city concept",
+      "imageUrl": "https://images.unsplash.com/photo-1525935944571-4e99237764c9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzbWFydCUyMGNpdHl8ZW58MHx8fHwxNzU5NjgyNzIwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "smart city"
+    }
+  ]
 }

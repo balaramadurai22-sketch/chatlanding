@@ -1,0 +1,58 @@
+"use client";
+
+import { ArrowUp } from "lucide-react";
+import { Button } from "../ui/button";
+
+const navLinks = [
+  { name: "Home", href: "#home" },
+  { name: "About", href: "#about" },
+  { name: "Projects", href: "#projects" },
+  { name: "Chat", href: "#chat" },
+  { name: "Contact", href: "#contact" },
+];
+
+export default function Footer() {
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  return (
+    <footer className="border-t bg-background">
+      <div className="container relative py-8">
+        <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
+          <div className="text-center md:text-left">
+            <a href="#home" className="font-headline text-lg font-bold">
+              TECHismust Innovation Hub
+            </a>
+            <p className="mt-1 text-sm text-muted-foreground">
+              &copy; {new Date().getFullYear()} TECHismust. All rights reserved.
+            </p>
+          </div>
+          <nav className="flex flex-wrap justify-center gap-4 md:gap-6">
+            {navLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
+                {link.name}
+              </a>
+            ))}
+          </nav>
+        </div>
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute -top-5 right-6 rounded-full"
+          onClick={scrollToTop}
+          aria-label="Back to top"
+        >
+          <ArrowUp className="h-4 w-4" />
+        </Button>
+      </div>
+    </footer>
+  );
+}
