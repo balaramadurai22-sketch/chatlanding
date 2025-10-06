@@ -24,9 +24,9 @@ export default function FeatureCard({ icon, title, description, index }: Feature
       viewport={{ once: true, amount: 0.5 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
-      <Card className="h-full text-center transition-all hover:shadow-xl hover:-translate-y-2">
+      <Card className="h-full text-center transition-all hover:shadow-lg hover:-translate-y-1 border-transparent hover:border-primary/20">
         <CardHeader>
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
             {icon}
           </div>
           <CardTitle className="pt-4 font-headline text-xl font-bold">{title}</CardTitle>

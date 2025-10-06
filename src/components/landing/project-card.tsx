@@ -37,7 +37,7 @@ export default function ProjectCard({ project, index }: ProjectCardProps) {
     >
       <Dialog>
         <DialogTrigger asChild>
-          <div className="group h-full cursor-pointer overflow-hidden rounded-lg border bg-card shadow-sm transition-all hover:shadow-xl hover:-translate-y-2">
+          <div className="group h-full cursor-pointer overflow-hidden rounded-lg border bg-card shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
             <div className="relative aspect-video overflow-hidden">
               <Image
                 src={project.imageUrl}
@@ -46,6 +46,7 @@ export default function ProjectCard({ project, index }: ProjectCardProps) {
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
                 data-ai-hint={project.imageHint}
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
             </div>
             <div className="p-6">
               <h3 className="font-headline text-xl font-bold">{project.title}</h3>
@@ -72,7 +73,7 @@ export default function ProjectCard({ project, index }: ProjectCardProps) {
           <DialogFooter>
             <Link href={`/projects/${project.id}`} passHref>
               <Button>
-                View More <ExternalLink className="ml-2 h-4 w-4" />
+                View Case Study <ExternalLink className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </DialogFooter>

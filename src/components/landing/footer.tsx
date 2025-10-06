@@ -6,8 +6,9 @@ import { Button } from "../ui/button";
 const navLinks = [
   { name: "Home", href: "#home" },
   { name: "About", href: "#about" },
+  { name: "Solutions", href: "#solutions" },
   { name: "Projects", href: "#projects" },
-  { name: "Chat", href: "#chat" },
+  { name: "AI Lab", href: "#ai-lab" },
   { name: "Contact", href: "#contact" },
 ];
 
@@ -25,7 +26,7 @@ export default function Footer() {
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           <div className="text-center md:text-left">
             <a href="#home" className="font-headline text-lg font-bold">
-              TECHismust Innovation Hub
+              TECHismust AI
             </a>
             <p className="mt-1 text-sm text-muted-foreground">
               &copy; {new Date().getFullYear()} TECHismust. All rights reserved.
@@ -46,7 +47,7 @@ export default function Footer() {
         <Button
           variant="outline"
           size="icon"
-          className="absolute -top-5 right-6 rounded-full"
+          className="absolute -top-5 right-6 rounded-full bg-background"
           onClick={scrollToTop}
           aria-label="Back to top"
         >

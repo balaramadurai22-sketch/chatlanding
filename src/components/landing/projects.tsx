@@ -3,7 +3,7 @@ import ProjectCard from "./project-card";
 
 export default function Projects() {
   return (
-    <section id="projects" className="bg-muted/50">
+    <section id="projects" className="bg-background">
       <div className="container">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="font-headline text-3xl font-bold tracking-tight sm:text-4xl">

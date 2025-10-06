@@ -37,7 +37,7 @@ import { startChatSession, continueChat } from "@/app/actions";
 const chatSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("Invalid email address."),
-  experience: z.string().min(1, "Please select your experience level."),
+  interest: z.string().min(1, "Please select your field of interest."),
 });
 
 type ChatFormData = z.infer<typeof chatSchema>;
@@ -56,12 +56,12 @@ export default function Chat() {
 
   const form = useForm<ChatFormData>({
     resolver: zodResolver(chatSchema),
-    defaultValues: { name: "", email: "", experience: "" },
+    defaultValues: { name: "", email: "", interest: "" },
   });
 
   const handleFormSubmit = async (data: ChatFormData) => {
     setIsThinking(true);
-    const result = await startChatSession(data);
+    const result = await startChatSession({ name: data.name, email: data.email, experience: data.interest });
     if (result.success && result.initialMessage) {
       setMessages([result.initialMessage]);
       setChatState("chat");
@@ -104,7 +104,7 @@ export default function Chat() {
   }
 
   return (
-    <section id="chat" className="container text-center">
+    <section id="ai-lab" className="container text-center bg-muted/50">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -112,15 +112,14 @@ export default function Chat() {
         viewport={{ once: true, amount: 0.5 }}
       >
         <h2 className="font-headline text-3xl font-bold tracking-tight sm:text-4xl">
-          Have Questions?
+          Welcome to the AI Lab
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-          Our AI assistant is here to help. Get instant answers about our
-          technologies, projects, and innovation philosophy.
+          Have a question or a brilliant idea? Our AI assistant is ready to chat. Explore concepts, ask about our research, or just say hello.
         </p>
         <Button
           size="lg"
-          className="mt-8 glow"
+          className="mt-8"
           onClick={() => setIsChatOpen(true)}
         >
           <MessageSquare className="mr-2" />
@@ -185,26 +184,24 @@ export default function Chat() {
                       />
                       <FormField
                         control={form.control}
-                        name="experience"
+                        name="interest"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Business/Tech Experience</FormLabel>
+                            <FormLabel>Field of Interest</FormLabel>
                             <Select
                               onValueChange={field.onChange}
                               defaultValue={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select your experience level" />
+                                  <SelectValue placeholder="Select your interest" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="beginner">Beginner</SelectItem>
-                                <SelectItem value="intermediate">
-                                  Intermediate
-                                </SelectItem>
-                                <SelectItem value="advanced">Advanced</SelectItem>
-                                <SelectItem value="expert">Expert</SelectItem>
+                                <SelectItem value="AI">AI</SelectItem>
+                                <SelectItem value="Product">Product</SelectItem>
+                                <SelectItem value="Research">Research</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -248,7 +245,10 @@ export default function Chat() {
                           msg.role === "user" ? "justify-end" : "justify-start"
                         }`}
                       >
-                        <div
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3 }}
                           className={`max-w-xs rounded-lg px-3 py-2 md:max-w-sm ${
                             msg.role === "user"
                               ? "bg-primary text-primary-foreground"
@@ -256,7 +256,7 @@ export default function Chat() {
                           }`}
                         >
                           <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                        </div>
+                        </motion.div>
                       </div>
                     ))}
                     {isThinking && (

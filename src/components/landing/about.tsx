@@ -1,21 +1,21 @@
-import { BrainCircuit, Bot, LayoutTemplate } from "lucide-react";
+import { Zap, Share2, Rocket } from "lucide-react";
 import FeatureCard from "./feature-card";
 
 const features = [
   {
-    icon: <BrainCircuit className="size-8 text-primary" />,
-    title: "AI Research",
-    description: "We pioneer advancements in machine learning and neural networks to create intelligent, self-improving systems.",
+    icon: <Zap className="size-8 text-primary" />,
+    title: "Innovation",
+    description: "Pushing the boundaries of what's possible with artificial intelligence.",
   },
   {
-    icon: <LayoutTemplate className="size-8 text-primary" />,
-    title: "Product Design",
-    description: "Our human-centric approach to design ensures that our innovations are not only powerful but also intuitive and accessible.",
+    icon: <Rocket className="size-8 text-primary" />,
+    title: "Research",
+    description: "Turning ambitious concepts into real-world, impactful solutions.",
   },
   {
-    icon: <Bot className="size-8 text-primary" />,
-    title: "Automation Lab",
-    description: "We develop sophisticated automation solutions that streamline complex processes and boost efficiency.",
+    icon: <Share2 className="size-8 text-primary" />,
+    title: "Collaboration",
+    description: "Fostering open-source and teamwork-oriented development for shared success.",
   },
 ];
 
@@ -24,13 +24,10 @@ export default function About() {
     <section id="about" className="container">
       <div className="mx-auto max-w-4xl text-center">
         <h2 className="font-headline text-3xl font-bold tracking-tight sm:text-4xl">
-          A Fusion of Creativity and Technology
+          We turn the impossible into possible.
         </h2>
         <p className="mt-4 text-lg text-muted-foreground">
-          At TECHismust, our mission is to harness the power of artificial
-          intelligence and web technologies to build the next generation of
-          digital experiences. We are researchers, designers, and engineers
-          passionate about innovation.
+          TECHismust Innovation Lab is a collective of forward-thinkers, researchers, and engineers dedicated to solving humanity's most challenging problems through artificial intelligence. Our mission is to build a future where technology empowers everyone.
         </p>
       </div>
 

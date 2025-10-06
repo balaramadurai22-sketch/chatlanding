@@ -40,7 +40,7 @@ export default function Particles({ className, quantity = 50 }: ParticlesProps) 
       {particles.map((particle) => (
         <motion.div
           key={particle.id}
-          className="absolute rounded-full bg-primary/30"
+          className="absolute rounded-full bg-foreground/10"
           style={{
             left: `${particle.x}%`,
             top: `${particle.y}%`,

@@ -49,20 +49,14 @@
 
   @keyframes glow {
     from {
-      box-shadow: 0 0 10px -5px hsl(var(--accent)), 0 0 20px -10px hsl(var(--accent)), 0 0 30px -15px hsl(var(--primary));
+      box-shadow: 0 0 5px -2px hsl(var(--foreground)), 0 0 10px -5px hsl(var(--foreground));
     }
     to {
-      box-shadow: 0 0 10px 0px hsl(var(--accent)), 0 0 20px -5px hsl(var(--accent)), 0 0 30px -10px hsl(var(--primary));
+      box-shadow: 0 0 5px 0px hsl(var(--foreground)), 0 0 10px -2px hsl(var(--foreground));
     }
   }
 
   .animated-gradient-text {
     color: hsl(var(--foreground));
-  }
-
-  @keyframes gradient-animation {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
   }
 }

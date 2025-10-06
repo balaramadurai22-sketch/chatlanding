@@ -79,11 +79,8 @@ export default function Contact() {
   return (
     <section
       id="contact"
-      className="container relative overflow-hidden"
+      className="container"
     >
-      <div className="absolute inset-0 -z-10 h-full w-full bg-gradient-to-br from-primary/10 via-background to-background" />
-       <div className="absolute -bottom-1/4 -right-1/4 -z-10 h-1/2 w-1/2 rounded-full bg-accent/10 blur-3xl" />
-
       <div className="grid gap-12 md:grid-cols-2">
         <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -120,7 +117,7 @@ export default function Contact() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
             viewport={{ once: true, amount: 0.3 }}
-            className="rounded-lg border bg-card/50 p-6 shadow-lg backdrop-blur-sm"
+            className="rounded-lg border bg-card p-6 shadow-sm"
         >
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

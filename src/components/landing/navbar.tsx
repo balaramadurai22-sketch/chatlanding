@@ -9,8 +9,9 @@ import { cn } from "@/lib/utils";
 const navLinks = [
   { name: "Home", href: "#home" },
   { name: "About", href: "#about" },
+  { name: "Solutions", href: "#solutions" },
   { name: "Projects", href: "#projects" },
-  { name: "Chat", href: "#chat" },
+  { name: "AI Lab", href: "#ai-lab" },
   { name: "Contact", href: "#contact" },
 ];
 
@@ -43,8 +44,8 @@ export default function Navbar() {
         )}
       >
         <div className="container mx-auto flex h-20 items-center justify-between">
-          <a href="#home" className="font-headline text-xl font-bold animated-gradient-text">
-            TECHismust
+          <a href="#home" className="font-headline text-xl font-bold">
+            TECHismust AI
           </a>
           <nav className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
@@ -57,6 +58,9 @@ export default function Navbar() {
               </a>
             ))}
           </nav>
+          <div className="hidden md:block">
+            <Button variant="outline" className="transition-all hover:bg-primary hover:text-primary-foreground">Explore AI</Button>
+          </div>
           <div className="md:hidden">
             <Button
               variant="ghost"
@@ -79,8 +83,8 @@ export default function Navbar() {
             className="fixed inset-0 z-50 bg-background/95 backdrop-blur-lg"
           >
             <div className="container mx-auto flex h-20 items-center justify-between">
-               <a href="#home" className="font-headline text-xl font-bold animated-gradient-text" onClick={() => setIsMenuOpen(false)}>
-                TECHismust
+               <a href="#home" className="font-headline text-xl font-bold" onClick={() => setIsMenuOpen(false)}>
+                TECHismust AI
               </a>
               <Button
                 variant="ghost"
@@ -91,7 +95,7 @@ export default function Navbar() {
               </Button>
             </div>
             <nav className="mt-8 flex flex-col items-center gap-8">
-              {navLinks.map((link) => (
+              {navLinks.map((link, i) => (
                 <motion.a
                   key={link.name}
                   href={link.href}
@@ -99,11 +103,18 @@ export default function Navbar() {
                   className="text-2xl font-medium transition-colors hover:text-primary"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * navLinks.indexOf(link), duration: 0.5 }}
+                  transition={{ delay: 0.1 * i, duration: 0.5 }}
                 >
                   {link.name}
                 </motion.a>
               ))}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * navLinks.length, duration: 0.5 }}
+                >
+                    <Button variant="outline" size="lg" onClick={() => setIsMenuOpen(false)}>Explore AI</Button>
+                </motion.div>
             </nav>
           </motion.div>
         )}
