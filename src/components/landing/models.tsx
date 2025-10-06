@@ -157,7 +157,7 @@ const ModelDialogContent = ({ model }: { model: (typeof models)[0] }) => (
                 <DialogTitle className="font-headline text-2xl">{model.name} {model.version}</DialogTitle>
                 <Badge variant="outline">{model.tagline}</Badge>
             </div>
-            <div className="h-32 w-full bg-muted/30 rounded-md flex items-center justify-center p-4 my-4">
+            <div className="relative h-48 w-full bg-muted/30 rounded-md flex items-center justify-center p-4 my-4 overflow-hidden">
                 {model.visual}
             </div>
             <DialogDescription className="text-base text-muted-foreground text-left">
@@ -187,7 +187,7 @@ const DesktopModels = () => {
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(() => {
             setActiveIndex(prev => (prev + 1) % models.length);
-        }, 5000); // Slower rotation
+        }, 4000);
     }, []);
 
     React.useEffect(() => {
@@ -237,7 +237,7 @@ const DesktopModels = () => {
                                   ))}
                                 </div>
                             </div>
-                            <div className="h-32 w-full bg-muted/30 rounded-md flex items-center justify-center p-4 mt-6">
+                            <div className="relative h-40 w-full bg-muted/30 rounded-md flex items-center justify-center p-4 mt-6 overflow-hidden">
                                 {featured.visual}
                             </div>
                         </motion.div>
@@ -288,7 +288,7 @@ const MobileModels = () => {
                         <div className="group flex flex-col justify-between h-full bg-card cursor-pointer border rounded-lg overflow-hidden p-6">
                             <h3 className="font-headline text-2xl font-bold">{model.name} <span className="text-lg font-light text-muted-foreground">{model.version}</span></h3>
                             <p className="text-md text-primary mt-1 mb-4">{model.tagline}</p>
-                            <div className="h-32 w-full bg-muted/30 rounded-md flex items-center justify-center p-4 my-4">
+                            <div className="relative h-40 w-full bg-muted/30 rounded-md flex items-center justify-center p-4 my-4 overflow-hidden">
                                 {model.visual}
                             </div>
                             <div className="flex flex-wrap gap-2">
