@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Cpu, Database, Share2, Zap } from 'lucide-react';
 import StatsChart from './stats-chart';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const stats = [
   {
@@ -35,6 +36,10 @@ const stats = [
 export default function Achievements() {
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, amount: 0.2 });
+  
+  const [country, setCountry] = useState('all');
+  const [model, setModel] = useState('all');
+  const [userCategory, setUserCategory] = useState('all');
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -83,10 +88,48 @@ export default function Achievements() {
                 variants={itemVariants}
                 className="lg:col-span-3 rounded-lg border bg-card/50 p-6 shadow-sm backdrop-blur-sm"
             >
-                <h3 className="font-headline text-lg font-semibold">Models Used per Hour</h3>
-                <p className="text-sm text-muted-foreground mb-4">Live data from our model inference servers.</p>
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-4">
+                  <div>
+                    <h3 className="font-headline text-lg font-semibold">Models Used per Hour</h3>
+                    <p className="text-sm text-muted-foreground">Live data from our model inference servers.</p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <Select value={country} onValueChange={setCountry}>
+                        <SelectTrigger className="w-full sm:w-[120px] text-xs h-8">
+                          <SelectValue placeholder="Country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Countries</SelectItem>
+                          <SelectItem value="usa">USA</SelectItem>
+                          <SelectItem value="eu">Europe</SelectItem>
+                          <SelectItem value="asia">Asia</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={model} onValueChange={setModel}>
+                        <SelectTrigger className="w-full sm:w-[120px] text-xs h-8">
+                          <SelectValue placeholder="Model" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Models</SelectItem>
+                          <SelectItem value="gemini-1.5">Gemini 1.5</SelectItem>
+                          <SelectItem value="other">Other Models</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={userCategory} onValueChange={setUserCategory}>
+                        <SelectTrigger className="w-full sm:w-[120px] text-xs h-8 col-span-2 sm:col-span-1">
+                          <SelectValue placeholder="User" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Users</SelectItem>
+                          <SelectItem value="student">Student</SelectItem>
+                          <SelectItem value="it">IT Professional</SelectItem>
+                          <SelectItem value="research">Researcher</SelectItem>
+                        </SelectContent>
+                      </Select>
+                  </div>
+                </div>
                 <div className="h-[250px] w-full">
-                    <StatsChart />
+                    <StatsChart key={`${country}-${model}-${userCategory}`} />
                 </div>
             </motion.div>
             <div className="lg:col-span-2 grid grid-cols-2 gap-6">

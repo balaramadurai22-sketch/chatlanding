@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Area,
   AreaChart,
@@ -80,7 +80,11 @@ export default function StatsChart() {
   }, []);
   
   if (data.length === 0) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <p className="text-muted-foreground">Loading chart...</p>
+      </div>
+    );
   }
 
   return (
