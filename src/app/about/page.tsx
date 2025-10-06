@@ -136,8 +136,8 @@ export default function AboutPage() {
                      <div className="space-y-12">
                         {timeline.map((item, index) => (
                             <div key={index} className="relative flex items-center justify-center">
-                                <div className={`w-full md:w-2/5 ${index % 2 === 0 ? 'text-right' : 'text-left'}`}>
-                                    <Card className="inline-block">
+                                <div className={`w-full md:w-2/5 ${index % 2 === 0 ? 'md:text-right' : 'md:text-left'}`}>
+                                    <Card className="inline-block text-left">
                                         <CardHeader>
                                             <p className="text-sm font-semibold text-primary">{item.year}</p>
                                             <CardTitle className="font-headline text-xl">{item.title}</CardTitle>
