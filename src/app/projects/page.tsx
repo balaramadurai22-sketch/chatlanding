@@ -2,7 +2,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowDown, Layers, Filter, CheckCircle, Clock, PlayCircle, Loader } from 'lucide-react';
+import { ArrowDown, Layers, Filter, CheckCircle, Clock, PlayCircle, Loader, Paperclip } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -31,13 +31,17 @@ const proposalSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("Invalid email address."),
   proposal: z.string().min(20, "Proposal must be at least 20 characters."),
+  attachments: z.any().optional(),
+  notes: z.string().optional(),
 });
 
 const joinSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("Invalid email address."),
   project: z.string().min(1, "Please select a project."),
-  interest: z.string().min(10, "Please tell us why you're interested."),
+  skills: z.string().min(10, "Please list your relevant skills."),
+  availability: z.string().min(1, "Please select your availability."),
+  motivation: z.string().min(10, "Please tell us why you're interested."),
 });
 
 
@@ -49,16 +53,20 @@ export default function ProjectsPage() {
 
   const proposalForm = useForm<z.infer<typeof proposalSchema>>({
     resolver: zodResolver(proposalSchema),
-    defaultValues: { name: "", email: "", proposal: "" },
+    defaultValues: { name: "", email: "", proposal: "", notes: "" },
   });
 
   const joinForm = useForm<z.infer<typeof joinSchema>>({
     resolver: zodResolver(joinSchema),
-    defaultValues: { name: "", email: "", project: "", interest: "" },
+    defaultValues: { name: "", email: "", project: "", skills: "", availability: "", motivation: "" },
   });
 
   const handleProposalSubmit = async (data: z.infer<typeof proposalSchema>) => {
-    const result = await submitContactForm({name: data.name, email: data.email, message: `PROPOSAL: ${data.proposal}`});
+    const message = `
+      PROPOSAL: ${data.proposal}
+      NOTES: ${data.notes || 'N/A'}
+    `;
+    const result = await submitContactForm({name: data.name, email: data.email, message });
     if (result.success) {
       toast({
         title: "Proposal Sent!",
@@ -76,7 +84,13 @@ export default function ProjectsPage() {
   };
 
   const handleJoinSubmit = async (data: z.infer<typeof joinSchema>) => {
-    const result = await submitContactForm({name: data.name, email: data.email, message: `JOIN REQUEST for ${data.project}: ${data.interest}`});
+    const message = `
+      JOIN REQUEST for ${data.project}:
+      Skills: ${data.skills}
+      Availability: ${data.availability}
+      Motivation: ${data.motivation}
+    `;
+    const result = await submitContactForm({name: data.name, email: data.email, message });
      if (result.success) {
       toast({
         title: "Request Sent!",
@@ -264,7 +278,22 @@ export default function ProjectsPage() {
                                                 <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="your.email@example.com" {...field} /></FormControl><FormMessage /></FormItem>
                                             )}/>
                                             <FormField control={proposalForm.control} name="proposal" render={({ field }) => (
-                                                <FormItem><FormLabel>Your Proposal</FormLabel><FormControl><Textarea placeholder="Describe your idea in detail..." className="min-h-[120px]" {...field} /></FormControl><FormMessage /></FormItem>
+                                                <FormItem><FormLabel>Your Proposal</FormLabel><FormControl><Textarea placeholder="Describe your project idea, its goals, and potential impact..." className="min-h-[120px]" {...field} /></FormControl><FormMessage /></FormItem>
+                                            )}/>
+                                            <FormField control={proposalForm.control} name="attachments" render={({ field }) => (
+                                                <FormItem>
+                                                  <FormLabel>Attachments</FormLabel>
+                                                  <FormControl>
+                                                    <div className="relative">
+                                                      <Input type="file" className="w-full pr-12" {...field} />
+                                                      <Paperclip className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                                    </div>
+                                                  </FormControl>
+                                                  <FormMessage />
+                                                </FormItem>
+                                            )}/>
+                                            <FormField control={proposalForm.control} name="notes" render={({ field }) => (
+                                                <FormItem><FormLabel>Optional Notes</FormLabel><FormControl><Textarea placeholder="Any additional information or comments..." {...field} /></FormControl><FormMessage /></FormItem>
                                             )}/>
                                             <DialogFooter>
                                                 <Button type="submit" disabled={proposalForm.formState.isSubmitting}>
@@ -306,8 +335,23 @@ export default function ProjectsPage() {
                                                     </Select>
                                                 <FormMessage /></FormItem>
                                             )}/>
-                                            <FormField control={joinForm.control} name="interest" render={({ field }) => (
-                                                <FormItem><FormLabel>Why are you interested?</FormLabel><FormControl><Textarea placeholder="Tell us about your skills and why you want to join..." className="min-h-[100px]" {...field} /></FormControl><FormMessage /></FormItem>
+                                             <FormField control={joinForm.control} name="skills" render={({ field }) => (
+                                                <FormItem><FormLabel>Skills</FormLabel><FormControl><Textarea placeholder="e.g., Python, PyTorch, React, UI/UX Design..." {...field} /></FormControl><FormMessage /></FormItem>
+                                            )}/>
+                                            <FormField control={joinForm.control} name="availability" render={({ field }) => (
+                                                <FormItem><FormLabel>Availability</FormLabel>
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select your availability" /></SelectTrigger></FormControl>
+                                                        <SelectContent>
+                                                            <SelectItem value="part-time">Part-time (5-10 hours/week)</SelectItem>
+                                                            <SelectItem value="full-time">Full-time (20+ hours/week)</SelectItem>
+                                                            <SelectItem value="flexible">Flexible</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                <FormMessage /></FormItem>
+                                            )}/>
+                                            <FormField control={joinForm.control} name="motivation" render={({ field }) => (
+                                                <FormItem><FormLabel>Motivation & Notes</FormLabel><FormControl><Textarea placeholder="Tell us why you're interested and what you'd like to contribute..." className="min-h-[100px]" {...field} /></FormControl><FormMessage /></FormItem>
                                             )}/>
                                             <DialogFooter>
                                                 <Button type="submit" disabled={joinForm.formState.isSubmitting}>
@@ -329,3 +373,5 @@ export default function ProjectsPage() {
     </>
   );
 }
+
+    
