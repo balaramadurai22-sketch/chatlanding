@@ -2,16 +2,18 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowRight, BrainCircuit, Bot, Cog, FlaskConical, Rocket, TestTube, Briefcase, BarChart, ChevronRight } from 'lucide-react';
+import { ArrowRight, BrainCircuit, Bot, Cog, FlaskConical, Rocket, TestTube, Briefcase, BarChart, ChevronRight, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/landing/navbar';
 import Footer from '@/components/landing/footer';
 import Particles from '@/components/landing/particles';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { projects } from '@/lib/projects';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
 
 const solutionDomains = [
     {
@@ -207,28 +209,54 @@ export default function SolutionsPage() {
                                 viewport={{ once: true, amount: 0.3 }}
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
                             >
-                                <Link href={`/projects/${project.id}`} className="block h-full group">
-                                    <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-lg">
-                                        <div className="relative h-48 w-full overflow-hidden">
-                                            <Image
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-lg cursor-pointer group">
+                                            <div className="relative h-48 w-full overflow-hidden">
+                                                <Image
+                                                    src={project.imageUrl}
+                                                    alt={project.title}
+                                                    fill
+                                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                                    data-ai-hint={project.imageHint}
+                                                />
+                                            </div>
+                                            <CardHeader>
+                                                <h3 className="font-headline text-lg font-bold">{project.title}</h3>
+                                                <p className="text-muted-foreground text-sm flex-grow">{project.description}</p>
+                                            </CardHeader>
+                                            <CardContent className="mt-auto">
+                                                <div className="text-sm font-semibold text-primary flex items-center">
+                                                    View Details <ChevronRight className="size-4 ml-1 transition-transform group-hover:translate-x-1" />
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-2xl">
+                                      <DialogHeader>
+                                        <div className="relative mb-4 aspect-video w-full overflow-hidden rounded-md">
+                                             <Image
                                                 src={project.imageUrl}
                                                 alt={project.title}
                                                 fill
-                                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                                className="object-cover"
                                                 data-ai-hint={project.imageHint}
                                             />
                                         </div>
-                                        <CardHeader>
-                                            <h3 className="font-headline text-lg font-bold">{project.title}</h3>
-                                            <p className="text-muted-foreground text-sm flex-grow">{project.description}</p>
-                                        </CardHeader>
-                                        <CardContent className="mt-auto">
-                                            <div className="text-sm font-semibold text-primary flex items-center">
-                                                View Case Study <ChevronRight className="size-4 ml-1 transition-transform group-hover:translate-x-1" />
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </Link>
+                                        <DialogTitle className="font-headline text-2xl">{project.title}</DialogTitle>
+                                        <DialogDescription className="text-base">
+                                          {project.longDescription}
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      <DialogFooter>
+                                        <Link href={`/projects/${project.id}`} passHref>
+                                          <Button>
+                                            View Case Study <ExternalLink className="ml-2 h-4 w-4" />
+                                          </Button>
+                                        </Link>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
                             </motion.div>
                         ))}
                     </div>
