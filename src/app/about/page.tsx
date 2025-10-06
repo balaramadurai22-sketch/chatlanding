@@ -138,17 +138,31 @@ export default function AboutPage() {
                         {timeline.map((item, index) => (
                             <div key={index} className="relative flex items-center justify-center">
                                 <div className={`w-full md:w-2/5 ${index % 2 === 0 ? 'md:text-right' : 'md:text-left'}`}>
-                                    <Card className="inline-block text-left">
-                                        <CardHeader>
-                                            <p className="text-sm font-semibold text-primary">{item.year}</p>
-                                            <CardTitle className="font-headline text-xl">{item.title}</CardTitle>
-                                            <CardDescription>{item.description}</CardDescription>
-                                        </CardHeader>
-                                    </Card>
+                                    <motion.div
+                                        initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+                                        whileInView={{ opacity: 1, x: 0 }}
+                                        viewport={{ once: true, amount: 0.5 }}
+                                        transition={{ duration: 0.6 }}
+                                    >
+                                        <Card className="inline-block text-left">
+                                            <CardHeader>
+                                                <p className="text-sm font-semibold text-primary">{item.year}</p>
+                                                <CardTitle className="font-headline text-xl">{item.title}</CardTitle>
+                                                <CardDescription>{item.description}</CardDescription>
+                                            </CardHeader>
+                                        </Card>
+                                    </motion.div>
                                 </div>
-                                <div className="absolute left-1/2 -translate-x-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-background border-2 border-primary text-primary">
+                                <motion.div 
+                                    className="absolute left-1/2 -translate-x-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-background border-2 border-primary text-primary"
+                                    initial={{ scale: 0 }}
+                                    whileInView={{ scale: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.4, delay: 0.2 }}
+                                >
                                     <Milestone className="size-5" />
-                                </div>
+                                </motion.div>
+                                <div className="hidden md:block w-2/5"></div>
                             </div>
                         ))}
                     </div>
@@ -162,15 +176,22 @@ export default function AboutPage() {
                 <h2 className="font-headline text-3xl font-bold tracking-tight sm:text-4xl">Meet the Innovators</h2>
                 <p className="mt-4 text-lg text-muted-foreground">We are a collective of researchers, engineers, and dreamers passionate about building the future.</p>
                 <div className="mt-16 grid gap-8 sm:grid-cols-2 md:grid-cols-4">
-                    {team.map((member) => (
-                        <div key={member.name} className="group relative text-center">
-                             <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-background group-hover:border-primary transition-all duration-300">
+                    {team.map((member, i) => (
+                        <motion.div 
+                            key={member.name} 
+                            className="group relative text-center"
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, amount: 0.5 }}
+                            transition={{ duration: 0.5, delay: i * 0.1 }}
+                        >
+                             <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-background group-hover:border-primary transition-all duration-300 transform group-hover:scale-105">
                                 <Image src={member.image} alt={member.name} fill className="object-cover"/>
                             </div>
                             <h4 className="mt-4 font-headline text-lg font-bold">{member.name}</h4>
                             <p className="text-sm text-primary">{member.role}</p>
                             <p className="text-xs text-muted-foreground">{member.expertise}</p>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
             </div>
