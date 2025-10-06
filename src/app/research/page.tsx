@@ -2,14 +2,24 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowRight, Beaker, BrainCircuit, Dna, Rocket, TestTube } from 'lucide-react';
+import { ArrowRight, Beaker, BrainCircuit, Dna, Rocket, TestTube, FileText, Upload, Send } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
 import Navbar from '@/components/landing/navbar';
 import Footer from '@/components/landing/footer';
 import Particles from '@/components/landing/particles';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 import { researchExperiments } from '@/lib/research';
 
 const researchPillars = [
@@ -35,7 +45,49 @@ const researchPillars = [
     },
 ];
 
+const fellowshipSchema = z.object({
+  fullName: z.string().min(2, "Full name must be at least 2 characters."),
+  email: z.string().email("Invalid email address."),
+  affiliation: z.string().min(2, "Affiliation is required."),
+  areaOfInterest: z.string().min(5, "Please describe your area of interest."),
+  motivation: z.string().min(20, "Motivation statement must be at least 20 characters."),
+  resume: z.any().optional(), // File upload validation is complex on the client-side
+});
+
+const contactSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters."),
+  email: z.string().email("Invalid email address."),
+  subject: z.string().min(5, "Subject must be at least 5 characters."),
+  message: z.string().min(10, "Message must be at least 10 characters."),
+});
+
+type FellowshipFormValues = z.infer<typeof fellowshipSchema>;
+type ContactFormValues = z.infer<typeof contactSchema>;
+
 export default function ResearchPage() {
+    const { toast } = useToast();
+    const [isFellowshipOpen, setFellowshipOpen] = useState(false);
+    const [isContactOpen, setContactOpen] = useState(false);
+
+    const fellowshipForm = useForm<FellowshipFormValues>({ resolver: zodResolver(fellowshipSchema) });
+    const contactForm = useForm<ContactFormValues>({ resolver: zodResolver(contactSchema) });
+
+    const onFellowshipSubmit: SubmitHandler<FellowshipFormValues> = async (data) => {
+        console.log("Fellowship Application:", data);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        toast({ title: "Application Sent!", description: "Thank you for your interest. We will be in touch shortly." });
+        fellowshipForm.reset();
+        setFellowshipOpen(false);
+    };
+
+    const onContactSubmit: SubmitHandler<ContactFormValues> = async (data) => {
+        console.log("Contact Form Submission:", data);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        toast({ title: "Message Sent!", description: "Your message has been sent to our research team." });
+        contactForm.reset();
+        setContactOpen(false);
+    };
+
     return (
         <>
             <Navbar />
@@ -51,9 +103,9 @@ export default function ResearchPage() {
                                 transition={{ duration: 0.8, ease: 'easeInOut' }}
                                 className="font-headline text-4xl font-bold tracking-tight uppercase sm:text-6xl"
                             >
-                                Where Ideas Evolve
+                                Pushing the Frontiers
                                 <br />
-                                <span>Into Intelligence</span>
+                                <span>of AI Research</span>
                             </motion.h1>
                             <motion.p
                                 initial={{ opacity: 0, y: 20 }}
@@ -67,13 +119,14 @@ export default function ResearchPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, delay: 0.3 }}
-                                className="mt-8"
+                                className="mt-8 flex justify-center gap-4"
                             >
-                                <a href="#research-pillars">
-                                    <Button size="lg">
-                                        Explore Research Areas
-                                    </Button>
-                                </a>
+                                <Button size="lg" onClick={() => setFellowshipOpen(true)}>
+                                    Apply for Fellowship
+                                </Button>
+                                <Button size="lg" variant="outline" onClick={() => setContactOpen(true)}>
+                                    Contact Research Team
+                                </Button>
                             </motion.div>
                         </div>
                     </section>
@@ -82,7 +135,7 @@ export default function ResearchPage() {
                     <section id="research-pillars" className="py-24 sm:py-32">
                         <div className="container">
                             <div className="mx-auto max-w-4xl text-center mb-16">
-                                <h2 className="font-headline text-3xl font-bold tracking-tight uppercase sm:text-4xl">The Four Dimensions of AI Discovery</h2>
+                                <h2 className="font-headline text-3xl font-bold tracking-tight uppercase sm:text-4xl">Our Core Research Domains</h2>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                                 {researchPillars.map((pillar, index) => (
@@ -147,7 +200,7 @@ export default function ResearchPage() {
                         </div>
                     </section>
 
-                    {/* CTA */}
+                    {/* CTA - same as hero but can be its own section */}
                     <section className="py-24 sm:py-32">
                         <div className="container text-center">
                             <motion.div
@@ -161,11 +214,11 @@ export default function ResearchPage() {
                                     Whether you’re a researcher, developer, or dreamer—our lab is open to those who dare to explore.
                                 </p>
                                 <div className="mt-8 flex justify-center gap-4">
-                                    <Button asChild size="lg">
-                                        <Link href="/contact">Apply for Fellowship</Link>
+                                    <Button size="lg" onClick={() => setFellowshipOpen(true)}>
+                                        Apply for Fellowship
                                     </Button>
-                                    <Button asChild size="lg" variant="outline">
-                                        <Link href="/contact">Contact Research Team</Link>
+                                    <Button size="lg" variant="outline" onClick={() => setContactOpen(true)}>
+                                        Contact Research Team
                                     </Button>
                                 </div>
                             </motion.div>
@@ -173,6 +226,84 @@ export default function ResearchPage() {
                     </section>
                 </main>
             </div>
+
+            {/* Fellowship Application Modal */}
+            <Dialog open={isFellowshipOpen} onOpenChange={setFellowshipOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle className="font-headline text-2xl">Apply for Fellowship</DialogTitle>
+                        <DialogDescription>Submit your application to join our research team.</DialogDescription>
+                    </DialogHeader>
+                    <Form {...fellowshipForm}>
+                        <form onSubmit={fellowshipForm.handleSubmit(onFellowshipSubmit)} className="space-y-4 py-4">
+                            <FormField control={fellowshipForm.control} name="fullName" render={({ field }) => (
+                                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="Your Full Name" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                             <FormField control={fellowshipForm.control} name="email" render={({ field }) => (
+                                <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="your.email@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                             <FormField control={fellowshipForm.control} name="affiliation" render={({ field }) => (
+                                <FormItem><FormLabel>Affiliation / Organization</FormLabel><FormControl><Input placeholder="University or Company" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={fellowshipForm.control} name="areaOfInterest" render={({ field }) => (
+                                <FormItem><FormLabel>Area of Interest</FormLabel><FormControl><Input placeholder="e.g., Quantum AI, Ethical AI" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                             <FormField control={fellowshipForm.control} name="motivation" render={({ field }) => (
+                                <FormItem><FormLabel>Motivation Statement</FormLabel><FormControl><Textarea placeholder="Why do you want to join our lab?" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={fellowshipForm.control} name="resume" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>CV/Resume</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Input type="file" className="pl-12" onChange={(e) => field.onChange(e.target.files)} />
+                                            <Upload className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                            <DialogFooter>
+                                <Button type="submit" disabled={fellowshipForm.formState.isSubmitting}>
+                                    {fellowshipForm.formState.isSubmitting ? 'Submitting...' : 'Submit Application'}
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </Form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Contact Research Team Modal */}
+            <Dialog open={isContactOpen} onOpenChange={setContactOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle className="font-headline text-2xl">Contact Research Team</DialogTitle>
+                        <DialogDescription>Have a question or proposal? Let us know.</DialogDescription>
+                    </DialogHeader>
+                    <Form {...contactForm}>
+                        <form onSubmit={contactForm.handleSubmit(onContactSubmit)} className="space-y-4 py-4">
+                            <FormField control={contactForm.control} name="name" render={({ field }) => (
+                                <FormItem><FormLabel>Name</FormLabel><FormControl><Input placeholder="Your Name" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                             <FormField control={contactForm.control} name="email" render={({ field }) => (
+                                <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="your.email@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                             <FormField control={contactForm.control} name="subject" render={({ field }) => (
+                                <FormItem><FormLabel>Subject</FormLabel><FormControl><Input placeholder="Question about..." {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                             <FormField control={contactForm.control} name="message" render={({ field }) => (
+                                <FormItem><FormLabel>Message</FormLabel><FormControl><Textarea placeholder="Your detailed message..." {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <DialogFooter>
+                                <Button type="submit" disabled={contactForm.formState.isSubmitting}>
+                                    {contactForm.formState.isSubmitting ? 'Sending...' : 'Send Message'}
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </Form>
+                </DialogContent>
+            </Dialog>
+
             <Footer />
         </>
     );
