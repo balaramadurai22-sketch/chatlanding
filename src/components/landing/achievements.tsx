@@ -7,29 +7,29 @@ import { cn } from '@/lib/utils';
 
 const stats = [
   {
-    value: 120,
+    value: 45,
     label: 'AI Models Deployed',
     icon: <Bot className="size-8" />,
   },
   {
-    value: 15,
+    value: 12,
     label: 'Patents Filed',
     icon: <FileText className="size-8" />,
   },
   {
-    value: 30,
-    label: 'Global Collaborations',
+    value: 18,
+    label: 'Research Collaborations',
     icon: <Globe className="size-8" />,
   },
   {
-    value: 25,
-    label: 'Research Papers Published',
-    icon: <BookOpen className="size-8" />,
+    value: 10,
+    label: 'Active Innovations',
+    icon: <Briefcase className="size-8" />,
   },
   {
-    value: 18,
-    label: 'Innovation Projects Ongoing',
-    icon: <Briefcase className="size-8" />,
+    value: 25,
+    label: 'Research Papers',
+    icon: <BookOpen className="size-8" />,
   },
   {
     value: 10,
