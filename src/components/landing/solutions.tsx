@@ -2,11 +2,10 @@
 
 import * as React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BrainCircuit, Bot, Cog, FlaskConical, Rocket, ArrowRight, Eye } from 'lucide-react';
+import { BrainCircuit, Bot, Cog, FlaskConical, Rocket, ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '../ui/dialog';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
-import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 
@@ -145,20 +144,32 @@ const SolutionDialogContent = ({ solution }: { solution: (typeof solutions)[0] }
 const DesktopSolutions = () => {
     const [activeIndex, setActiveIndex] = React.useState(0);
     const [isHovered, setIsHovered] = React.useState(false);
+    const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
+
+    const scheduleRotation = React.useCallback(() => {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        intervalRef.current = setInterval(() => {
+            setActiveIndex(prev => (prev + 1) % solutions.length);
+        }, 3000);
+    }, []);
 
     React.useEffect(() => {
-        if (isHovered) return;
+        if (!isHovered) {
+            scheduleRotation();
+        } else {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        }
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
+    }, [isHovered, scheduleRotation]);
 
-        const interval = setInterval(() => {
-            setActiveIndex((prev) => (prev + 1) % solutions.length);
-        }, 3000); // Increased interval to 3s
-
-        return () => clearInterval(interval);
-    }, [isHovered]);
-
-    const handleMouseEnter = (index: number) => {
+    const handleMouseEnter = (index?: number) => {
         setIsHovered(true);
-        setActiveIndex(index);
+        if (index !== undefined) {
+             if (intervalRef.current) clearInterval(intervalRef.current);
+             setActiveIndex(index);
+        }
     };
 
     const handleMouseLeave = () => {
@@ -166,63 +177,74 @@ const DesktopSolutions = () => {
     };
 
     const activeSolution = solutions[activeIndex];
-    const otherSolutions = solutions.filter((_, i) => i !== activeIndex);
+    
+    // The order of other solutions should be based on the active index
+    const otherSolutions = React.useMemo(() => {
+       return solutions.filter((_, i) => i !== activeIndex);
+    }, [activeIndex])
+
 
     return (
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-[450px]">
-            <Dialog>
-                 <DialogTrigger asChild>
-                    <motion.div
-                        layoutId={`solution-card-${activeSolution.title}`}
-                        className="lg:col-span-2 p-8 rounded-lg border bg-card shadow-sm flex flex-col justify-between cursor-pointer"
-                        onMouseEnter={() => handleMouseEnter(activeIndex)}
-                        onMouseLeave={handleMouseLeave}
-                    >
-                        <div>
-                            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-muted mb-6">
-                                {React.cloneElement(activeSolution.icon, { className: "size-10 text-foreground"})}
+        <div 
+            className="hidden md:grid md:grid-cols-3 gap-8 min-h-[450px]"
+            onMouseEnter={() => handleMouseEnter()}
+            onMouseLeave={handleMouseLeave}
+        >
+            <AnimatePresence initial={false}>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <motion.div
+                            key={activeIndex}
+                            layoutId={`solution-card-${activeSolution.title}`}
+                            className="md:col-span-2 p-8 rounded-lg border bg-card shadow-sm flex flex-col justify-between cursor-pointer"
+                            initial={{ opacity: 0, x: -50 }}
+                            animate={{ opacity: 1, x: 0, transition: { duration: 0.5, ease: 'easeOut' } }}
+                            exit={{ opacity: 0, x: 50, transition: { duration: 0.3, ease: 'easeIn' } }}
+                        >
+                            <div>
+                                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-muted mb-6">
+                                    {React.cloneElement(activeSolution.icon, { className: "size-10 text-foreground"})}
+                                </div>
+                                <h3 className="font-headline text-3xl font-bold">{activeSolution.title}</h3>
+                                <p className="text-lg text-muted-foreground mt-2">{activeSolution.description}</p>
                             </div>
-                            <h3 className="font-headline text-3xl font-bold">{activeSolution.title}</h3>
-                            <p className="text-lg text-muted-foreground mt-2">{activeSolution.description}</p>
-                        </div>
-                        <div className="h-32 w-full bg-muted/30 rounded-md flex items-center justify-center p-4 mt-6">
-                            {activeSolution.diagram}
-                        </div>
-                    </motion.div>
-                </DialogTrigger>
-                <SolutionDialogContent solution={activeSolution} />
-            </Dialog>
-
+                            <div className="h-32 w-full bg-muted/30 rounded-md flex items-center justify-center p-4 mt-6">
+                                {activeSolution.diagram}
+                            </div>
+                        </motion.div>
+                    </DialogTrigger>
+                    <SolutionDialogContent solution={activeSolution} />
+                </Dialog>
+            </AnimatePresence>
 
             <div className="flex flex-col gap-4">
-                 <AnimatePresence>
-                    {otherSolutions.map((solution, index) => {
-                        const originalIndex = solutions.findIndex(s => s.title === solution.title);
-                        return (
-                            <Dialog key={solution.title}>
-                                <DialogTrigger asChild>
-                                    <motion.div
-                                        layoutId={`solution-card-${solution.title}`}
-                                        className="p-4 rounded-lg border bg-card/70 shadow-sm flex items-center gap-4 cursor-pointer transition-all hover:bg-card"
-                                        onMouseEnter={() => handleMouseEnter(originalIndex)}
-                                        onMouseLeave={handleMouseLeave}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -20 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted flex-shrink-0">
-                                            {solution.icon}
-                                        </div>
-                                        <div>
-                                            <h4 className="font-headline font-semibold">{solution.title}</h4>
-                                        </div>
-                                    </motion.div>
-                                </DialogTrigger>
-                                <SolutionDialogContent solution={solution} />
-                            </Dialog>
-                        );
-                    })}
+                <AnimatePresence>
+                {otherSolutions.map((solution) => {
+                    const originalIndex = solutions.findIndex(s => s.title === solution.title);
+                    return (
+                        <Dialog key={solution.title}>
+                             <DialogTrigger asChild>
+                                <motion.div
+                                    layoutId={`solution-card-${solution.title}`}
+                                    className="p-4 rounded-lg border bg-card/70 shadow-sm flex items-center gap-4 cursor-pointer transition-all hover:bg-card hover:shadow-md"
+                                    onClick={() => setActiveIndex(originalIndex)}
+                                    onMouseEnter={() => handleMouseEnter(originalIndex)}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } }}
+                                    exit={{ opacity: 0, y: -20, transition: { duration: 0.2, ease: 'easeIn' } }}
+                                >
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted flex-shrink-0">
+                                        {solution.icon}
+                                    </div>
+                                    <div>
+                                        <h4 className="font-headline font-semibold">{solution.title}</h4>
+                                    </div>
+                                </motion.div>
+                            </DialogTrigger>
+                            <SolutionDialogContent solution={solution} />
+                        </Dialog>
+                    );
+                })}
                 </AnimatePresence>
             </div>
         </div>
@@ -299,5 +321,3 @@ export default function Solutions() {
     </section>
   );
 }
-
-    
