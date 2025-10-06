@@ -1,24 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { name: "Home", href: "#home" },
-  { name: "About", href: "#about" },
-  { name: "Solutions", href: "#solutions" },
-  { name: "Research", href: "#research" },
-  { name: "Projects", href: "#projects" },
-  { name: "AI Lab", href: "#ai-lab" },
-  { name: "Contact", href: "#contact" },
+  { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
+  { name: "Solutions", href: "/solutions" },
+  { name: "Research", href: "/research" },
+  { name: "Projects", href: "/projects" },
+  { name: "AI Lab", href: "/ai-lab" },
+  { name: "Contact", href: "/contact" },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,22 +48,27 @@ export default function Navbar() {
         )}
       >
         <div className="container mx-auto flex h-20 items-center justify-between">
-          <a href="#home" className="font-headline text-xl font-bold animated-gradient-text">
+          <Link href="/" className="font-headline text-xl font-bold animated-gradient-text">
             TECHismust AI
-          </a>
+          </Link>
           <nav className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
                 href={link.href}
-                className="text-sm font-medium transition-colors text-foreground/80 hover:text-foreground"
+                className={cn(
+                    "text-sm font-medium transition-colors text-foreground/80 hover:text-foreground",
+                    pathname === link.href && "text-primary"
+                )}
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
           </nav>
           <div className="hidden md:block">
-            <Button variant="ghost" className="transition-all hover:bg-foreground/10">Explore AI</Button>
+            <Link href="/ai-lab">
+              <Button variant="ghost" className="transition-all hover:bg-foreground/10">Explore AI</Button>
+            </Link>
           </div>
           <div className="md:hidden">
             <Button
@@ -84,9 +92,9 @@ export default function Navbar() {
             className="fixed inset-0 z-50 bg-background/95 backdrop-blur-lg"
           >
             <div className="container mx-auto flex h-20 items-center justify-between">
-               <a href="#home" className="font-headline text-xl font-bold animated-gradient-text" onClick={() => setIsMenuOpen(false)}>
+               <Link href="/" className="font-headline text-xl font-bold animated-gradient-text" onClick={() => setIsMenuOpen(false)}>
                 TECHismust AI
-              </a>
+              </Link>
               <Button
                 variant="ghost"
                 size="icon"
@@ -114,7 +122,9 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * navLinks.length, duration: 0.5 }}
                 >
-                    <Button variant="outline" size="lg" onClick={() => setIsMenuOpen(false)}>Explore AI</Button>
+                    <Link href="/ai-lab">
+                        <Button variant="outline" size="lg" onClick={() => setIsMenuOpen(false)}>Explore AI</Button>
+                    </Link>
                 </motion.div>
             </nav>
           </motion.div>

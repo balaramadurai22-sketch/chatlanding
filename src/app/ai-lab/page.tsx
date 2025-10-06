@@ -1,11 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import Hero from '@/components/landing/hero';
 import Chat from '@/components/landing/chat';
 
-export default function Home() {
-  const [isChatOpen, setIsChatOpen] = useState(false);
+export default function AiLabPage() {
+  const [isChatOpen, setIsChatOpen] = useState(true);
   const [initialQuery, setInitialQuery] = useState('');
 
   const handleOpenChat = (query?: string) => {
@@ -21,9 +20,8 @@ export default function Home() {
   };
 
   return (
-    <>
-      <Hero onChatSubmit={handleOpenChat} />
+    <section className="container">
       <Chat isOpen={isChatOpen} onOpenChange={handleCloseChat} initialQuery={initialQuery} onTriggerClick={() => handleOpenChat()} />
-    </>
+    </section>
   );
 }

@@ -2,15 +2,16 @@
 
 import { ArrowUp } from "lucide-react";
 import { Button } from "../ui/button";
+import Link from 'next/link';
 
 const navLinks = [
-  { name: "Home", href: "#home" },
-  { name: "About", href: "#about" },
-  { name: "Solutions", href: "#solutions" },
-  { name: "Research", href: "#research" },
-  { name: "Projects", href: "#projects" },
-  { name: "AI Lab", href: "#ai-lab" },
-  { name: "Contact", href: "#contact" },
+  { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
+  { name: "Solutions", href: "/solutions" },
+  { name: "Research", href: "/research" },
+  { name: "Projects", href: "/projects" },
+  { name: "AI Lab", href: "/ai-lab" },
+  { name: "Contact", href: "/contact" },
 ];
 
 export default function Footer() {
@@ -26,22 +27,22 @@ export default function Footer() {
       <div className="container relative py-8">
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           <div className="text-center md:text-left">
-            <a href="#home" className="font-headline text-lg font-bold animated-gradient-text">
+            <Link href="/" className="font-headline text-lg font-bold animated-gradient-text">
               TECHismust AI
-            </a>
+            </Link>
             <p className="mt-1 text-sm text-muted-foreground">
               &copy; {new Date().getFullYear()} TECHismust. All rights reserved.
             </p>
           </div>
           <nav className="flex flex-wrap justify-center gap-4 md:gap-6">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
                 href={link.href}
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
           </nav>
         </div>
