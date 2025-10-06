@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 
 const navLinks = [
   { name: 'Home', href: '/' },
-  { name: 'About', href: '#about' },
+  { name: 'About', href: '/about' },
   { name: 'Solutions', href: '#solutions' },
   { name: 'Research', href: '#research' },
   { name: 'Projects', href: '#projects' },
@@ -66,15 +66,16 @@ export default function Navbar() {
   };
 
   const getIsActive = (link: {href: string}) => {
-    if (link.href.startsWith('/#')) {
+     if (link.href.startsWith('/#')) {
       if (pathname === '/') {
-         return activeSection === link.href.substring(2);
+         const sectionId = link.href.substring(2);
+         if (!activeSection && sectionId === 'home') return true;
+         return activeSection === sectionId;
       }
       return false;
     }
     return pathname === link.href;
   }
-
 
   return (
     <>
@@ -95,7 +96,7 @@ export default function Navbar() {
                 href={link.href}
                 className={cn(
                     'text-sm font-medium transition-colors text-foreground/80 hover:text-foreground',
-                    getIsActive(link) && 'text-primary'
+                    getIsActive(link) ? 'text-primary' : ''
                 )}
               >
                 {link.name}

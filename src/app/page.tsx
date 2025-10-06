@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Navbar from '@/components/landing/navbar';
 import Hero from '@/components/landing/hero';
-import About from '@/components/landing/about';
 import Solutions from '@/components/landing/solutions';
 import Research from '@/components/landing/research';
 import Projects from '@/components/landing/projects';
@@ -34,7 +33,6 @@ export default function Home() {
         <Navbar />
         <main className="flex-1">
             <Hero onChatSubmit={handleOpenChat} />
-            <About />
             <Solutions />
             <Research />
             <Projects />
