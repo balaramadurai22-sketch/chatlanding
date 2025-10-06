@@ -4,47 +4,26 @@
 
 @layer base {
   :root {
-    --background: 280 50% 95.5%;
-    --foreground: 285 10% 25%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 285 10% 25%;
+    --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 285 10% 25%;
-    --primary: 285 100% 41%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 280 20% 90%;
-    --secondary-foreground: 285 100% 41%;
-    --muted: 280 20% 90%;
-    --muted-foreground: 285 5% 55%;
-    --accent: 183 96% 74%;
-    --accent-foreground: 183 100% 15%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 280 20% 85%;
-    --input: 280 20% 88%;
-    --ring: 285 100% 41%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
     --radius: 0.5rem;
-  }
-  .dark {
-    --background: 285 15% 10%;
-    --foreground: 0 0% 98%;
-    --card: 285 15% 15%;
-    --card-foreground: 0 0% 98%;
-    --popover: 285 15% 10%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 285 100% 60%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 285 15% 25%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 285 15% 25%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 183 96% 60%;
-    --accent-foreground: 183 100% 10%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 285 15% 25%;
-    --input: 285 15% 25%;
-    --ring: 285 100% 60%;
   }
 }
 
@@ -78,12 +57,7 @@
   }
 
   .animated-gradient-text {
-    background-image: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)));
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: gradient-animation 5s ease-in-out infinite;
+    color: hsl(var(--foreground));
   }
 
   @keyframes gradient-animation {
