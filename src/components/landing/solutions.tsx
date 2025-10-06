@@ -134,7 +134,7 @@ const SolutionDialogContent = ({ solution }: { solution: (typeof solutions)[0] }
         </DialogHeader>
         <DialogFooter>
             <Button variant="outline" className="transition-all hover:bg-foreground/10">
-                View More <ArrowRight className="ml-2 h-4 w-4" />
+                Learn More <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
         </DialogFooter>
     </DialogContent>
@@ -178,7 +178,6 @@ const DesktopSolutions = () => {
 
     const activeSolution = solutions[activeIndex];
     
-    // The order of other solutions should be based on the active index
     const otherSolutions = React.useMemo(() => {
        return solutions.filter((_, i) => i !== activeIndex);
     }, [activeIndex])
