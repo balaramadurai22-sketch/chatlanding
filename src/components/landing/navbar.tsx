@@ -1,31 +1,43 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
-  { name: "Solutions", href: "/solutions" },
-  { name: "Research", href: "/research" },
-  { name: "Projects", href: "/projects" },
-  { name: "AI Lab", href: "/ai-lab" },
-  { name: "Contact", href: "/contact" },
+  { name: "Home", href: "#home" },
+  { name: "About", href: "#about" },
+  { name: "Solutions", href: "#solutions" },
+  { name: "Research", href: "#research" },
+  { name: "Projects", href: "#projects" },
+  { name: "AI Lab", href: "#ai-lab" },
+  { name: "Contact", href: "#contact" },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const pathname = usePathname();
+  const [activeSection, setActiveSection] = useState("home");
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
+
+      const sections = navLinks.map(link => document.getElementById(link.href.substring(1)));
+      let currentSection = "home";
+
+      for (const section of sections) {
+        if (section) {
+          const rect = section.getBoundingClientRect();
+          if (rect.top <= 100 && rect.bottom >= 100) {
+            currentSection = section.id;
+            break;
+          }
+        }
+      }
+      setActiveSection(currentSection);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -41,7 +53,7 @@ export default function Navbar() {
       document.body.style.overflow = 'auto';
     }
   }, [isMenuOpen]);
-  
+
   const handleMenuLinkClick = () => {
     setIsMenuOpen(false);
   };
@@ -56,27 +68,27 @@ export default function Navbar() {
         )}
       >
         <div className="container mx-auto flex h-20 items-center justify-between">
-          <Link href="/" className="font-headline text-xl font-bold animated-gradient-text">
+          <a href="#home" className="font-headline text-xl font-bold animated-gradient-text">
             TECHismust AI
-          </Link>
+          </a>
           <nav className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
-              <Link
+              <a
                 key={link.name}
                 href={link.href}
                 className={cn(
                     "text-sm font-medium transition-colors text-foreground/80 hover:text-foreground",
-                    pathname === link.href && "text-primary"
+                    activeSection === link.href.substring(1) && "text-primary"
                 )}
               >
                 {link.name}
-              </Link>
+              </a>
             ))}
           </nav>
           <div className="hidden md:block">
-            <Link href="/ai-lab">
+            <a href="#ai-lab">
               <Button variant="ghost" className="transition-all hover:bg-foreground/10">Explore AI</Button>
-            </Link>
+            </a>
           </div>
           <div className="md:hidden">
             <Button
@@ -100,9 +112,9 @@ export default function Navbar() {
             className="fixed inset-0 z-50 bg-background/95 backdrop-blur-lg"
           >
             <div className="container mx-auto flex h-20 items-center justify-between">
-               <Link href="/" className="font-headline text-xl font-bold animated-gradient-text" onClick={handleMenuLinkClick}>
+               <a href="#home" className="font-headline text-xl font-bold animated-gradient-text" onClick={handleMenuLinkClick}>
                 TECHismust AI
-              </Link>
+              </a>
               <Button
                 variant="ghost"
                 size="icon"
@@ -130,9 +142,9 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * navLinks.length, duration: 0.5 }}
                 >
-                    <Link href="/ai-lab" onClick={handleMenuLinkClick}>
+                    <a href="#ai-lab" onClick={handleMenuLinkClick}>
                         <Button variant="outline" size="lg">Explore AI</Button>
-                    </Link>
+                    </a>
                 </motion.div>
             </nav>
           </motion.div>

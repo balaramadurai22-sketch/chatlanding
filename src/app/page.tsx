@@ -1,27 +1,47 @@
 'use client';
 
 import { useState } from 'react';
+import Navbar from '@/components/landing/navbar';
 import Hero from '@/components/landing/hero';
+import About from '@/components/landing/about';
+import Solutions from '@/components/landing/solutions';
+import Research from '@/components/landing/research';
+import Projects from '@/components/landing/projects';
+import Chat from '@/components/landing/chat';
+import Contact from '@/components/landing/contact';
+import Footer from '@/components/landing/footer';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  // This state is kept for potential future use where the chat
-  // might be initiated from the hero section even on the home page.
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [initialQuery, setInitialQuery] = useState('');
+  const router = useRouter();
 
   const handleOpenChat = (query?: string) => {
     if (query) {
       setInitialQuery(query);
     }
-    // In a full-page navigation setup, this might navigate to the /ai-lab page
-    // For now, we'll keep the logic but it won't be used as the chat component is removed.
-    // A more advanced implementation could use: router.push(`/ai-lab?query=${query}`);
-    console.log("Chat initiated with query:", query);
+    setIsChatOpen(true);
+  };
+  
+  const handleCloseChat = () => {
+    setIsChatOpen(false);
+    setInitialQuery('');
   };
 
   return (
-    <>
-      <Hero onChatSubmit={handleOpenChat} />
-    </>
+    <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="flex-1">
+            <Hero onChatSubmit={handleOpenChat} />
+            <About />
+            <Solutions />
+            <Research />
+            <Projects />
+            <Chat isOpen={isChatOpen} onOpenChange={handleCloseChat} initialQuery={initialQuery} onTriggerClick={handleOpenChat} />
+            <Contact />
+        </main>
+        <Footer />
+    </div>
   );
 }
