@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Badge } from '../ui/badge';
+import Image from 'next/image';
 
 // Visual Components for modals
 const TypingEffect = ({ text }: { text: string }) => {
@@ -43,13 +44,15 @@ const Waveform = () => (
     </div>
 );
 
-const ImageReveal = ({ src, alt }: { src: string, alt: string }) => (
-    <motion.div className="w-full h-full bg-cover bg-center rounded-md"
-        style={{ backgroundImage: `url(${src})` }}
-        initial={{ filter: 'blur(20px)', opacity: 0 }}
-        animate={{ filter: 'blur(0px)', opacity: 1 }}
-        transition={{ duration: 1, ease: 'easeOut' }}
-    />
+const ImageReveal = ({ src, alt }: { src: string; alt: string }) => (
+  <motion.div
+    className="relative w-full h-full rounded-md overflow-hidden"
+    initial={{ filter: 'blur(20px)', opacity: 0 }}
+    animate={{ filter: 'blur(0px)', opacity: 1 }}
+    transition={{ duration: 1, ease: 'easeOut' }}
+  >
+    <Image src={src} alt={alt} fill className="object-cover" />
+  </motion.div>
 );
 
 const NeuralGraph = () => (
@@ -184,7 +187,7 @@ const DesktopModels = () => {
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(() => {
             setActiveIndex(prev => (prev + 1) % models.length);
-        }, 3000);
+        }, 5000); // Slower rotation
     }, []);
 
     React.useEffect(() => {
@@ -220,8 +223,8 @@ const DesktopModels = () => {
                             key={activeIndex}
                             className="p-8 rounded-lg border bg-card shadow-sm flex flex-col justify-between cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1"
                             initial={{ opacity: 0.5, x: -50, scale: 0.95 }}
-                            animate={{ opacity: 1, x: 0, scale: 1, transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] } }}
-                            exit={{ opacity: 0, position: 'absolute', transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }}
+                            animate={{ opacity: 1, x: 0, scale: 1, transition: { duration: 0.8, ease: [0.4, 0, 0.2, 1] } }}
+                            exit={{ opacity: 0, position: 'absolute', transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] } }}
                         >
                             <div>
                                 <h3 className="font-headline text-3xl font-bold">{featured.name} <span className="text-lg font-light text-muted-foreground">{featured.version}</span></h3>
@@ -254,7 +257,7 @@ const DesktopModels = () => {
                                         className="p-4 rounded-lg border bg-card/70 shadow-sm flex flex-col items-start gap-2 cursor-pointer transition-all hover:bg-card hover:shadow-md"
                                         onClick={() => handleModelClick(originalIndex)}
                                         initial={{ opacity: 0, x: 30 }}
-                                        animate={{ opacity: 1, x: 0, transition: { duration: 0.6, delay: index * 0.1, ease: [0.4, 0, 0.2, 1] } }}
+                                        animate={{ opacity: 1, x: 0, transition: { duration: 0.8, delay: index * 0.1, ease: [0.4, 0, 0.2, 1] } }}
                                         exit={{ opacity: 0, x: -30, transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] } }}
                                     >
                                         <h4 className="font-headline font-semibold text-lg">{model.name} <span className="text-sm font-light text-muted-foreground">{model.version}</span></h4>
