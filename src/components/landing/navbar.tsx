@@ -10,6 +10,7 @@ const navLinks = [
   { name: "Home", href: "#home" },
   { name: "About", href: "#about" },
   { name: "Solutions", href: "#solutions" },
+  { name: "Research", href: "#research" },
   { name: "Projects", href: "#projects" },
   { name: "AI Lab", href: "#ai-lab" },
   { name: "Contact", href: "#contact" },
@@ -44,7 +45,7 @@ export default function Navbar() {
         )}
       >
         <div className="container mx-auto flex h-20 items-center justify-between">
-          <a href="#home" className="font-headline text-xl font-bold">
+          <a href="#home" className="font-headline text-xl font-bold animated-gradient-text">
             TECHismust AI
           </a>
           <nav className="hidden md:flex items-center gap-6">
@@ -52,14 +53,14 @@ export default function Navbar() {
               <a
                 key={link.name}
                 href={link.href}
-                className="text-sm font-medium transition-colors hover:text-primary"
+                className="text-sm font-medium transition-colors text-foreground/80 hover:text-foreground"
               >
                 {link.name}
               </a>
             ))}
           </nav>
           <div className="hidden md:block">
-            <Button variant="outline" className="transition-all hover:bg-primary hover:text-primary-foreground">Explore AI</Button>
+            <Button variant="ghost" className="transition-all hover:bg-foreground/10">Explore AI</Button>
           </div>
           <div className="md:hidden">
             <Button
@@ -83,7 +84,7 @@ export default function Navbar() {
             className="fixed inset-0 z-50 bg-background/95 backdrop-blur-lg"
           >
             <div className="container mx-auto flex h-20 items-center justify-between">
-               <a href="#home" className="font-headline text-xl font-bold" onClick={() => setIsMenuOpen(false)}>
+               <a href="#home" className="font-headline text-xl font-bold animated-gradient-text" onClick={() => setIsMenuOpen(false)}>
                 TECHismust AI
               </a>
               <Button

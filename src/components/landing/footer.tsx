@@ -7,6 +7,7 @@ const navLinks = [
   { name: "Home", href: "#home" },
   { name: "About", href: "#about" },
   { name: "Solutions", href: "#solutions" },
+  { name: "Research", href: "#research" },
   { name: "Projects", href: "#projects" },
   { name: "AI Lab", href: "#ai-lab" },
   { name: "Contact", href: "#contact" },
@@ -25,7 +26,7 @@ export default function Footer() {
       <div className="container relative py-8">
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           <div className="text-center md:text-left">
-            <a href="#home" className="font-headline text-lg font-bold">
+            <a href="#home" className="font-headline text-lg font-bold animated-gradient-text">
               TECHismust AI
             </a>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -47,7 +48,7 @@ export default function Footer() {
         <Button
           variant="outline"
           size="icon"
-          className="absolute -top-5 right-6 rounded-full bg-background"
+          className="absolute -top-5 right-6 rounded-full bg-background transition-all hover:bg-foreground/10"
           onClick={scrollToTop}
           aria-label="Back to top"
         >

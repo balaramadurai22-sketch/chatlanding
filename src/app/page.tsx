@@ -9,6 +9,7 @@ import Chat from '@/components/landing/chat';
 import Contact from '@/components/landing/contact';
 import Footer from '@/components/landing/footer';
 import Solutions from '@/components/landing/solutions';
+import Research from '@/components/landing/research';
 
 export default function Home() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -33,6 +34,7 @@ export default function Home() {
         <Hero onChatSubmit={handleOpenChat} />
         <About />
         <Solutions />
+        <Research />
         <Projects />
         <Chat isOpen={isChatOpen} onOpenChange={handleCloseChat} initialQuery={initialQuery} onTriggerClick={handleOpenChat} />
         <Contact />
