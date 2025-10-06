@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'TECHismust Innovation Hub',
-  description: 'Empowering the Future with Innovation and Intelligence.',
+  title: 'TECHismust Innovation Lab',
+  description: 'Turning the Impossible Into Possible With AI.',
 };
 
 export default function RootLayout({
