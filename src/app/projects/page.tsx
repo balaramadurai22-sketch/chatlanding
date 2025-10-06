@@ -5,9 +5,7 @@ import { motion } from 'framer-motion';
 import { ArrowDown, Layers, Filter, CheckCircle, Clock, PlayCircle, Loader, Paperclip } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -16,96 +14,11 @@ import Footer from '@/components/landing/footer';
 import Particles from '@/components/landing/particles';
 import { Badge } from '@/components/ui/badge';
 import { projects } from '@/lib/projects-data';
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import { submitContactForm } from '@/app/actions';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const categories = ['All', 'Ongoing', 'Completed', 'Upcoming', 'Predictive', 'Generative', 'Automation', 'Quantum'];
 
-const proposalSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
-  email: z.string().email("Invalid email address."),
-  proposal: z.string().min(20, "Proposal must be at least 20 characters."),
-  attachments: z.any().optional(),
-  notes: z.string().optional(),
-});
-
-const joinSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
-  email: z.string().email("Invalid email address."),
-  project: z.string().min(1, "Please select a project."),
-  skills: z.string().min(10, "Please list your relevant skills."),
-  availability: z.string().min(1, "Please select your availability."),
-  motivation: z.string().min(10, "Please tell us why you're interested."),
-});
-
-
 export default function ProjectsPage() {
   const [activeFilter, setActiveFilter] = useState('All');
-  const [isProposalOpen, setIsProposalOpen] = useState(false);
-  const [isJoinOpen, setIsJoinOpen] = useState(false);
-  const { toast } = useToast();
-
-  const proposalForm = useForm<z.infer<typeof proposalSchema>>({
-    resolver: zodResolver(proposalSchema),
-    defaultValues: { name: "", email: "", proposal: "", notes: "" },
-  });
-
-  const joinForm = useForm<z.infer<typeof joinSchema>>({
-    resolver: zodResolver(joinSchema),
-    defaultValues: { name: "", email: "", project: "", skills: "", availability: "", motivation: "" },
-  });
-
-  const handleProposalSubmit = async (data: z.infer<typeof proposalSchema>) => {
-    const message = `
-      PROPOSAL: ${data.proposal}
-      NOTES: ${data.notes || 'N/A'}
-    `;
-    const result = await submitContactForm({name: data.name, email: data.email, message });
-    if (result.success) {
-      toast({
-        title: "Proposal Sent!",
-        description: "Thank you for your submission. We'll be in touch soon.",
-      });
-      proposalForm.reset();
-      setIsProposalOpen(false);
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: result.error,
-      });
-    }
-  };
-
-  const handleJoinSubmit = async (data: z.infer<typeof joinSchema>) => {
-    const message = `
-      JOIN REQUEST for ${data.project}:
-      Skills: ${data.skills}
-      Availability: ${data.availability}
-      Motivation: ${data.motivation}
-    `;
-    const result = await submitContactForm({name: data.name, email: data.email, message });
-     if (result.success) {
-      toast({
-        title: "Request Sent!",
-        description: "Thank you for your interest. We'll get back to you shortly.",
-      });
-      joinForm.reset();
-      setIsJoinOpen(false);
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: result.error,
-      });
-    }
-  };
 
   const filteredProjects = activeFilter === 'All' 
     ? projects 
@@ -260,109 +173,12 @@ export default function ProjectsPage() {
                             Have an idea that could change the world? We want to hear it.
                         </p>
                         <div className="mt-8 flex justify-center gap-4">
-                            <Dialog open={isProposalOpen} onOpenChange={setIsProposalOpen}>
-                                <DialogTrigger asChild>
-                                    <Button size="lg">Submit Your Proposal</Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle className="font-headline">Submit a Proposal</DialogTitle>
-                                        <DialogDescription>Share your innovative idea with us. We review every submission.</DialogDescription>
-                                    </DialogHeader>
-                                    <Form {...proposalForm}>
-                                        <form onSubmit={proposalForm.handleSubmit(handleProposalSubmit)} className="space-y-4">
-                                            <FormField control={proposalForm.control} name="name" render={({ field }) => (
-                                                <FormItem><FormLabel>Name</FormLabel><FormControl><Input placeholder="Your Name" {...field} /></FormControl><FormMessage /></FormItem>
-                                            )}/>
-                                             <FormField control={proposalForm.control} name="email" render={({ field }) => (
-                                                <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="your.email@example.com" {...field} /></FormControl><FormMessage /></FormItem>
-                                            )}/>
-                                            <FormField control={proposalForm.control} name="proposal" render={({ field }) => (
-                                                <FormItem><FormLabel>Your Proposal</FormLabel><FormControl><Textarea placeholder="Describe your project idea, its goals, and potential impact..." className="min-h-[120px]" {...field} /></FormControl><FormMessage /></FormItem>
-                                            )}/>
-                                            <FormField control={proposalForm.control} name="attachments" render={({ field }) => (
-                                                <FormItem>
-                                                  <FormLabel>Attachments</FormLabel>
-                                                  <FormControl>
-                                                    <div className="relative">
-                                                      <Input type="file" className="w-full pr-12" {...field} />
-                                                      <Paperclip className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                                    </div>
-                                                  </FormControl>
-                                                  <FormMessage />
-                                                </FormItem>
-                                            )}/>
-                                            <FormField control={proposalForm.control} name="notes" render={({ field }) => (
-                                                <FormItem><FormLabel>Optional Notes</FormLabel><FormControl><Textarea placeholder="Any additional information or comments..." {...field} /></FormControl><FormMessage /></FormItem>
-                                            )}/>
-                                            <DialogFooter>
-                                                <Button type="submit" disabled={proposalForm.formState.isSubmitting}>
-                                                    {proposalForm.formState.isSubmitting && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                                                    Submit
-                                                </Button>
-                                            </DialogFooter>
-                                        </form>
-                                    </Form>
-                                </DialogContent>
-                            </Dialog>
-
-                             <Dialog open={isJoinOpen} onOpenChange={setIsJoinOpen}>
-                                <DialogTrigger asChild>
-                                     <Button size="lg" variant="outline">Join a Project</Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle className="font-headline">Join a Project</DialogTitle>
-                                        <DialogDescription>Interested in contributing to one of our ongoing projects? Let us know.</DialogDescription>
-                                    </DialogHeader>
-                                    <Form {...joinForm}>
-                                        <form onSubmit={joinForm.handleSubmit(handleJoinSubmit)} className="space-y-4">
-                                            <FormField control={joinForm.control} name="name" render={({ field }) => (
-                                                <FormItem><FormLabel>Name</FormLabel><FormControl><Input placeholder="Your Name" {...field} /></FormControl><FormMessage /></FormItem>
-                                            )}/>
-                                             <FormField control={joinForm.control} name="email" render={({ field }) => (
-                                                <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="your.email@example.com" {...field} /></FormControl><FormMessage /></FormItem>
-                                            )}/>
-                                             <FormField control={joinForm.control} name="project" render={({ field }) => (
-                                                <FormItem><FormLabel>Project of Interest</FormLabel>
-                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select a project" /></SelectTrigger></FormControl>
-                                                        <SelectContent>
-                                                            {projects.filter(p => p.status === 'Ongoing').map(p => (
-                                                                <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                <FormMessage /></FormItem>
-                                            )}/>
-                                             <FormField control={joinForm.control} name="skills" render={({ field }) => (
-                                                <FormItem><FormLabel>Skills</FormLabel><FormControl><Textarea placeholder="e.g., Python, PyTorch, React, UI/UX Design..." {...field} /></FormControl><FormMessage /></FormItem>
-                                            )}/>
-                                            <FormField control={joinForm.control} name="availability" render={({ field }) => (
-                                                <FormItem><FormLabel>Availability</FormLabel>
-                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                        <FormControl><SelectTrigger><SelectValue placeholder="Select your availability" /></SelectTrigger></FormControl>
-                                                        <SelectContent>
-                                                            <SelectItem value="part-time">Part-time (5-10 hours/week)</SelectItem>
-                                                            <SelectItem value="full-time">Full-time (20+ hours/week)</SelectItem>
-                                                            <SelectItem value="flexible">Flexible</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                <FormMessage /></FormItem>
-                                            )}/>
-                                            <FormField control={joinForm.control} name="motivation" render={({ field }) => (
-                                                <FormItem><FormLabel>Motivation & Notes</FormLabel><FormControl><Textarea placeholder="Tell us why you're interested and what you'd like to contribute..." className="min-h-[100px]" {...field} /></FormControl><FormMessage /></FormItem>
-                                            )}/>
-                                            <DialogFooter>
-                                                <Button type="submit" disabled={joinForm.formState.isSubmitting}>
-                                                    {joinForm.formState.isSubmitting && <Loader className="mr-2 h-4 w-4 animate-spin" />}
-                                                    Submit Request
-                                                </Button>
-                                            </DialogFooter>
-                                        </form>
-                                    </Form>
-                                </DialogContent>
-                            </Dialog>
+                            <Button size="lg" asChild>
+                                <Link href="/#contact">Submit Your Proposal</Link>
+                            </Button>
+                             <Button size="lg" variant="outline" asChild>
+                                <Link href="/#contact">Join a Project</Link>
+                            </Button>
                         </div>
                     </motion.div>
                 </div>
@@ -373,5 +189,3 @@ export default function ProjectsPage() {
     </>
   );
 }
-
-    
