@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Navbar from '@/components/landing/navbar';
 import Hero from '@/components/landing/hero';
 import Achievements from '@/components/landing/achievements';
+import Models from '@/components/landing/models';
 import Solutions from '@/components/landing/solutions';
 import Research from '@/components/landing/research';
 import Projects from '@/components/landing/projects';
@@ -36,6 +37,7 @@ export default function Home() {
         <main className="flex-1">
             <Hero onChatSubmit={handleOpenChat} />
             <Achievements />
+            <Models />
             <About />
             <Solutions />
             <Research />
