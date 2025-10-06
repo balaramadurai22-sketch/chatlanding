@@ -1,8 +1,7 @@
-
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowDown, Bot, Dna, FlaskConical } from 'lucide-react';
+import { ArrowDown, Bot, Dna, FlaskConical, PlayCircle, Clock, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -32,7 +31,20 @@ const labPrinciples = [
     },
 ];
 
-const modelsInLab = projects.filter(p => ['Ongoing', 'Upcoming'].includes(p.status)).slice(0, 6);
+const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'Ongoing':
+        return <Clock className="mr-2 h-4 w-4" />;
+      case 'Completed':
+        return <CheckCircle className="mr-2 h-4 w-4" />;
+      case 'Upcoming':
+        return <PlayCircle className="mr-2 h-4 w-4" />;
+      default:
+        return null;
+    }
+};
+
+const modelsInLab = projects.filter(p => ['Ongoing', 'Upcoming', 'Completed'].includes(p.status)).slice(0, 6);
 
 
 export default function AiLabPage() {
@@ -105,7 +117,10 @@ export default function AiLabPage() {
                                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                               />
                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent flex items-end p-4">
-                                  <Badge variant={model.status === 'Ongoing' ? 'default' : 'secondary'}>{model.status}</Badge>
+                                  <Badge variant={model.status === 'Ongoing' ? 'default' : 'secondary'} className="flex items-center">
+                                    {getStatusIcon(model.status)}
+                                    {model.status}
+                                </Badge>
                                </div>
                           </div>
                           <div className="flex justify-between items-center">
@@ -189,5 +204,3 @@ export default function AiLabPage() {
     </>
   );
 }
-
-    
