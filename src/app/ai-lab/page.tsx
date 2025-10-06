@@ -2,7 +2,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowDown, Bot, Dna, FlaskConical, Cpu, BrainCircuit, Rocket } from 'lucide-react';
+import { ArrowDown, Bot, Dna, FlaskConical } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
