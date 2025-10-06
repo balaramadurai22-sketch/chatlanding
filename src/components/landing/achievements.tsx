@@ -38,7 +38,7 @@ export default function Achievements() {
   const isInView = useInView(containerRef, { once: true, amount: 0.2 });
   
   const [country, setCountry] = useState('all');
-  const [model, setModel] = useState('all');
+  const [model, setModel] = useState('tim-ai-2.0');
   const [userCategory, setUserCategory] = useState('all');
 
   const containerVariants = {
@@ -111,9 +111,9 @@ export default function Achievements() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Models</SelectItem>
-                          <SelectItem value="gemini-1.5">Gemini 1.5</SelectItem>
-                          <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
-                          <SelectItem value="gemini-flash">Gemini Flash</SelectItem>
+                          <SelectItem value="tim-ai-2.0">TIM AI - 2.0</SelectItem>
+                          <SelectItem value="tim-ai-1.5-pro">TIM AI - 1.5 Pro</SelectItem>
+                          <SelectItem value="sentinel-v1">Sentinel v1</SelectItem>
                           <SelectItem value="other">Other Models</SelectItem>
                         </SelectContent>
                       </Select>
