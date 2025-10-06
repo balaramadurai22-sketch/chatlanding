@@ -178,32 +178,26 @@ const ModelDialogContent = ({ model }: { model: (typeof models)[0] }) => (
 
 const DesktopModels = () => {
     const [activeIndex, setActiveIndex] = React.useState(0);
-    const [isHovered, setIsHovered] = React.useState(false);
     const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
     const scheduleRotation = React.useCallback(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(() => {
             setActiveIndex(prev => (prev + 1) % models.length);
-        }, 4000);
+        }, 3000);
     }, []);
 
     React.useEffect(() => {
-        if (!isHovered) scheduleRotation();
-        else if (intervalRef.current) clearInterval(intervalRef.current);
+        scheduleRotation();
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    }, [isHovered, scheduleRotation]);
+    }, [scheduleRotation]);
 
-    const handleMouseEnter = (index?: number) => {
-        setIsHovered(true);
-        if (index !== undefined) {
-             if (intervalRef.current) clearInterval(intervalRef.current);
-             setActiveIndex(index);
-        }
+    const handleModelClick = (index: number) => {
+        setActiveIndex(index);
+        scheduleRotation(); // Reset the timer on manual interaction
     };
-    const handleMouseLeave = () => setIsHovered(false);
     
     const displayModels = React.useMemo(() => {
         const result = [];
@@ -214,13 +208,10 @@ const DesktopModels = () => {
     }, [activeIndex]);
 
     const [featured, next1, next2] = displayModels;
-    const modelMap = { featured, next1, next2 };
 
     return (
          <div 
             className="hidden md:grid md:grid-cols-2 gap-8 min-h-[450px]"
-            onMouseEnter={() => handleMouseEnter()}
-            onMouseLeave={handleMouseLeave}
         >
             <AnimatePresence initial={false}>
                 <Dialog>
@@ -229,8 +220,8 @@ const DesktopModels = () => {
                             key={activeIndex}
                             className="p-8 rounded-lg border bg-card shadow-sm flex flex-col justify-between cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1"
                             initial={{ opacity: 0.5, x: -50, scale: 0.95 }}
-                            animate={{ opacity: 1, x: 0, scale: 1, transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] } }}
-                            exit={{ opacity: 0, position: 'absolute', transition: { duration: 0.2 } }}
+                            animate={{ opacity: 1, x: 0, scale: 1, transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] } }}
+                            exit={{ opacity: 0, position: 'absolute', transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }}
                         >
                             <div>
                                 <h3 className="font-headline text-3xl font-bold">{featured.name} <span className="text-lg font-light text-muted-foreground">{featured.version}</span></h3>
@@ -261,11 +252,10 @@ const DesktopModels = () => {
                                 <DialogTrigger asChild>
                                     <motion.div
                                         className="p-4 rounded-lg border bg-card/70 shadow-sm flex flex-col items-start gap-2 cursor-pointer transition-all hover:bg-card hover:shadow-md"
-                                        onClick={() => setActiveIndex(originalIndex)}
-                                        onMouseEnter={() => handleMouseEnter(originalIndex)}
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0, transition: { duration: 0.5, delay: index * 0.05, ease: [0.4, 0, 0.2, 1] } }}
-                                        exit={{ opacity: 0, x: -20, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }}
+                                        onClick={() => handleModelClick(originalIndex)}
+                                        initial={{ opacity: 0, x: 30 }}
+                                        animate={{ opacity: 1, x: 0, transition: { duration: 0.6, delay: index * 0.1, ease: [0.4, 0, 0.2, 1] } }}
+                                        exit={{ opacity: 0, x: -30, transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] } }}
                                     >
                                         <h4 className="font-headline font-semibold text-lg">{model.name} <span className="text-sm font-light text-muted-foreground">{model.version}</span></h4>
                                         <p className="text-sm text-muted-foreground">{model.tagline}</p>
