@@ -112,6 +112,8 @@ export default function Achievements() {
                         <SelectContent>
                           <SelectItem value="all">All Models</SelectItem>
                           <SelectItem value="gemini-1.5">Gemini 1.5</SelectItem>
+                          <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
+                          <SelectItem value="gemini-flash">Gemini Flash</SelectItem>
                           <SelectItem value="other">Other Models</SelectItem>
                         </SelectContent>
                       </Select>
