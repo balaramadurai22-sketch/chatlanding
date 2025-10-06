@@ -1,19 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { BrainCircuit, Bot, Cog, FlaskConical, Rocket, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
+import { AnimatePresence, motion } from 'framer-motion';
+import { BrainCircuit, Bot, Cog, FlaskConical, Rocket, ArrowRight, Eye } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '../ui/dialog';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card';
+import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 
 const solutions = [
   {
@@ -110,7 +105,7 @@ const solutions = [
     description: 'Turn impossible ideas into functional AI-driven products.',
     longDescription: 'Turn impossible ideas into functional AI-driven products and prototypes, ready for real-world testing and validation. Our rapid prototyping process integrates AI from the ground up, allowing you to iterate and innovate faster than ever before.',
      diagram: (
-        <svg viewBox="0 0 100 50" xmlns="http://www.w3org/2000/svg" className="w-full h-auto">
+        <svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
             <path d="M20 35 C 40 35, 40 15, 60 15 S 80 15, 80 35" stroke="hsl(var(--border))" strokeDasharray="2 2" strokeWidth="0.5" fill="none"/>
             <motion.circle cx="20" cy="35" r="3" fill="hsl(var(--muted))" stroke="hsl(var(--primary))" />
             <motion.circle cx="80" cy="35" r="3" fill="hsl(var(--primary))" />
@@ -122,7 +117,163 @@ const solutions = [
   },
 ];
 
+const SolutionDialogContent = ({ solution }: { solution: (typeof solutions)[0] }) => (
+    <DialogContent className="max-w-xl">
+        <DialogHeader>
+            <div className="flex items-center gap-4 mb-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted flex-shrink-0">
+                    {solution.icon}
+                </div>
+                <DialogTitle className="font-headline text-2xl">{solution.title}</DialogTitle>
+            </div>
+            <div className="h-32 w-full bg-muted/30 rounded-md flex items-center justify-center p-4 my-4">
+                {solution.diagram}
+            </div>
+            <DialogDescription className="text-base text-muted-foreground text-left">
+                {solution.longDescription}
+            </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+            <Button variant="outline" className="transition-all hover:bg-foreground/10">
+                View More <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+        </DialogFooter>
+    </DialogContent>
+);
+
+
+const DesktopSolutions = () => {
+    const [activeIndex, setActiveIndex] = React.useState(0);
+    const [isHovered, setIsHovered] = React.useState(false);
+
+    React.useEffect(() => {
+        if (isHovered) return;
+
+        const interval = setInterval(() => {
+            setActiveIndex((prev) => (prev + 1) % solutions.length);
+        }, 3000); // Increased interval to 3s
+
+        return () => clearInterval(interval);
+    }, [isHovered]);
+
+    const handleMouseEnter = (index: number) => {
+        setIsHovered(true);
+        setActiveIndex(index);
+    };
+
+    const handleMouseLeave = () => {
+        setIsHovered(false);
+    };
+
+    const activeSolution = solutions[activeIndex];
+    const otherSolutions = solutions.filter((_, i) => i !== activeIndex);
+
+    return (
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-[450px]">
+            <Dialog>
+                 <DialogTrigger asChild>
+                    <motion.div
+                        layoutId={`solution-card-${activeSolution.title}`}
+                        className="lg:col-span-2 p-8 rounded-lg border bg-card shadow-sm flex flex-col justify-between cursor-pointer"
+                        onMouseEnter={() => handleMouseEnter(activeIndex)}
+                        onMouseLeave={handleMouseLeave}
+                    >
+                        <div>
+                            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-muted mb-6">
+                                {React.cloneElement(activeSolution.icon, { className: "size-10 text-foreground"})}
+                            </div>
+                            <h3 className="font-headline text-3xl font-bold">{activeSolution.title}</h3>
+                            <p className="text-lg text-muted-foreground mt-2">{activeSolution.description}</p>
+                        </div>
+                        <div className="h-32 w-full bg-muted/30 rounded-md flex items-center justify-center p-4 mt-6">
+                            {activeSolution.diagram}
+                        </div>
+                    </motion.div>
+                </DialogTrigger>
+                <SolutionDialogContent solution={activeSolution} />
+            </Dialog>
+
+
+            <div className="flex flex-col gap-4">
+                 <AnimatePresence>
+                    {otherSolutions.map((solution, index) => {
+                        const originalIndex = solutions.findIndex(s => s.title === solution.title);
+                        return (
+                            <Dialog key={solution.title}>
+                                <DialogTrigger asChild>
+                                    <motion.div
+                                        layoutId={`solution-card-${solution.title}`}
+                                        className="p-4 rounded-lg border bg-card/70 shadow-sm flex items-center gap-4 cursor-pointer transition-all hover:bg-card"
+                                        onMouseEnter={() => handleMouseEnter(originalIndex)}
+                                        onMouseLeave={handleMouseLeave}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -20 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted flex-shrink-0">
+                                            {solution.icon}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-headline font-semibold">{solution.title}</h4>
+                                        </div>
+                                    </motion.div>
+                                </DialogTrigger>
+                                <SolutionDialogContent solution={solution} />
+                            </Dialog>
+                        );
+                    })}
+                </AnimatePresence>
+            </div>
+        </div>
+    );
+};
+
+const MobileSolutions = () => {
+  return (
+    <div className="md:hidden">
+      <Carousel
+        opts={{
+          align: 'start',
+        }}
+        className="w-full"
+      >
+        <CarouselContent>
+          {solutions.map((solution, index) => (
+            <CarouselItem key={index} className="basis-full sm:basis-1/2">
+              <div className="p-1 h-full">
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Card className="group flex flex-col justify-between h-full hover:shadow-lg transition-all bg-card cursor-pointer border overflow-hidden">
+                            <CardHeader>
+                                <div className="h-24 w-full bg-muted/30 group-hover:bg-muted/50 transition-colors flex items-center justify-center p-4">
+                                    {solution.diagram}
+                                </div>
+                                <CardTitle className="font-headline text-xl font-bold pt-4 flex items-center gap-3">
+                                  {solution.icon}
+                                  {solution.title}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <CardDescription className="text-base text-muted-foreground transition-all duration-300">
+                                {solution.description}
+                                </CardDescription>
+                            </CardContent>
+                        </Card>
+                    </DialogTrigger>
+                    <SolutionDialogContent solution={solution} />
+                </Dialog>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+    </div>
+  )
+}
+
 export default function Solutions() {
+    const isMobile = useIsMobile();
   return (
     <section id="solutions" className="bg-background">
       <div className="container">
@@ -141,73 +292,12 @@ export default function Solutions() {
           </p>
         </motion.div>
 
-        <motion.div
-          className="mt-16"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Carousel
-            opts={{
-              align: 'start',
-            }}
-            className="w-full"
-          >
-            <CarouselContent>
-              {solutions.map((solution, index) => (
-                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                  <div className="p-1 h-full">
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Card className="group flex flex-col justify-between h-full hover:shadow-2xl transition-all bg-card cursor-pointer border overflow-hidden">
-                                <CardHeader>
-                                    <div className="h-24 w-full bg-muted/30 group-hover:bg-muted/50 transition-colors flex items-center justify-center p-4">
-                                        {solution.diagram}
-                                    </div>
-                                    <CardTitle className="font-headline text-xl font-bold pt-4 flex items-center gap-3">
-                                      {solution.icon}
-                                      {solution.title}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <CardDescription className="text-base text-muted-foreground transition-all duration-300">
-                                    {solution.description}
-                                    </CardDescription>
-                                </CardContent>
-                            </Card>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-xl">
-                            <DialogHeader>
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted flex-shrink-0">
-                                        {solution.icon}
-                                    </div>
-                                    <DialogTitle className="font-headline text-2xl">{solution.title}</DialogTitle>
-                                </div>
-                                <div className="h-32 w-full bg-muted/30 rounded-md flex items-center justify-center p-4 my-4">
-                                    {solution.diagram}
-                                </div>
-                                <DialogDescription className="text-base text-muted-foreground text-left">
-                                    {solution.longDescription}
-                                </DialogDescription>
-                            </DialogHeader>
-                             <DialogFooter>
-                                <Button variant="outline" className="transition-all hover:bg-foreground/10">
-                                View More <ArrowRight className="ml-2 h-4 w-4" />
-                                </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden sm:flex" />
-            <CarouselNext className="hidden sm:flex" />
-          </Carousel>
-        </motion.div>
+        <div className="mt-16">
+            { isMobile ? <MobileSolutions /> : <DesktopSolutions /> }
+        </div>
       </div>
     </section>
   );
 }
+
+    
