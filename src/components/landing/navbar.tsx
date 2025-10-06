@@ -12,7 +12,7 @@ const navLinks = [
   { name: 'Home', href: '/' },
   { name: 'About', href: '/about' },
   { name: 'Solutions', href: '/solutions' },
-  { name: 'Research', href: '#research' },
+  { name: 'Research', href: '/research' },
   { name: 'Projects', href: '#projects' },
   { name: 'AI Lab', href: '#ai-lab' },
   { name: 'Contact', href: '#contact' },
@@ -76,7 +76,8 @@ export default function Navbar() {
     }
     // For non-hash links, check if the pathname starts with the href.
     // This makes parent routes active for nested routes (e.g. /solutions is active for /solutions/predictive)
-    return pathname.startsWith(link.href) && link.href !== '/';
+    if (link.href === '/') return pathname === '/';
+    return pathname.startsWith(link.href);
   }
 
   const isHomePage = pathname === '/';
