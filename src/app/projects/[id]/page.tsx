@@ -1,7 +1,8 @@
+
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { projects } from "@/lib/projects";
+import { projects } from "@/lib/projects-data";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +34,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                     TECHismust
                 </Link>
                 <Button asChild variant="outline">
-                    <Link href="/#projects">
+                    <Link href="/projects">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Projects
                     </Link>
@@ -48,9 +49,8 @@ export default function ProjectPage({ params }: ProjectPageProps) {
               {project.title}
             </h1>
             <div className="mt-4 flex gap-2">
-                <Badge>AI</Badge>
-                <Badge variant="secondary">Research</Badge>
-                <Badge variant="outline">Innovation</Badge>
+                <Badge>{project.category}</Badge>
+                <Badge variant="secondary">{project.status}</Badge>
             </div>
           </div>
 
