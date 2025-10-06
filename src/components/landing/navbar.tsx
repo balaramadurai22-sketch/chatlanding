@@ -15,7 +15,7 @@ const navLinks = [
   { name: 'Solutions', href: '/solutions' },
   { name: 'Research', href: '/research' },
   { name: 'Projects', href: '/projects' },
-  { name: 'AI Lab', href: '#ai-lab' },
+  { name: 'AI Lab', href: '/ai-lab' },
   { name: 'Contact', href: '#contact' },
 ];
 
@@ -116,7 +116,7 @@ export default function Navbar() {
             })}
           </nav>
           <div className="hidden md:block">
-            <a href={isHomePage ? "#ai-lab" : "/#ai-lab"}>
+            <a href={isHomePage ? "/ai-lab" : "/ai-lab"}>
               <Button variant="ghost" className="transition-all hover:bg-foreground/10">Explore AI</Button>
             </a>
           </div>
@@ -177,7 +177,7 @@ export default function Navbar() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * navLinks.length, duration: 0.5 }}
                 >
-                    <a href={isHomePage ? "#ai-lab" : "/#ai-lab"} onClick={handleMenuLinkClick}>
+                    <a href={isHomePage ? "/ai-lab" : "/ai-lab"} onClick={handleMenuLinkClick}>
                         <Button variant="outline" size="lg">Explore AI</Button>
                     </a>
                 </motion.div>
