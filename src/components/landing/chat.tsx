@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -47,35 +47,71 @@ interface ChatMessage {
   content: string;
 }
 
-export default function Chat() {
-  const [isChatOpen, setIsChatOpen] = useState(false);
+type ChatProps = {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  initialQuery?: string;
+  onTriggerClick: () => void;
+};
+
+
+export default function Chat({ isOpen, onOpenChange, initialQuery, onTriggerClick }: ChatProps) {
   const [chatState, setChatState] = useState<"form" | "chat">("form");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+  const [userInfo, setUserInfo] = useState<{name: string, email: string, experience: string} | null>(null);
 
   const form = useForm<ChatFormData>({
     resolver: zodResolver(chatSchema),
     defaultValues: { name: "", email: "", interest: "" },
   });
 
+  useEffect(() => {
+    if (initialQuery) {
+      setCurrentMessage(initialQuery);
+      if (userInfo) {
+        setChatState("chat");
+        handleSendMessage(new Event('submit'), initialQuery);
+      }
+    }
+  }, [initialQuery, userInfo]);
+
+
   const handleFormSubmit = async (data: ChatFormData) => {
     setIsThinking(true);
     const result = await startChatSession({ name: data.name, email: data.email, experience: data.interest });
+    setUserInfo({ name: data.name, email: data.email, experience: data.interest });
     if (result.success && result.initialMessage) {
-      setMessages([result.initialMessage]);
-      setChatState("chat");
+      const allMessages = [result.initialMessage];
+      if (initialQuery) {
+        const userQueryMessage: ChatMessage = { role: "user", content: initialQuery };
+        allMessages.push(userQueryMessage);
+        setMessages(allMessages);
+        setChatState("chat");
+        setIsThinking(true); // stay in thinking state
+        const chatResult = await continueChat([result.initialMessage], userQueryMessage);
+        if (chatResult.success && chatResult.response) {
+            setMessages(prev => [...prev, chatResult.response]);
+        }
+        setIsThinking(false);
+      } else {
+        setMessages(allMessages);
+        setChatState("chat");
+        setIsThinking(false);
+      }
     } else {
       console.error(result.error);
+      setIsThinking(false);
     }
-    setIsThinking(false);
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent, messageContent?: string) => {
     e.preventDefault();
-    if (!currentMessage.trim() || isThinking) return;
+    const message = messageContent || currentMessage;
+    if (!message.trim() || isThinking) return;
 
-    const newMessage: ChatMessage = { role: "user", content: currentMessage };
+    const newMessage: ChatMessage = { role: "user", content: message };
     const newMessages = [...messages, newMessage];
     setMessages(newMessages);
     setCurrentMessage("");
@@ -92,11 +128,12 @@ export default function Chat() {
     setMessages([]);
     setCurrentMessage("");
     setChatState("form");
+    setUserInfo(null);
     form.reset();
   }
 
   const handleOpenChange = (open: boolean) => {
-    setIsChatOpen(open);
+    onOpenChange(open);
     if (!open) {
       // Delay reset to allow for closing animation
       setTimeout(resetChat, 300);
@@ -120,14 +157,14 @@ export default function Chat() {
         <Button
           size="lg"
           className="mt-8"
-          onClick={() => setIsChatOpen(true)}
+          onClick={() => onTriggerClick()}
         >
           <MessageSquare className="mr-2" />
           Chat with Our AI
         </Button>
       </motion.div>
 
-      <Dialog open={isChatOpen} onOpenChange={handleOpenChange}>
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-md p-0">
           <AnimatePresence mode="wait">
             {chatState === "form" ? (
