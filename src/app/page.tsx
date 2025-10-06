@@ -9,8 +9,9 @@ import Research from '@/components/landing/research';
 import Projects from '@/components/landing/projects';
 import Chat from '@/components/landing/chat';
 import Contact from '@/components/landing/contact';
-import Footer from '@/components/landing/footer';
 import { useRouter } from 'next/navigation';
+import About from '@/components/landing/about';
+import Footer from '@/components/landing/footer';
 
 export default function Home() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -35,6 +36,7 @@ export default function Home() {
         <main className="flex-1">
             <Hero onChatSubmit={handleOpenChat} />
             <Achievements />
+            <About />
             <Solutions />
             <Research />
             <Projects />
