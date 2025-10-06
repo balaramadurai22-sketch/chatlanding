@@ -100,7 +100,7 @@ export default function SolutionsPage() {
               >
                 Reimagining Intelligence
                 <br/>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-500">
+                <span>
                     Through AI Solutions
                 </span>
               </motion.h1>
@@ -136,9 +136,9 @@ export default function SolutionsPage() {
                             viewport={{ once: true, amount: 0.5 }}
                             transition={{ duration: 0.5, delay: index * 0.1 }}
                         >
-                            <Card className="h-full text-left transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:shadow-cyan-500/10">
+                            <Card className="h-full text-left transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
                                 <CardHeader>
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/5 text-cyan-400 mb-4">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/5 text-primary mb-4">
                                         {domain.icon}
                                     </div>
                                     <h3 className="font-headline text-xl font-bold">{domain.title}</h3>
@@ -167,7 +167,7 @@ export default function SolutionsPage() {
                         viewport={{ once: true, amount: 0.3 }}
                         transition={{ duration: 0.6, delay: index * 0.1, ease: [0.25, 1, 0.5, 1] }}
                      >
-                        <Card className="h-full overflow-hidden transition-all duration-300 group hover:shadow-2xl hover:shadow-violet-500/10">
+                        <Card className="h-full overflow-hidden transition-all duration-300 group hover:shadow-2xl">
                            <CardContent className="p-6">
                             <div className="flex justify-between items-center">
                                 <h3 className="font-headline text-xl font-bold">{model.name}</h3>
@@ -208,7 +208,7 @@ export default function SolutionsPage() {
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
                             >
                                 <Link href={`/projects/${project.id}`} className="block h-full group">
-                                    <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:border-cyan-400/50 hover:shadow-lg">
+                                    <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-lg">
                                         <div className="relative h-48 w-full overflow-hidden">
                                             <Image
                                                 src={project.imageUrl}
@@ -223,7 +223,7 @@ export default function SolutionsPage() {
                                             <p className="text-muted-foreground text-sm flex-grow">{project.description}</p>
                                         </CardHeader>
                                         <CardContent className="mt-auto">
-                                            <div className="text-sm font-semibold text-cyan-400 flex items-center">
+                                            <div className="text-sm font-semibold text-primary flex items-center">
                                                 View Case Study <ChevronRight className="size-4 ml-1 transition-transform group-hover:translate-x-1" />
                                             </div>
                                         </CardContent>
