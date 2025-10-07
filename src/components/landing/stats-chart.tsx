@@ -13,8 +13,8 @@ import {
 
 type ChartData = {
   time: string;
-  'Gemini 1.5': number;
-  'Other Models': number;
+  'TIM AI Models': number;
+  'Legacy Models (GPT, etc.)': number;
 };
 
 const generateInitialData = (): ChartData[] => {
@@ -24,8 +24,8 @@ const generateInitialData = (): ChartData[] => {
     const time = new Date(now.getTime() - i * 60000);
     data.push({
       time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      'Gemini 1.5': Math.floor(Math.random() * (150 - 50 + 1)) + 50,
-      'Other Models': Math.floor(Math.random() * (120 - 30 + 1)) + 30,
+      'TIM AI Models': Math.floor(Math.random() * (150 - 50 + 1)) + 50,
+      'Legacy Models (GPT, etc.)': Math.floor(Math.random() * (120 - 30 + 1)) + 30,
     });
   }
   return data;
@@ -69,8 +69,8 @@ export default function StatsChart() {
         const now = new Date();
         const newDataPoint: ChartData = {
           time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          'Gemini 1.5': Math.floor(Math.random() * (150 - 50 + 1)) + 50,
-          'Other Models': Math.floor(Math.random() * (120 - 30 + 1)) + 30,
+          'TIM AI Models': Math.floor(Math.random() * (150 - 50 + 1)) + 50,
+          'Legacy Models (GPT, etc.)': Math.floor(Math.random() * (120 - 30 + 1)) + 30,
         };
         return [...prevData.slice(1), newDataPoint];
       });
@@ -91,11 +91,11 @@ export default function StatsChart() {
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
         <defs>
-          <linearGradient id="colorGemini" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="colorTim" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
             <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
           </linearGradient>
-          <linearGradient id="colorOther" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="colorLegacy" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.4}/>
             <stop offset="95%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0}/>
           </linearGradient>
@@ -122,19 +122,19 @@ export default function StatsChart() {
         />
         <Area
           type="monotone"
-          dataKey="Gemini 1.5"
+          dataKey="TIM AI Models"
           stroke="hsl(var(--primary))"
           strokeWidth={2}
           fillOpacity={1}
-          fill="url(#colorGemini)"
+          fill="url(#colorTim)"
         />
         <Area
           type="monotone"
-          dataKey="Other Models"
+          dataKey="Legacy Models (GPT, etc.)"
           stroke="hsl(var(--muted-foreground))"
           strokeWidth={2}
           fillOpacity={1}
-          fill="url(#colorOther)"
+          fill="url(#colorLegacy)"
         />
       </AreaChart>
     </ResponsiveContainer>
