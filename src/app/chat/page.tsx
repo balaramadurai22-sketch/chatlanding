@@ -84,9 +84,9 @@ export default function ChatPage() {
   };
 
   const PageContent = () => (
-    <main className="flex-1 flex flex-col h-full bg-white dark:bg-[#212121]">
-      <div className="flex-1 flex flex-col items-center w-full">
-        <div className="w-full max-w-3xl flex-1 flex flex-col">
+    <main className="flex flex-1 flex-col h-full bg-white dark:bg-[#212121]">
+      <div className="flex flex-1 justify-center w-full">
+        <div className="w-full max-w-3xl flex flex-1 flex-col">
           {messages.length === 0 && !isLoading ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
                 <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">Where should we begin?</h1>
@@ -222,5 +222,3 @@ export default function ChatPage() {
     </SidebarProvider>
   );
 }
-
-    
