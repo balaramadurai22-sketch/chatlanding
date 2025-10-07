@@ -49,7 +49,7 @@ export default function Achievements() {
   const [isTimModel, setIsTimModel] = useState(true);
 
   useEffect(() => {
-    const isTim = model.includes('tim-ai');
+    const isTim = model.startsWith('tim-ai');
     setIsTimModel(isTim);
     
     let intervalId: NodeJS.Timeout;
