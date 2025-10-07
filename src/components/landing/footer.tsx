@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ArrowUp } from 'lucide-react';
@@ -8,11 +9,11 @@ const navLinks = [
   { name: 'Home', href: '/' },
   { name: 'About', href: '/about' },
   { name: 'Company', href: '/company' },
-  { name: 'Solutions', href: '#solutions' },
-  { name: 'Research', href: '#research' },
-  { name: 'Projects', href: '#projects' },
-  { name: 'AI Lab', href: '#ai-lab' },
-  { name: 'Contact', href: '#contact' },
+  { name: 'Solutions', href: '/solutions' },
+  { name: 'Research', href: '/research' },
+  { name: 'Projects', href: '/projects' },
+  { name: 'AI Lab', href: '/ai-lab' },
+  { name: 'Contact', href: '/contact' },
 ];
 
 export default function Footer() {
@@ -60,3 +61,5 @@ export default function Footer() {
     </footer>
   );
 }
+
+    

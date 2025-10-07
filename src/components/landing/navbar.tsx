@@ -17,7 +17,7 @@ const navLinks = [
   { name: 'Research', href: '/research' },
   { name: 'Projects', href: '/projects' },
   { name: 'AI Lab', href: '/ai-lab' },
-  { name: 'Contact', href: '#contact' },
+  { name: 'Contact', href: '/contact' },
 ];
 
 export default function Navbar() {
@@ -189,3 +189,5 @@ export default function Navbar() {
     </>
   );
 }
+
+    
