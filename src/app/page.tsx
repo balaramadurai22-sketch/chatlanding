@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -15,8 +16,6 @@ import About from '@/components/landing/about';
 import Footer from '@/components/landing/footer';
 
 export default function Home() {
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [initialQuery, setInitialQuery] = useState('');
   const router = useRouter();
 
   const handleOpenChat = (query?: string) => {
@@ -25,11 +24,6 @@ export default function Home() {
     } else {
       router.push('/chat');
     }
-  };
-  
-  const handleCloseChat = () => {
-    setIsChatOpen(false);
-    setInitialQuery('');
   };
 
   return (
@@ -43,7 +37,7 @@ export default function Home() {
             <Solutions />
             <Research />
             <Projects />
-            <Chat isOpen={isChatOpen} onOpenChange={handleCloseChat} initialQuery={initialQuery} onTriggerClick={handleOpenChat} />
+            <Chat onTriggerClick={handleOpenChat} />
             <Contact />
         </main>
         <Footer />

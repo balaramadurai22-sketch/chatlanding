@@ -1,62 +1,19 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { AnimatePresence, motion } from "framer-motion";
-import { Loader, Send, MessageSquare, X } from "lucide-react";
-
+import { motion } from "framer-motion";
+import { MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { startChatSession, continueChat, type ChatMessage } from "@/app/actions";
-import { useRouter } from "next/navigation";
-
-
-const chatSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
-  email: z.string().email("Invalid email address."),
-  interest: z.string().min(1, "Please select your field of interest."),
-});
-
-type ChatFormData = z.infer<typeof chatSchema>;
 
 type ChatProps = {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  initialQuery?: string;
   onTriggerClick: (query?: string) => void;
 };
 
 
-export default function Chat({ isOpen, onOpenChange, initialQuery, onTriggerClick }: ChatProps) {
-  const router = useRouter();
+export default function Chat({ onTriggerClick }: ChatProps) {
 
   const handleTriggerClick = () => {
-    router.push('/chat');
+    onTriggerClick();
   }
 
   return (

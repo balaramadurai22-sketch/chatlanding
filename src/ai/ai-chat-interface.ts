@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -11,15 +12,13 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
+const MessageSchema = z.object({
+  role: z.enum(['user', 'assistant']),
+  content: z.string(),
+});
+
 const AIChatInputSchema = z.object({
-  name: z.string().describe('The name of the user.'),
-  email: z.string().email().describe('The email address of the user.'),
-  experienceLevel: z
-    .string()
-    .describe(
-      'The business/tech experience level of the user (e.g., beginner, intermediate, expert).' // e.g., beginner, intermediate, expert
-    ),
-  query: z.string().describe('The user query for the AI chat interface.'),
+  history: z.array(MessageSchema).describe('The chat history.'),
 });
 export type AIChatInput = z.infer<typeof AIChatInputSchema>;
 
@@ -36,12 +35,14 @@ const chatPrompt = ai.definePrompt({
   name: 'aiChatPrompt',
   input: {schema: AIChatInputSchema},
   output: {schema: AIChatOutputSchema},
-  prompt: `You are an AI assistant designed to help users with questions related to innovation and technology.
-
-  You will be speaking with a user named {{name}} with email {{email}} and experience level {{experienceLevel}}.
-  You should tailor your responses based on the experience level of the user.
-
-  User Query: {{{query}}}`, // removed the system prompt as it is not available.
+  prompt: `You are a helpful AI assistant for TECHismust Innovation Lab.
+  
+  Here is the conversation history:
+  {{#each history}}
+  - {{role}}: {{content}}
+  {{/each}}
+  
+  Based on this history, provide a relevant and helpful response.`,
 });
 
 const aiChatFlow = ai.defineFlow(

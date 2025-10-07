@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -11,7 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import Navbar from '@/components/landing/navbar';
 import Footer from '@/components/landing/footer';
 import Particles from '@/components/landing/particles';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 function TypingIndicator() {
     return (
@@ -29,15 +30,18 @@ export default function ChatPage() {
     const [isThinking, setIsThinking] = useState(false);
     const searchParams = useSearchParams();
     const scrollAreaRef = useRef<HTMLDivElement>(null);
+    const isInitialQueryHandled = useRef(false);
 
     useEffect(() => {
         const query = searchParams.get('query');
-        if (query) {
+        if (query && !isInitialQueryHandled.current) {
             handleInitialQuery(query);
-        } else {
+            isInitialQueryHandled.current = true;
+        } else if (!messages.length && !isInitialQueryHandled.current) {
              setMessages([{ role: 'assistant', content: "Hello! How can I help you today? Ask me anything about AI, our projects, or TECHismust." }]);
+             isInitialQueryHandled.current = true;
         }
-    }, [searchParams]);
+    }, [searchParams, messages.length]);
     
     useEffect(() => {
         if (scrollAreaRef.current) {
@@ -50,13 +54,12 @@ export default function ChatPage() {
 
 
     const handleInitialQuery = async (query: string) => {
-        const welcomeMessage: ChatMessage = { role: 'assistant', content: "Hello! How can I help you today?" };
         const userQuery: ChatMessage = { role: 'user', content: query };
         
-        setMessages([welcomeMessage, userQuery]);
+        setMessages([userQuery]);
         setIsThinking(true);
         
-        const result = await continueChat([userQuery], userQuery);
+        const result = await continueChat([userQuery]);
         if (result.success && result.response) {
             setMessages(prev => [...prev, result.response]);
         } else {
@@ -75,7 +78,7 @@ export default function ChatPage() {
         setCurrentMessage('');
         setIsThinking(true);
 
-        const result = await continueChat(messages, newMessage);
+        const result = await continueChat(newMessages);
         if (result.success && result.response) {
             setMessages(prev => [...prev, result.response]);
         } else {
