@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -6,6 +7,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Particles from "./particles";
 import { Input } from "../ui/input";
+import { useRouter } from "next/navigation";
 
 type HeroProps = {
   onChatSubmit: (query: string) => void;
@@ -13,11 +15,12 @@ type HeroProps = {
 
 export default function Hero({ onChatSubmit }: HeroProps) {
   const [query, setQuery] = useState("");
+  const router = useRouter();
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (query.trim()) {
-      onChatSubmit(query);
+      router.push(`/contact?query=${encodeURIComponent(query)}`);
       setQuery("");
     }
   };
@@ -57,7 +60,7 @@ export default function Hero({ onChatSubmit }: HeroProps) {
             <div className="relative">
               <Input
                 type="text"
-                placeholder="Ask us anything about AI..."
+                placeholder="Have a question? Get in touch..."
                 className="h-12 w-full rounded-full border-border/50 bg-background/50 pl-6 pr-12 text-base shadow-sm backdrop-blur-sm"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}

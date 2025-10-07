@@ -14,7 +14,6 @@ const navLinks = [
   { name: 'Projects', href: '/projects' },
   { name: 'Grow With Us', href: '/grow-with-us' },
   { name: 'AI Lab', href: '/ai-lab' },
-  { name: 'Chat', href: '/chat' },
   { name: 'Contact', href: '/contact' },
 ];
 

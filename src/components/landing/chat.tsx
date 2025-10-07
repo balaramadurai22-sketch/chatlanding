@@ -1,9 +1,11 @@
 
+
 "use client";
 
 import { motion } from "framer-motion";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type ChatProps = {
   onTriggerClick: (query?: string) => void;
@@ -13,7 +15,7 @@ type ChatProps = {
 export default function Chat({ onTriggerClick }: ChatProps) {
 
   const handleTriggerClick = () => {
-    onTriggerClick();
+    // Link to contact page instead of chat
   }
 
   return (
@@ -28,15 +30,18 @@ export default function Chat({ onTriggerClick }: ChatProps) {
           Welcome to the AI Lab
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-          Have a question or a brilliant idea? Our AI assistant is ready to chat. Explore concepts, ask about our research, or just say hello.
+          Have a question or a brilliant idea? Our team is ready to connect. Explore concepts, ask about our research, or just say hello.
         </p>
         <Button
           size="lg"
           className="mt-8"
-          onClick={handleTriggerClick}
+          asChild
         >
-          <MessageSquare className="mr-2" />
-          Chat with Our AI
+          <Link href="/contact">
+            <MessageSquare className="mr-2" />
+            Start a Conversation
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
         </Button>
       </motion.div>
     </section>
