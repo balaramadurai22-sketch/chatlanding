@@ -18,6 +18,8 @@ const sidebarLinks = [
   { href: '#', icon: <Search className="size-4" />, label: 'Search Chats' },
   { href: '#', icon: <Library className="size-4" />, label: 'Library' },
   { href: '/projects', icon: <FolderKanban className="size-4" />, label: 'Projects' },
+  { href: '#', icon: <Bug className="size-4" />, label: 'Bug Report' },
+  { href: '#', icon: <Lightbulb className="size-4" />, label: 'Features Request' },
 ];
 
 export default function ChatPage() {
@@ -82,100 +84,104 @@ export default function ChatPage() {
   };
 
   const PageContent = () => (
-    <main className="flex-1 flex flex-col relative bg-white dark:bg-[#212121]">
-      {messages.length === 0 && !isLoading ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-center">
-            <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">Where should we begin?</h1>
-            <div className="w-full max-w-2xl mt-8">
-                <form onSubmit={handleSubmit} className="relative">
-                    <Input
+    <main className="flex-1 flex flex-col h-full bg-white dark:bg-[#212121]">
+      <div className="flex-1 flex flex-col items-center w-full">
+        <div className="w-full max-w-3xl flex-1 flex flex-col">
+          {messages.length === 0 && !isLoading ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
+                <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">Where should we begin?</h1>
+                <div className="w-full max-w-2xl mt-8">
+                    <form onSubmit={handleSubmit} className="relative">
+                        <Input
+                            type="text"
+                            placeholder="Ask anything..."
+                            value={input}
+                            onChange={e => setInput(e.target.value)}
+                            className="h-14 w-full rounded-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 pl-6 pr-14 text-base shadow-sm"
+                        />
+                        <Button type="submit" size="icon" className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full" disabled={isLoading || !input.trim()}>
+                            {isLoading ? <Loader className="animate-spin" /> : <Send className="size-5" />}
+                        </Button>
+                    </form>
+                </div>
+            </div>
+          ) : (
+            <>
+                <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 w-full">
+                    <AnimatePresence>
+                        {messages.map((msg, index) => (
+                        <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3 }}
+                            className={`flex items-start gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        >
+                            {msg.role === 'assistant' && (
+                            <div className="flex-shrink-0 size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                                <Bot size={20} />
+                            </div>
+                            )}
+                            <div className={`p-4 rounded-xl shadow-md max-w-md ${msg.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'}`}>
+                                <p className="whitespace-pre-wrap">{msg.content}</p>
+                                 <p className="text-xs mt-2 opacity-50">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                            </div>
+                            {msg.role === 'user' && (
+                            <div className="flex-shrink-0 size-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                                <User size={20} />
+                            </div>
+                            )}
+                        </motion.div>
+                        ))}
+                        {isLoading && (
+                            <motion.div
+                                key="loading"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="flex items-start gap-4 justify-start"
+                            >
+                                <div className="flex-shrink-0 size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                                    <Bot size={20} />
+                                </div>
+                                <div className="p-4 rounded-xl shadow-md bg-gray-100 dark:bg-gray-700 flex items-center gap-2">
+                                    <span className="text-muted-foreground">TIM is thinking</span>
+                                    <div className="flex gap-1">
+                                        <span className="h-1.5 w-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                                        <span className="h-1.5 w-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                                        <span className="h-1.5 w-1.5 bg-muted-foreground rounded-full animate-bounce"></span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+                
+                <div className="sticky bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-[#212121]/80 backdrop-blur-sm border-t dark:border-gray-800">
+                    <form onSubmit={handleSubmit} className="w-full flex gap-2">
+                        <Input
                         type="text"
                         placeholder="Ask anything..."
                         value={input}
                         onChange={e => setInput(e.target.value)}
-                        className="h-14 w-full rounded-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 pl-6 pr-14 text-base shadow-sm"
-                    />
-                    <Button type="submit" size="icon" className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full" disabled={isLoading || !input.trim()}>
-                        {isLoading ? <Loader className="animate-spin" /> : <Send className="size-5" />}
-                    </Button>
-                </form>
-            </div>
+                        disabled={isLoading}
+                        className="h-12 text-base rounded-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus-visible:ring-1"
+                        />
+                        <Button type="submit" size="icon" className="h-12 w-12 flex-shrink-0 rounded-full" disabled={isLoading || !input.trim()}>
+                            {isLoading ? <Loader className="animate-spin" /> : <Send />}
+                        </Button>
+                    </form>
+                </div>
+            </>
+          )}
         </div>
-      ) : (
-        <>
-            <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
-                <AnimatePresence>
-                    {messages.map((msg, index) => (
-                    <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className={`flex items-start gap-4 max-w-4xl mx-auto ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                        {msg.role === 'assistant' && (
-                        <div className="flex-shrink-0 size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                            <Bot size={20} />
-                        </div>
-                        )}
-                        <div className={`p-4 rounded-xl shadow-md ${msg.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'}`}>
-                            <p className="whitespace-pre-wrap">{msg.content}</p>
-                             <p className="text-xs mt-2 opacity-50">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                        </div>
-                        {msg.role === 'user' && (
-                        <div className="flex-shrink-0 size-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-                            <User size={20} />
-                        </div>
-                        )}
-                    </motion.div>
-                    ))}
-                    {isLoading && (
-                        <motion.div
-                            key="loading"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="flex items-start gap-4 max-w-4xl mx-auto justify-start"
-                        >
-                            <div className="flex-shrink-0 size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                                <Bot size={20} />
-                            </div>
-                            <div className="p-4 rounded-xl shadow-md bg-gray-100 dark:bg-gray-700 flex items-center gap-2">
-                                <span className="text-muted-foreground">TIM is thinking</span>
-                                <div className="flex gap-1">
-                                    <span className="h-1.5 w-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                                    <span className="h-1.5 w-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                                    <span className="h-1.5 w-1.5 bg-muted-foreground rounded-full animate-bounce"></span>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-            
-            <div className="sticky bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-[#212121]/80 backdrop-blur-sm border-t dark:border-gray-800">
-                <form onSubmit={handleSubmit} className="container max-w-3xl mx-auto flex gap-2">
-                    <Input
-                    type="text"
-                    placeholder="Ask anything..."
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    disabled={isLoading}
-                    className="h-12 text-base rounded-full border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus-visible:ring-1"
-                    />
-                    <Button type="submit" size="icon" className="h-12 w-12 flex-shrink-0 rounded-full" disabled={isLoading || !input.trim()}>
-                        {isLoading ? <Loader className="animate-spin" /> : <Send />}
-                    </Button>
-                </form>
-            </div>
-        </>
-      )}
+      </div>
     </main>
   );
 
   return (
     <SidebarProvider>
-        <div className="flex flex-col min-h-screen bg-[#f7f7f8] dark:bg-[#212121]">
+        <div className="flex h-screen bg-[#f7f7f8] dark:bg-[#212121] overflow-hidden">
             <Sidebar side="left" className="bg-[#f7f7f8] dark:bg-black/10 border-r dark:border-gray-800">
                 <SidebarHeader className="border-b dark:border-gray-800">
                     <div className="flex items-center gap-2 h-12">
