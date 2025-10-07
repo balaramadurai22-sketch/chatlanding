@@ -7,6 +7,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Particles from "./particles";
 import { Input } from "../ui/input";
+import Link from "next/link";
 
 type HeroProps = {
   onChatSubmit: (query: string) => void;
@@ -51,46 +52,15 @@ export default function Hero({ onChatSubmit }: HeroProps) {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3, ease: "easeInOut" }}
-          className="mx-auto mt-8 max-w-xl"
-        >
-          <form onSubmit={handleFormSubmit}>
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="Ask TIM AI anything..."
-                className="h-12 w-full rounded-full border-border/50 bg-background/50 pl-6 pr-12 text-base shadow-sm backdrop-blur-sm"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-              <Button
-                type="submit"
-                size="icon"
-                variant="ghost"
-                className="absolute right-2 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary"
-              >
-                <ArrowRight className="h-5 w-5" />
-              </Button>
-            </div>
-          </form>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4, ease: "easeInOut" }}
           className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <a href="#solutions">
-            <Button size="lg" className="w-full sm:w-auto">
-              Discover Our Solutions
-            </Button>
-          </a>
-          <a href="/chat">
-            <Button size="lg" variant="outline" className="w-full sm:w-auto transition-all hover:bg-primary hover:text-primary-foreground">
-              Join the Lab
-            </Button>
-          </a>
+          <Button size="lg" className="w-full sm:w-auto" asChild>
+            <Link href="#solutions">Discover Our Solutions</Link>
+          </Button>
+          <Button size="lg" variant="outline" className="w-full sm:w-auto transition-all hover:bg-primary hover:text-primary-foreground" asChild>
+            <Link href="/contact">Join the Lab</Link>
+          </Button>
         </motion.div>
       </div>
     </section>

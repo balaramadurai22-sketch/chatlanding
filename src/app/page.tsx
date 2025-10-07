@@ -17,11 +17,9 @@ export default function Home() {
   const router = useRouter();
 
   const handleOpenChat = (query?: string) => {
-    if (query) {
-      router.push(`/chat?query=${encodeURIComponent(query)}`);
-    } else {
-      router.push('/chat');
-    }
+    // This functionality is removed as the chat page is deleted.
+    // You can redirect to another page or show a message.
+    router.push('/contact');
   };
 
   return (

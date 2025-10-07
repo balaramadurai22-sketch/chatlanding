@@ -26,33 +26,3 @@ const AIChatOutputSchema = z.object({
   response: z.string().describe('The AI response to the user query.'),
 });
 export type AIChatOutput = z.infer<typeof AIChatOutputSchema>;
-
-export async function aiChat(input: AIChatInput): Promise<AIChatOutput> {
-  return aiChatFlow(input);
-}
-
-const chatPrompt = ai.definePrompt({
-  name: 'aiChatPrompt',
-  input: {schema: AIChatInputSchema},
-  output: {schema: AIChatOutputSchema},
-  prompt: `You are TIM (TECHismust Intelligent Model), a helpful AI assistant for TECHismust Innovation Lab. Your persona is professional, knowledgeable, and slightly futuristic.
-
-  Here is the conversation history:
-  {{#each history}}
-  - {{role}}: {{content}}
-  {{/each}}
-  
-  Based on this history, provide a relevant and helpful response. Be concise but informative. Your main goal is to engage the user and encourage them to explore collaboration with TECHismust. If they ask about our services, direct them to the solutions or contact page.`,
-});
-
-const aiChatFlow = ai.defineFlow(
-  {
-    name: 'aiChatFlow',
-    inputSchema: AIChatInputSchema,
-    outputSchema: AIChatOutputSchema,
-  },
-  async input => {
-    const {output} = await chatPrompt(input);
-    return output!;
-  }
-);
