@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -72,6 +73,14 @@ export default function ChatUI({
     closed: { width: '80px', transition: { duration: 0.3, ease: 'easeInOut' } },
   };
 
+  const navItems = [
+    { icon: <Plus className="h-4 w-4" />, text: 'New Chat', action: () => setMessages([]) },
+    { icon: <History className="h-4 w-4" />, text: 'Chat History' },
+    { icon: <LayoutGrid className="h-4 w-4" />, text: 'Projects', href: '/projects' },
+    { icon: <Bug className="h-4 w-4" />, text: 'Bug Report' },
+    { icon: <Lightbulb className="h-4 w-4" />, text: 'Features Request' },
+  ]
+
   return (
     <div className="flex h-screen w-screen bg-white text-gray-800">
       {/* Left Sidebar */}
@@ -81,11 +90,11 @@ export default function ChatUI({
         className="hidden md:flex flex-col flex-shrink-0 bg-gray-50 h-full border-r border-gray-200"
       >
         <div className="flex flex-col flex-1 p-4 overflow-y-auto">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 h-10">
             <Link
               href="/"
               className={cn(
-                'text-lg font-bold text-gray-900 transition-opacity duration-300',
+                'text-lg font-bold text-gray-900 transition-opacity duration-300 whitespace-nowrap',
                 !isSidebarOpen && 'opacity-0'
               )}
             >
@@ -100,44 +109,29 @@ export default function ChatUI({
             </Button>
           </div>
           <nav className="flex-1 space-y-2">
-            <Button
-              variant="ghost"
-              className={cn(
-                'w-full justify-start gap-3',
-                !isSidebarOpen && 'justify-center'
-              )}
-              onClick={() => setMessages([])}
-            >
-              <Plus className="h-4 w-4" />
-              <span className={cn(!isSidebarOpen && 'hidden')}>New Chat</span>
-            </Button>
-            <Button
-              variant="ghost"
-              className={cn(
-                'w-full justify-start gap-3',
-                !isSidebarOpen && 'justify-center'
-              )}
-            >
-              <History className="h-4 w-4" />
-              <span className={cn(!isSidebarOpen && 'hidden')}>History</span>
-            </Button>
-            <Link href="/projects" className="block w-full">
-              <Button
-                variant="ghost"
-                className={cn(
-                  'w-full justify-start gap-3',
-                  !isSidebarOpen && 'justify-center'
-                )}
-              >
-                <LayoutGrid className="h-4 w-4" />
-                <span className={cn(!isSidebarOpen && 'hidden')}>Projects</span>
-              </Button>
-            </Link>
+            {navItems.map((item, index) => {
+              const content = (
+                 <div
+                    className={cn(
+                        'w-full flex items-center gap-3 p-3 rounded-lg border bg-white shadow-sm transition-all hover:bg-gray-100 cursor-pointer',
+                        !isSidebarOpen && 'justify-center'
+                    )}
+                 >
+                    {item.icon}
+                    <span className={cn('font-medium',!isSidebarOpen && 'hidden')}>{item.text}</span>
+                 </div>
+              );
+
+              if (item.href) {
+                return <Link key={index} href={item.href}>{content}</Link>
+              }
+              return <button key={index} onClick={item.action} className="w-full text-left">{content}</button>
+            })}
           </nav>
           <div className="mt-auto">
              <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="w-full justify-start gap-3 p-2 h-auto">
+                <Button variant="ghost" className="w-full justify-start gap-3 p-3 h-auto rounded-lg border bg-white shadow-sm hover:bg-gray-100">
                   <Avatar className="h-8 w-8">
                       <AvatarImage src="https://picsum.photos/seed/bala/100/100" />
                       <AvatarFallback>B</AvatarFallback>
@@ -203,16 +197,15 @@ export default function ChatUI({
                       className={cn(
                         'max-w-[75%] rounded-2xl p-3 text-sm shadow-sm',
                         message.role === 'user'
-                          ? 'bg-blue-600 text-white'
+                          ? 'bg-black text-white'
                           : 'bg-white border'
                       )}
                     >
-                      {/* Using pre-wrap to respect newlines and spaces */}
                       <p className="whitespace-pre-wrap">{message.content}</p>
                     </div>
                     {message.role === 'user' && (
                       <Avatar className="h-8 w-8 flex-shrink-0">
-                        <AvatarFallback>
+                         <AvatarFallback>
                           <User size={16} />
                         </AvatarFallback>
                       </Avatar>
@@ -262,14 +255,14 @@ export default function ChatUI({
                   }
                 }}
                 placeholder="Ask anything..."
-                className="w-full resize-none rounded-2xl border border-gray-300 py-3 px-4 pr-14 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full resize-none rounded-2xl border border-gray-300 py-3 px-4 pr-14 shadow-sm focus:outline-none focus:ring-2 focus:ring-black"
                 rows={1}
                 style={{ minHeight: '52px' }}
               />
               <Button
                 type="submit"
                 size="icon"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-lg flex items-center justify-center bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-lg flex items-center justify-center bg-black text-white hover:bg-gray-800 disabled:bg-gray-300"
                 disabled={isLoading || !input.trim()}
               >
                 <Send className="h-4 w-4" />
@@ -281,3 +274,5 @@ export default function ChatUI({
     </div>
   );
 }
+
+    
