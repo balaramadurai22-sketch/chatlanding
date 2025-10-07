@@ -59,12 +59,8 @@ export default function ChatPage() {
         setMessages([userQuery]);
         setIsThinking(true);
         
-        const result = await continueChat([userQuery]);
-        if (result.success && result.response) {
-            setMessages(prev => [...prev, result.response]);
-        } else {
-            setMessages(prev => [...prev, { role: 'assistant', content: "I had an issue processing that. Please try again."}]);
-        }
+        const response = await continueChat([userQuery]);
+        setMessages(prev => [...prev, response]);
         setIsThinking(false);
     };
 
@@ -78,12 +74,8 @@ export default function ChatPage() {
         setCurrentMessage('');
         setIsThinking(true);
 
-        const result = await continueChat(newMessages);
-        if (result.success && result.response) {
-            setMessages(prev => [...prev, result.response]);
-        } else {
-            setMessages(prev => [...prev, { role: 'assistant', content: "I had an issue processing that. Please try again."}]);
-        }
+        const response = await continueChat(newMessages);
+        setMessages(prev => [...prev, response]);
         setIsThinking(false);
     };
 
