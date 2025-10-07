@@ -21,9 +21,10 @@ export default function Home() {
 
   const handleOpenChat = (query?: string) => {
     if (query) {
-      setInitialQuery(query);
+      router.push(`/chat?query=${encodeURIComponent(query)}`);
+    } else {
+      router.push('/chat');
     }
-    setIsChatOpen(true);
   };
   
   const handleCloseChat = () => {

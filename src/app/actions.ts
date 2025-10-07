@@ -14,7 +14,7 @@ const contactSchema = z.object({
   message: z.string().min(10, "Message must be at least 10 characters."),
 });
 
-interface ChatMessage {
+export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
 }
@@ -43,27 +43,43 @@ export async function continueChat(
   history: ChatMessage[],
   newMessage: ChatMessage
 ) {
-  // Simulate an AI response. In a real app, this would be an API call to an LLM.
-  // e.g., const response = await run("gemini-pro", { messages: [...history, newMessage] });
-  
-  await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+  const messages = [...history, newMessage].map(msg => ({
+    role: msg.role,
+    content: msg.content
+  }));
 
-  const userMessage = newMessage.content.toLowerCase();
-  let responseContent = "That's a fascinating question. Could you tell me more about your goals?";
+  try {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer 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`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "model": "mistralai/mistral-medium",
+        "messages": messages
+      })
+    });
 
-  if (userMessage.includes("project")) {
-    responseContent = "Our projects focus on cutting-edge AI and automation. You can explore them in the Projects section of our website. Do you have a specific area of interest?";
-  } else if (userMessage.includes("about")) {
-    responseContent = "TECHismust Innovation Lab is dedicated to pushing the boundaries of digital experiences through creative AI. What part of our mission excites you the most?";
-  } else if (userMessage.includes("contact")) {
-    responseContent = "You can reach out to our team via the contact form on our website. We're always open to new collaborations and ideas.";
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("API Error:", errorBody);
+      return { success: false, response: { role: "assistant", content: `An error occurred: ${response.statusText}` } as ChatMessage };
+    }
+
+    const data = await response.json();
+    const aiMessage = data.choices[0].message.content;
+
+    return {
+      success: true,
+      response: { role: "assistant", content: aiMessage } as ChatMessage,
+    };
+  } catch (error) {
+    console.error("Failed to fetch from OpenRouter:", error);
+    return { success: false, response: { role: "assistant", content: "Sorry, I'm having trouble connecting to my brain right now." } as ChatMessage };
   }
-
-  return {
-    success: true,
-    response: { role: "assistant", content: responseContent } as ChatMessage,
-  };
 }
+
 
 export async function submitContactForm(data: unknown) {
   const parsed = contactSchema.safeParse(data);
