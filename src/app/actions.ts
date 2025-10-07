@@ -19,7 +19,7 @@ export async function continueChat(
     console.error('Failed to call Genkit flow:', error);
     return {
       role: 'assistant',
-      content: "Sorry, I'm having trouble connecting to my brain right now.",
+      content: "Sorry, I'm having trouble connecting to my brain right now. Please try again in a moment.",
     };
   }
 }

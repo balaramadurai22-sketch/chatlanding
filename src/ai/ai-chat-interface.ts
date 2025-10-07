@@ -36,13 +36,13 @@ const chatPrompt = ai.definePrompt({
   input: {schema: AIChatInputSchema},
   output: {schema: AIChatOutputSchema},
   prompt: `You are TIM (TECHismust Intelligent Model), a helpful AI assistant for TECHismust Innovation Lab. Your persona is professional, knowledgeable, and slightly futuristic.
-  
+
   Here is the conversation history:
   {{#each history}}
   - {{role}}: {{content}}
   {{/each}}
   
-  Based on this history, provide a relevant and helpful response. Be concise but informative.`,
+  Based on this history, provide a relevant and helpful response. Be concise but informative. Your main goal is to engage the user and encourage them to explore collaboration with TECHismust. If they ask about our services, direct them to the solutions or contact page.`,
 });
 
 const aiChatFlow = ai.defineFlow(

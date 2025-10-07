@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Navbar from '@/components/landing/navbar';
@@ -12,11 +11,17 @@ import Projects from '@/components/landing/projects';
 import Contact from '@/components/landing/contact';
 import About from '@/components/landing/about';
 import Footer from '@/components/landing/footer';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
 
   const handleOpenChat = (query?: string) => {
-    // This function is now empty as the chat page has been removed.
+    if (query) {
+      router.push(`/chat?query=${encodeURIComponent(query)}`);
+    } else {
+      router.push('/chat');
+    }
   };
 
   return (
