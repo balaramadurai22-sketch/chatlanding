@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -24,8 +25,8 @@ const generateInitialData = (): ChartData[] => {
     const time = new Date(now.getTime() - i * 60000);
     data.push({
       time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      'TIM AI Models': Math.floor(Math.random() * (150 - 50 + 1)) + 50,
-      'Legacy Models (GPT, etc.)': Math.floor(Math.random() * (120 - 30 + 1)) + 30,
+      'TIM AI Models': Math.floor(Math.random() * (60000 - 30000 + 1)) + 30000,
+      'Legacy Models (GPT, etc.)': Math.floor(Math.random() * (1500000 - 1000000 + 1)) + 1000000,
     });
   }
   return data;
@@ -48,7 +49,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                 {item.name}
               </span>
               <span className="font-bold" style={{ color: item.color }}>
-                {item.value}
+                {item.value.toLocaleString()}
               </span>
             </div>
           ))}
@@ -69,8 +70,8 @@ export default function StatsChart() {
         const now = new Date();
         const newDataPoint: ChartData = {
           time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          'TIM AI Models': Math.floor(Math.random() * (150 - 50 + 1)) + 50,
-          'Legacy Models (GPT, etc.)': Math.floor(Math.random() * (120 - 30 + 1)) + 30,
+          'TIM AI Models': Math.floor(Math.random() * (60000 - 30000 + 1)) + 30000,
+          'Legacy Models (GPT, etc.)': Math.floor(Math.random() * (1500000 - 1000000 + 1)) + 1000000,
         };
         return [...prevData.slice(1), newDataPoint];
       });
@@ -87,9 +88,19 @@ export default function StatsChart() {
     );
   }
 
+  const formatYAxis = (value: number) => {
+    if (value >= 1000000) {
+      return `${value / 1000000}M`;
+    }
+    if (value >= 1000) {
+      return `${value / 1000}K`;
+    }
+    return value;
+  };
+
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <AreaChart data={data} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
         <defs>
           <linearGradient id="colorTim" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
@@ -110,17 +121,31 @@ export default function StatsChart() {
           tickFormatter={(value, index) => index % 2 === 0 ? value : ''}
         />
         <YAxis
+          yAxisId="left"
+          orientation="left"
           fontSize={12}
           tickLine={false}
           axisLine={false}
           tickMargin={8}
-          tickFormatter={value => `${value}`}
+          tickFormatter={(val) => formatYAxis(val)}
+          domain={[0, 'dataMax']}
+        />
+        <YAxis
+          yAxisId="right"
+          orientation="right"
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          tickFormatter={(val) => formatYAxis(val)}
+          domain={[0, 'dataMax']}
         />
         <Tooltip
           content={<CustomTooltip />}
           cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
         />
         <Area
+          yAxisId="left"
           type="monotone"
           dataKey="TIM AI Models"
           stroke="hsl(var(--primary))"
@@ -129,6 +154,7 @@ export default function StatsChart() {
           fill="url(#colorTim)"
         />
         <Area
+          yAxisId="right"
           type="monotone"
           dataKey="Legacy Models (GPT, etc.)"
           stroke="hsl(var(--muted-foreground))"
