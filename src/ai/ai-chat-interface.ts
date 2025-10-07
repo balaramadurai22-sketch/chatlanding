@@ -11,7 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { generate } from 'genkit/generate';
+import { generate } from 'genkit';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
