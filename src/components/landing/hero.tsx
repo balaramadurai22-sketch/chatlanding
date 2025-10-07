@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Particles from "./particles";
 import { Input } from "../ui/input";
@@ -21,6 +21,8 @@ export default function Hero({ onChatSubmit }: HeroProps) {
     if (query.trim()) {
       onChatSubmit(query);
       setQuery("");
+    } else {
+      onChatSubmit('');
     }
   };
 
@@ -46,22 +48,34 @@ export default function Hero({ onChatSubmit }: HeroProps) {
           transition={{ duration: 0.8, delay: 0.2, ease: "easeInOut" }}
           className="mx-auto mt-6 max-w-3xl text-lg text-muted-foreground md:text-xl"
         >
-          Innovating the future, one algorithm at a time.
+          Innovating the future, one algorithm at a time. Ask our AI anything.
         </motion.p>
         
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4, ease: "easeInOut" }}
-          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4"
+        <motion.form
+            onSubmit={handleFormSubmit}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="mx-auto mt-8 max-w-xl"
         >
-          <Button size="lg" className="w-full sm:w-auto" asChild>
-            <Link href="#solutions">Discover Our Solutions</Link>
-          </Button>
-          <Button size="lg" variant="outline" className="w-full sm:w-auto transition-all hover:bg-primary hover:text-primary-foreground" asChild>
-            <Link href="/contact">Join the Lab</Link>
-          </Button>
-        </motion.div>
+          <div className="relative">
+             <MessageSquare className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Ask anything... TECHISMUST AI is listening."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="h-14 w-full rounded-full bg-background/50 pl-12 pr-32 text-base shadow-lg backdrop-blur-sm"
+            />
+            <Button
+              type="submit"
+              size="lg"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full"
+            >
+              Chat <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        </motion.form>
       </div>
     </section>
   );

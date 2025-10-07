@@ -13,6 +13,7 @@ const navLinks = [
   { name: 'Research', href: '/research' },
   { name: 'Projects', href: '/projects' },
   { name: 'Grow With Us', href: '/grow-with-us' },
+  { name: 'Chat', href: '/chat' },
   { name: 'Contact', href: '/contact' },
 ];
 

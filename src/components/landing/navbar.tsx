@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, MessageSquare } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 
@@ -116,10 +116,18 @@ export default function Navbar() {
               );
             })}
           </nav>
-          <div className="hidden md:block">
-            <a href="/contact">
-              <Button variant="ghost" className="transition-all hover:bg-foreground/10">Get in Touch</Button>
-            </a>
+          <div className="hidden md:flex items-center gap-2">
+            <Button asChild>
+              <Link href="/chat">
+                <MessageSquare className="mr-2 h-4 w-4" />
+                AI Chat
+              </Link>
+            </Button>
+            <Button variant="ghost" asChild>
+              <Link href="/contact">
+                Get in Touch
+              </Link>
+            </Button>
           </div>
           <div className="md:hidden">
             <Button
@@ -176,7 +184,19 @@ export default function Navbar() {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * navLinks.length, duration: 0.5 }}
+                  transition={{ delay: 0.1 * (navLinks.length), duration: 0.5 }}
+                >
+                    <a href="/chat" onClick={handleMenuLinkClick}>
+                        <Button size="lg">
+                           <MessageSquare className="mr-2 h-5 w-5" />
+                           AI Chat
+                        </Button>
+                    </a>
+                </motion.div>
+                 <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * (navLinks.length + 1), duration: 0.5 }}
                 >
                     <a href="/contact" onClick={handleMenuLinkClick}>
                         <Button variant="outline" size="lg">Get in Touch</Button>

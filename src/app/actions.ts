@@ -8,3 +8,12 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
 }
+
+export async function continueChat(history: ChatMessage[]): Promise<ChatMessage> {
+    const result = await aiChat({ history });
+
+    return {
+        role: 'assistant',
+        content: result.response
+    }
+}
