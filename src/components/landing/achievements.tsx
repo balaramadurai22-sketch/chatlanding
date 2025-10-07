@@ -1,31 +1,36 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Cpu, Database, Share2, Zap } from 'lucide-react';
 import StatsChart from './stats-chart';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import MiniChart from './mini-chart';
 
-const stats = [
+const initialStats = [
   {
+    id: 'models',
     value: '45',
     unit: 'models',
     label: 'Active Models',
     icon: <Cpu className="size-6" />,
   },
   {
+    id: 'api',
     value: '1.2M',
     unit: 'req/min',
     label: 'API Requests',
     icon: <Share2 className="size-6" />,
   },
   {
+    id: 'tasks',
     value: '320K',
     unit: 'tasks',
     label: 'Tasks Processed',
     icon: <Zap className="size-6" />,
   },
   {
+    id: 'training',
     value: '3',
     unit: 'training',
     label: 'Models Training',
@@ -40,6 +45,46 @@ export default function Achievements() {
   const [country, setCountry] = useState('all');
   const [model, setModel] = useState('tim-ai-2.0');
   const [userCategory, setUserCategory] = useState('all');
+  const [stats, setStats] = useState(initialStats);
+  const [isTimModel, setIsTimModel] = useState(true);
+
+  useEffect(() => {
+    const isTim = model.includes('tim-ai');
+    setIsTimModel(isTim);
+    
+    let intervalId: NodeJS.Timeout;
+
+    if (isTim) {
+      // Animate the API requests value
+      let counter = 0;
+      intervalId = setInterval(() => {
+        const randomValue = Math.floor(Math.random() * (60 - 38 + 1)) + 38;
+        setStats(prevStats => prevStats.map(stat => 
+          stat.id === 'api' ? { ...stat, value: `${randomValue}K` } : stat
+        ));
+        counter++;
+        if (counter > 20) { // Stop after some iterations and set a final-ish value
+            const finalRandomValue = Math.floor(Math.random() * (60 - 38 + 1)) + 38;
+            setStats(prevStats => prevStats.map(stat => 
+              stat.id === 'api' ? { ...stat, value: `${finalRandomValue}K` } : stat
+            ));
+            clearInterval(intervalId);
+        }
+      }, 100);
+    } else {
+       // Revert to a default value if not a TIM model
+       setStats(prevStats => prevStats.map(stat => 
+        stat.id === 'api' ? { ...stat, value: '15K' } : stat
+      ));
+    }
+    
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [model]);
+
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -137,9 +182,9 @@ export default function Achievements() {
             <div className="lg:col-span-2 grid grid-cols-2 gap-6">
                 {stats.map((stat) => (
                     <motion.div
-                        key={stat.label}
+                        key={stat.id}
                         variants={itemVariants}
-                        className="flex flex-col items-start justify-center gap-2 rounded-lg border bg-card/50 p-4 text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-md backdrop-blur-sm"
+                        className="relative flex flex-col items-start justify-center gap-2 rounded-lg border bg-card/50 p-4 text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-md backdrop-blur-sm overflow-hidden"
                     >
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-primary">{stat.icon}</div>
                         <div>
@@ -149,6 +194,11 @@ export default function Achievements() {
                             <span className="text-sm text-muted-foreground ml-1">{stat.unit}</span>
                         </div>
                         <p className="text-sm text-muted-foreground">{stat.label}</p>
+                        {stat.id === 'api' && (
+                          <div className="absolute bottom-2 right-2 h-8 w-16">
+                            <MiniChart isActive={isTimModel} />
+                          </div>
+                        )}
                     </motion.div>
                 ))}
             </div>
