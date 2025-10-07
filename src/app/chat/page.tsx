@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -6,10 +5,12 @@ import { useSearchParams } from 'next/navigation';
 import { continueChat } from '@/app/actions';
 import type { ChatMessage } from '@/app/actions';
 import ChatUI from '@/components/chat/chat-ui';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ChatPage() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q');
+  const { toast } = useToast();
   
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [input, setInput] = React.useState('');
@@ -29,8 +30,13 @@ export default function ChatPage() {
       const response = await continueChat(newMessages);
       setMessages(prev => [...prev, response]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error.' }]);
+      toast({
+        title: "An error occurred.",
+        description: "Sorry, I encountered an error. Please try again.",
+        variant: "destructive",
+      });
       console.error(error);
+      setMessages(prev => prev.slice(0, prev.length -1));
     } finally {
       setIsLoading(false);
     }
@@ -49,8 +55,14 @@ export default function ChatPage() {
       const response = await continueChat(newMessages);
       setMessages(prev => [...prev, response]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error.' }]);
+       toast({
+        title: "An error occurred.",
+        description: "Sorry, I encountered an error. Please try again.",
+        variant: "destructive",
+      });
       console.error(error);
+      // Remove the user message that failed to get a response
+      setMessages(prev => prev.slice(0, prev.length - 1));
     } finally {
       setIsLoading(false);
     }
