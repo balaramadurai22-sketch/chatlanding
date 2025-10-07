@@ -12,6 +12,7 @@ const navLinks = [
   { name: 'Solutions', href: '/solutions' },
   { name: 'Research', href: '/research' },
   { name: 'Projects', href: '/projects' },
+  { name: 'Grow With Us', href: '/grow-with-us' },
   { name: 'AI Lab', href: '/ai-lab' },
   { name: 'Contact', href: '/contact' },
 ];
@@ -61,5 +62,3 @@ export default function Footer() {
     </footer>
   );
 }
-
-    

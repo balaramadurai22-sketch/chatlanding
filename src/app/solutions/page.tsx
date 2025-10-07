@@ -26,10 +26,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const partnershipSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters."),
   email: z.string().email("Invalid email address."),
-  company: z.string().min(2, "Company name is required."),
-  industry: z.string().min(1, "Please select an industry."),
-  partnershipType: z.string().min(1, "Please select a partnership type."),
-  message: z.string().min(20, "Proposal must be at least 20 characters."),
+  company: z.string().min(2, "Company name is required.").optional(),
+  collaborationType: z.string().min(1, "Please select a collaboration type."),
+  projectIdea: z.string().min(20, "Please describe your idea in at least 20 characters."),
   attachment: z.any().optional(),
 });
 
@@ -319,7 +318,7 @@ export default function SolutionsPage() {
                                 Join as a Partner
                             </Button>
                              <Button asChild size="lg" variant="outline">
-                                <Link href="/projects">Build With Our API</Link>
+                                <Link href="/grow-with-us">Build With Our API</Link>
                             </Button>
                         </div>
                     </motion.div>
@@ -339,51 +338,31 @@ export default function SolutionsPage() {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onPartnershipSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
-              <div className="grid grid-cols-2 gap-4">
                 <FormField control={form.control} name="fullName" render={({ field }) => (
                   <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="Your Name" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="email" render={({ field }) => (
                   <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="your.email@example.com" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
-              </div>
               <FormField control={form.control} name="company" render={({ field }) => (
                 <FormItem><FormLabel>Company / Organization</FormLabel><FormControl><Input placeholder="Your Company Name" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
-              <div className="grid grid-cols-2 gap-4">
-                <FormField control={form.control} name="industry" render={({ field }) => (
-                  <FormItem><FormLabel>Industry</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Select Industry" /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        <SelectItem value="ai">AI</SelectItem>
-                        <SelectItem value="healthcare">Healthcare</SelectItem>
-                        <SelectItem value="finance">Finance</SelectItem>
-                        <SelectItem value="research">Research</SelectItem>
-                        <SelectItem value="startup">Tech Startup</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="partnershipType" render={({ field }) => (
-                  <FormItem><FormLabel>Partnership Type</FormLabel>
+              <FormField control={form.control} name="collaborationType" render={({ field }) => (
+                  <FormItem><FormLabel>Collaboration Type</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Select Type" /></SelectTrigger></FormControl>
                       <SelectContent>
-                        <SelectItem value="collaboration">Collaboration</SelectItem>
                         <SelectItem value="research">Research</SelectItem>
-                        <SelectItem value="api_access">API Access</SelectItem>
+                        <SelectItem value="startup">Startup Partnership</SelectItem>
+                        <SelectItem value="lab">Innovation Lab</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
                 )} />
-              </div>
-              <FormField control={form.control} name="message" render={({ field }) => (
-                <FormItem><FormLabel>Message / Proposal</FormLabel><FormControl><Textarea className="min-h-[120px]" placeholder="Tell us about your proposal..." {...field} /></FormControl><FormMessage /></FormItem>
+              <FormField control={form.control} name="projectIdea" render={({ field }) => (
+                <FormItem><FormLabel>Project Idea / Description</FormLabel><FormControl><Textarea className="min-h-[120px]" placeholder="Tell us about your proposal..." {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="attachment" render={({ field }) => (
                 <FormItem>
