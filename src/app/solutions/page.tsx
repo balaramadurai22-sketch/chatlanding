@@ -2,7 +2,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowRight, BrainCircuit, Bot, Cog, FlaskConical, Rocket, TestTube, Briefcase, BarChart, ChevronRight, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { BrainCircuit, Bot, Cog, FlaskConical, Rocket, TestTube, ChevronRight, ExternalLink, Loader, Send, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/landing/navbar';
@@ -13,6 +17,23 @@ import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription }
 import { Badge } from '@/components/ui/badge';
 import { projects } from '@/lib/projects';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const partnershipSchema = z.object({
+  fullName: z.string().min(2, "Full name must be at least 2 characters."),
+  email: z.string().email("Invalid email address."),
+  company: z.string().min(2, "Company name is required."),
+  industry: z.string().min(1, "Please select an industry."),
+  partnershipType: z.string().min(1, "Please select a partnership type."),
+  message: z.string().min(20, "Proposal must be at least 20 characters."),
+  attachment: z.any().optional(),
+});
+
+type PartnershipFormValues = z.infer<typeof partnershipSchema>;
 
 
 const solutionDomains = [
@@ -77,6 +98,21 @@ const models = [
 
 
 export default function SolutionsPage() {
+    const { toast } = useToast();
+    const [isPartnerModalOpen, setPartnerModalOpen] = useState(false);
+
+    const form = useForm<PartnershipFormValues>({
+        resolver: zodResolver(partnershipSchema),
+    });
+
+    const onPartnershipSubmit: SubmitHandler<PartnershipFormValues> = async (data) => {
+        console.log("Partnership Proposal:", data);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        toast({ title: "Proposal Sent!", description: "Thank you for your interest. Our partnership team will be in touch shortly." });
+        form.reset();
+        setPartnerModalOpen(false);
+    };
+
 
   const scrollTo = (id:string) => {
     const element = document.getElementById(id);
@@ -279,11 +315,11 @@ export default function SolutionsPage() {
                             Collaborate. Create. Challenge the impossible.
                         </p>
                         <div className="mt-8 flex justify-center gap-4">
-                            <Button asChild size="lg">
-                                <Link href="/contact">Join as a Partner</Link>
+                            <Button size="lg" onClick={() => setPartnerModalOpen(true)}>
+                                Join as a Partner
                             </Button>
                              <Button asChild size="lg" variant="outline">
-                                <Link href="/contact">Build With Our API</Link>
+                                <Link href="/projects">Build With Our API</Link>
                             </Button>
                         </div>
                     </motion.div>
@@ -291,6 +327,85 @@ export default function SolutionsPage() {
             </section>
         </main>
       </div>
+
+       {/* Partnership Modal */}
+      <Dialog open={isPartnerModalOpen} onOpenChange={setPartnerModalOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-headline text-2xl">Become a Partner</DialogTitle>
+            <DialogDescription>
+              Submit your proposal to collaborate with TECHISMUST Innovation Lab.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onPartnershipSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField control={form.control} name="fullName" render={({ field }) => (
+                  <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="Your Name" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="email" render={({ field }) => (
+                  <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="your.email@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+              </div>
+              <FormField control={form.control} name="company" render={({ field }) => (
+                <FormItem><FormLabel>Company / Organization</FormLabel><FormControl><Input placeholder="Your Company Name" {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField control={form.control} name="industry" render={({ field }) => (
+                  <FormItem><FormLabel>Industry</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Select Industry" /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="ai">AI</SelectItem>
+                        <SelectItem value="healthcare">Healthcare</SelectItem>
+                        <SelectItem value="finance">Finance</SelectItem>
+                        <SelectItem value="research">Research</SelectItem>
+                        <SelectItem value="startup">Tech Startup</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="partnershipType" render={({ field }) => (
+                  <FormItem><FormLabel>Partnership Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Select Type" /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="collaboration">Collaboration</SelectItem>
+                        <SelectItem value="research">Research</SelectItem>
+                        <SelectItem value="api_access">API Access</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+              <FormField control={form.control} name="message" render={({ field }) => (
+                <FormItem><FormLabel>Message / Proposal</FormLabel><FormControl><Textarea className="min-h-[120px]" placeholder="Tell us about your proposal..." {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="attachment" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Attachment (Optional)</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input type="file" className="pl-12 file:text-sm file:font-medium" onChange={(e) => field.onChange(e.target.files)} />
+                      <Upload className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <DialogFooter>
+                <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Submitting...</> : <><Send className="mr-2 h-4 w-4" /> Submit Proposal</>}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
       <Footer />
     </>
   );
