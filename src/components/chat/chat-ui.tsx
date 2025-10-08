@@ -290,3 +290,4 @@ export default function ChatUI({
     </div>
   );
 }
+  
