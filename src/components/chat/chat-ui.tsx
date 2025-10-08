@@ -334,8 +334,7 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
     }
 
     const onDonationSubmit: SubmitHandler<DonationFormValues> = (data) => {
-      console.log(`Donating $${data.amount} to ${agent.creator.name}`);
-      // toast({ title: 'Donation Successful!', description: `Thank you for supporting ${agent.creator.name}!` });
+      console.log(`Donating amount: ${data.amount} in ${currency} to ${agent.creator.name}`);
       donationForm.reset();
     };
 
@@ -343,26 +342,26 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
         switch (currency) {
             case 'usd':
                 return (
-                    <div className="flex gap-2">
-                        <Button variant="outline" className="flex-1 border-black"><DollarSign size={16} className="mr-2" /> PayPal</Button>
-                        <Button variant="outline" className="flex-1 border-black"><Apple size={16} className="mr-2" /> Apple Pay</Button>
-                        <Button variant="outline" className="flex-1 border-black"><CreditCard size={16} className="mr-2" /> Card</Button>
+                    <div className="flex flex-col gap-2">
+                        <Button variant="outline" className="w-full border-black justify-start"><DollarSign size={16} className="mr-2" /> PayPal</Button>
+                        <Button variant="outline" className="w-full border-black justify-start"><Apple size={16} className="mr-2" /> Apple Pay</Button>
+                        <Button variant="outline" className="w-full border-black justify-start"><CreditCard size={16} className="mr-2" /> Card</Button>
                     </div>
                 );
             case 'inr':
                  return (
-                    <div className="flex gap-2">
-                        <Button variant="outline" className="flex-1 border-black">GPay</Button>
-                        <Button variant="outline" className="flex-1 border-black">PhonePe</Button>
-                        <Button variant="outline" className="flex-1 border-black">UPI</Button>
+                    <div className="flex flex-col gap-2">
+                        <Button variant="outline" className="w-full border-black justify-start">GPay</Button>
+                        <Button variant="outline" className="w-full border-black justify-start">PhonePe</Button>
+                        <Button variant="outline" className="w-full border-black justify-start">UPI</Button>
                     </div>
                 );
             case 'crypto':
                 return (
                     <div className="flex flex-col gap-2">
-                        <Button variant="outline" className="w-full border-black">Binance Pay</Button>
-                        <Button variant="outline" className="w-full border-black">Trust Wallet</Button>
-                        <Button variant="outline" className="w-full border-black">Phantom</Button>
+                        <Button variant="outline" className="w-full border-black justify-start"><Bitcoin size={16} className="mr-2" /> Binance Pay</Button>
+                        <Button variant="outline" className="w-full border-black justify-start">Trust Wallet</Button>
+                        <Button variant="outline" className="w-full border-black justify-start">Phantom</Button>
                     </div>
                 );
             default:
@@ -420,25 +419,23 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                     </div>
                 </motion.div>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-                 <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
+            <DialogContent className="max-w-4xl">
+                <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
                     <X className="h-4 w-4" />
                     <span className="sr-only">Close</span>
                 </DialogClose>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4">
-                    <div className="flex flex-col gap-4">
-                        <Image src={agent.creator.imageUrl} alt={agent.creator.name} width={128} height={128} className="rounded-lg border-2 border-black w-full aspect-square object-cover" />
-                    </div>
-                     <div className="md:col-span-2 flex flex-col gap-6">
-                        <div>
-                            <DialogTitle className="text-3xl font-bold">{agent.name}</DialogTitle>
-                            <div className="text-sm text-black/60">by {agent.creator.name}</div>
-                            <div className="flex gap-3 mt-2">
+                    <div className="md:col-span-2 flex flex-col gap-4">
+                        <div className="p-4 border rounded-lg">
+                             <DialogTitle className="text-3xl font-bold">{agent.name}</DialogTitle>
+                             <div className="text-sm text-black/60">by {agent.creator.name}</div>
+                             <div className="flex gap-3 mt-2">
                                 {agent.creator.social.twitter && <a href={agent.creator.social.twitter} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Twitter size={16} /></a>}
                                 {agent.creator.social.github && <a href={agent.creator.social.github} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Github size={16} /></a>}
                                 {agent.creator.social.linkedin && <a href={agent.creator.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Linkedin size={16} /></a>}
                             </div>
                         </div>
+
                         <div className="p-4 border rounded-lg">
                             <h4 className="font-semibold mb-2">How it works</h4>
                             <p className="text-sm text-black/80">{agent.description}</p>
@@ -463,6 +460,38 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                                 }k</div>
                                 <div className="text-xs text-black/60">Likes</div>
                             </div>
+                        </div>
+                    </div>
+                     <div className="flex flex-col gap-4">
+                        <div className="p-4 border rounded-lg">
+                            <h3 className="font-bold text-sm uppercase text-black/60 mb-4">Support the Creator</h3>
+                             <Form {...donationForm}>
+                                <form onSubmit={donationForm.handleSubmit(onDonationSubmit)} className="space-y-4">
+                                     <Tabs value={currency} onValueChange={setCurrency} className="w-full">
+                                        <TabsList className="grid w-full grid-cols-3">
+                                            <TabsTrigger value="usd">USD</TabsTrigger>
+                                            <TabsTrigger value="inr">INR</TabsTrigger>
+                                            <TabsTrigger value="crypto">Crypto</TabsTrigger>
+                                        </TabsList>
+                                    </Tabs>
+                                     <FormField name="amount" control={donationForm.control} render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Amount</FormLabel>
+                                            <FormControl>
+                                                <div className="relative">
+                                                    <Input type="number" placeholder="Enter amount" {...field} className="border-black pl-8" />
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-black/60">{currency === 'usd' ? '$' : currency === 'inr' ? '₹' : '₿'}</span>
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+
+                                    <div className="space-y-2">
+                                        {renderPaymentOptions()}
+                                    </div>
+                                </form>
+                            </Form>
                         </div>
                     </div>
                 </div>
