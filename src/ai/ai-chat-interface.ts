@@ -10,7 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { Stream } from 'genkit/streaming';
+import { Stream } from 'genkit';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant']),

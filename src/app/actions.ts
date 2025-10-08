@@ -3,7 +3,7 @@
 
 import {aiChat} from '@/ai/ai-chat-interface';
 import type {AIChatInput} from '@/ai/ai-chat-interface';
-import { Stream } from 'genkit/streaming';
+import { Stream } from 'genkit';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
