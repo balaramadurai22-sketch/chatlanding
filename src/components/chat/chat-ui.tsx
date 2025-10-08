@@ -20,8 +20,14 @@ import {
   Infinity,
   Lightbulb,
   Grid,
-  Mic
+  Mic,
+  Bug,
+  Loader
 } from 'lucide-react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,6 +37,11 @@ import { Badge } from '../ui/badge';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ChatUIProps {
   messages: ChatMessage[];
@@ -40,6 +51,23 @@ interface ChatUIProps {
   setInput: (input: string) => void;
   setMessages: (messages: ChatMessage[]) => void;
 }
+
+const bugReportSchema = z.object({
+  title: z.string().min(1, "Title is required."),
+  description: z.string().min(10, "Description must be at least 10 characters."),
+  stepsToReproduce: z.string().min(10, "Steps to reproduce are required."),
+  severity: z.enum(["Low", "Medium", "High"]),
+});
+
+type BugReportFormValues = z.infer<typeof bugReportSchema>;
+
+const featureRequestSchema = z.object({
+  featureTitle: z.string().min(1, "Title is required."),
+  description: z.string().min(10, "Description must be at least 10 characters."),
+  priority: z.enum(["Low", "Medium", "High"]),
+});
+
+type FeatureRequestFormValues = z.infer<typeof featureRequestSchema>;
 
 const TypingIndicator = () => (
   <div className="flex items-center space-x-1 p-3">
@@ -84,14 +112,31 @@ export default function ChatUI({
   isLoading,
   handleSendMessage,
   setInput,
-  setMessages,
 }: ChatUIProps) {
     const isMobile = useIsMobile();
     const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const { toast } = useToast();
+
+    const bugReportForm = useForm<BugReportFormValues>({ resolver: zodResolver(bugReportSchema), defaultValues: { severity: "Medium" }});
+    const featureRequestForm = useForm<FeatureRequestFormValues>({ resolver: zodResolver(featureRequestSchema), defaultValues: { priority: "Medium" } });
+
+    const onBugSubmit: SubmitHandler<BugReportFormValues> = async (data) => {
+        console.log("Bug Report:", data);
+        await new Promise(res => setTimeout(res, 1000));
+        toast({ title: "Bug Report Submitted!", description: "Thank you for your feedback." });
+        bugReportForm.reset();
+        // Keep modal open to show success or close it
+    };
+    
+    const onFeatureSubmit: SubmitHandler<FeatureRequestFormValues> = async (data) => {
+        console.log("Feature Request:", data);
+        await new Promise(res => setTimeout(res, 1000));
+        toast({ title: "Feature Request Submitted!", description: "Thank you for your suggestion." });
+        featureRequestForm.reset();
+    };
 
     const SidebarContent = () => (
         <div className="flex flex-col h-full bg-white text-black p-4 border-r border-black">
-            {/* User Info */}
             <div className="flex items-center gap-3 p-2 border border-black rounded-md">
                 <div className="w-10 h-10 rounded-md bg-black flex items-center justify-center text-white font-bold text-xl">
                     B
@@ -100,12 +145,11 @@ export default function ChatUI({
                     <p className="font-bold">bala</p>
                     <p className="text-sm">Le Chat Free</p>
                 </div>
-                <Button variant="ghost" size="icon" className="ml-auto hover:bg-black hover:text-white">
+                <Button variant="ghost" size="icon" className="ml-auto hover:bg-black hover:text-white border border-transparent hover:border-black">
                     <Settings2 className="w-5 h-5" />
                 </Button>
             </div>
 
-            {/* Navigation */}
             <nav className="mt-6 flex flex-col gap-2">
                  <Button variant="outline" className="w-full justify-start text-base font-bold bg-black text-white border-black hover:bg-black hover:text-white">
                     <MessageCircle className="mr-3" /> Chat
@@ -123,7 +167,6 @@ export default function ChatUI({
                 </Button>
             </nav>
 
-             {/* Projects */}
             <div className="mt-8 flex-grow overflow-y-auto">
                 <h3 className="text-sm font-bold uppercase tracking-wider mb-2">Projects</h3>
                 <div className="space-y-4">
@@ -143,9 +186,89 @@ export default function ChatUI({
                 </div>
             </div>
 
-            {/* Upgrade Banner */}
-            <div className="mt-auto">
-                <div className="bg-white p-3 rounded-lg shadow-md border border-gray-200">
+            <div className="mt-auto flex flex-col gap-2">
+                 <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start text-base font-bold border-black hover:bg-black hover:text-white">
+                            <Bug className="mr-3" /> Bug Report
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-white text-black border-black">
+                        <DialogHeader>
+                            <DialogTitle className="font-bold text-black">Submit a Bug Report</DialogTitle>
+                            <DialogDescription className="text-black/80">
+                                Help us improve by reporting any issues you encounter.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <Form {...bugReportForm}>
+                            <form onSubmit={bugReportForm.handleSubmit(onBugSubmit)} className="space-y-4">
+                                <FormField control={bugReportForm.control} name="title" render={({ field }) => (
+                                    <FormItem><FormLabel className="text-black font-bold">Title</FormLabel><FormControl><Input className="border-black bg-white text-black placeholder:text-black/50" placeholder="e.g., UI glitch on chat page" {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                                <FormField control={bugReportForm.control} name="description" render={({ field }) => (
+                                    <FormItem><FormLabel className="text-black font-bold">Description</FormLabel><FormControl><Textarea className="border-black bg-white text-black placeholder:text-black/50" placeholder="Describe the bug in detail..." {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                                <FormField control={bugReportForm.control} name="stepsToReproduce" render={({ field }) => (
+                                    <FormItem><FormLabel className="text-black font-bold">Steps to Reproduce</FormLabel><FormControl><Textarea className="border-black bg-white text-black placeholder:text-black/50" placeholder="1. Go to '...'\n2. Click on '...'\n3. See error" {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                                 <FormField control={bugReportForm.control} name="severity" render={({ field }) => (
+                                    <FormItem><FormLabel className="text-black font-bold">Severity</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl><SelectTrigger className="border-black bg-white text-black"><SelectValue placeholder="Select severity" /></SelectTrigger></FormControl>
+                                            <SelectContent className="border-black bg-white text-black"><SelectItem value="Low">Low</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="High">High</SelectItem></SelectContent>
+                                        </Select>
+                                    <FormMessage /></FormItem>
+                                )}/>
+                                <DialogFooter>
+                                    <Button type="submit" variant="outline" className="w-full bg-white text-black border-black hover:bg-black hover:text-white" disabled={bugReportForm.formState.isSubmitting}>
+                                        {bugReportForm.formState.isSubmitting ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : null} Submit
+                                    </Button>
+                                </DialogFooter>
+                            </form>
+                        </Form>
+                    </DialogContent>
+                 </Dialog>
+
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start text-base font-bold border-black hover:bg-black hover:text-white">
+                            <Lightbulb className="mr-3" /> Feature Request
+                        </Button>
+                    </DialogTrigger>
+                     <DialogContent className="bg-white text-black border-black">
+                        <DialogHeader>
+                            <DialogTitle className="font-bold text-black">Request a Feature</DialogTitle>
+                            <DialogDescription className="text-black/80">
+                                Have an idea for a new feature? Let us know!
+                            </DialogDescription>
+                        </DialogHeader>
+                        <Form {...featureRequestForm}>
+                            <form onSubmit={featureRequestForm.handleSubmit(onFeatureSubmit)} className="space-y-4">
+                                <FormField control={featureRequestForm.control} name="featureTitle" render={({ field }) => (
+                                    <FormItem><FormLabel className="text-black font-bold">Feature Title</FormLabel><FormControl><Input className="border-black bg-white text-black placeholder:text-black/50" placeholder="e.g., Add dark mode" {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                                <FormField control={featureRequestForm.control} name="description" render={({ field }) => (
+                                    <FormItem><FormLabel className="text-black font-bold">Description</FormLabel><FormControl><Textarea className="border-black bg-white text-black placeholder:text-black/50" placeholder="Describe the feature and why it would be useful..." {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                                 <FormField control={featureRequestForm.control} name="priority" render={({ field }) => (
+                                    <FormItem><FormLabel className="text-black font-bold">Priority</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl><SelectTrigger className="border-black bg-white text-black"><SelectValue placeholder="Select priority" /></SelectTrigger></FormControl>
+                                            <SelectContent className="border-black bg-white text-black"><SelectItem value="Low">Low</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="High">High</SelectItem></SelectContent>
+                                        </Select>
+                                    <FormMessage /></FormItem>
+                                )}/>
+                                <DialogFooter>
+                                    <Button type="submit" variant="outline" className="w-full bg-white text-black border-black hover:bg-black hover:text-white" disabled={featureRequestForm.formState.isSubmitting}>
+                                        {featureRequestForm.formState.isSubmitting ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : null} Submit
+                                    </Button>
+                                </DialogFooter>
+                            </form>
+                        </Form>
+                    </DialogContent>
+                </Dialog>
+
+                <div className="bg-white p-3 rounded-lg shadow-md border border-gray-200 mt-2">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
@@ -290,5 +413,3 @@ export default function ChatUI({
     </div>
   );
 }
-
-    
