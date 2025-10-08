@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -78,7 +77,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '../ui/switch';
-
+import { agents as allAgents, type Agent } from '@/lib/agents-data';
+import { useMemo } from 'react';
 
 interface ChatUIProps {
   messages: ChatMessage[];
@@ -127,6 +127,415 @@ const featureRequestSchema = z.object({
 });
 type FeatureRequestFormValues = z.infer<typeof featureRequestSchema>;
 
+const newAgentSchema = z.object({
+  name: z.string().min(3, "Agent name must be at least 3 characters."),
+  description: z.string().min(10, "Description must be at least 10 characters."),
+  model: z.string().min(1, "Please select a model."),
+  category: z.enum(['Coding', 'Analysis', 'Creative', 'Productivity', 'Research']),
+  purpose: z.string().min(10, "Purpose must be at least 10 characters."),
+});
+type NewAgentFormValues = z.infer<typeof newAgentSchema>;
+
+const donationSchema = z.object({
+  amount: z.coerce.number().min(1, "Please enter an amount greater than 0."),
+});
+type DonationFormValues = z.infer<typeof donationSchema>;
+
+
+const getSymbolicVisual = (category: Agent['category']) => {
+    const commonProps = {
+        className: "absolute inset-0 w-full h-full opacity-10",
+    };
+
+    switch (category) {
+        case 'Coding':
+            return (
+                <div {...commonProps}>
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <motion.div
+                            key={i}
+                            className="absolute h-px bg-black"
+                            style={{
+                                width: `${Math.random() * 30 + 10}%`,
+                                top: `${i * 12.5}%`,
+                            }}
+                            initial={{ x: '-100%' }}
+                            animate={{ x: '100%' }}
+                            transition={{
+                                duration: Math.random() * 5 + 5,
+                                repeat: Infinity,
+                                repeatType: 'loop',
+                                ease: 'linear',
+                                delay: i * 0.5,
+                            }}
+                        />
+                    ))}
+                </div>
+            );
+        case 'Analysis':
+            return (
+                <div {...commonProps} className="flex items-end justify-between p-2 absolute inset-0 w-full h-full opacity-20">
+                     {Array.from({ length: 8 }).map((_, i) => (
+                        <motion.div
+                            key={i}
+                            className="w-1 bg-black"
+                            style={{ originY: 1 }}
+                            initial={{ scaleY: 0.1 }}
+                            animate={{ scaleY: Math.random() * 0.8 + 0.2 }}
+                            transition={{ duration: 1.5, repeat: Infinity, repeatType: 'mirror', delay: i * 0.2 }}
+                        />
+                    ))}
+                </div>
+            );
+        case 'Creative':
+            return (
+                <motion.svg {...commonProps} viewBox="0 0 100 100">
+                    <motion.circle
+                        cx="50"
+                        cy="50"
+                        r="30"
+                        stroke="black"
+                        strokeWidth="0.5"
+                        fill="none"
+                        initial={{ pathLength: 0.5, rotate: 0 }}
+                        animate={{ pathLength: 1, rotate: 360 }}
+                        transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
+                    />
+                     <motion.circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        stroke="black"
+                        strokeWidth="0.2"
+                        fill="none"
+                        initial={{ pathLength: 1, rotate: 360 }}
+                        animate={{ pathLength: 0.5, rotate: 0 }}
+                        transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+                    />
+                </motion.svg>
+            );
+        default:
+             return (
+                <motion.svg {...commonProps} viewBox="0 0 100 100">
+                    {Array.from({ length: 10 }).map((_, i) => (
+                        <motion.circle
+                            key={i}
+                            cx={`${Math.random() * 100}%`}
+                            cy={`${Math.random() * 100}%`}
+                            r={Math.random() * 1.5 + 0.5}
+                            fill="black"
+                            initial={{ opacity: 0 }}
+                            animate={{
+                                opacity: [0, 1, 0],
+                                scale: [1, 1.2, 1],
+                                x: Math.random() * 20 - 10,
+                                y: Math.random() * 20 - 10,
+                            }}
+                            transition={{
+                                duration: Math.random() * 5 + 5,
+                                repeat: Infinity,
+                                delay: i * 0.5,
+                            }}
+                        />
+                    ))}
+                </motion.svg>
+            );
+    }
+};
+
+const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent) => void }) => {
+    const [isPinned, setIsPinned] = React.useState(agent.pinned);
+    const [isActive, setIsActive] = React.useState(agent.active);
+    const donationForm = useForm<DonationFormValues>({ resolver: zodResolver(donationSchema) });
+
+    const handlePinToggle = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const newPinned = !isPinned;
+        setIsPinned(newPinned);
+        onUpdate({ ...agent, pinned: newPinned });
+    };
+
+    const handleActiveToggle = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const newActive = !isActive;
+      setIsActive(newActive);
+      onUpdate({ ...agent, active: newActive });
+    }
+
+    const onDonationSubmit: SubmitHandler<DonationFormValues> = (data) => {
+      console.log(`Donating $${data.amount} to ${agent.creator.name}`);
+      // toast({ title: 'Donation Successful!', description: `Thank you for supporting ${agent.creator.name}!` });
+      donationForm.reset();
+    };
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <motion.div
+                    layout
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.3 }}
+                    className="relative aspect-square flex flex-col justify-between p-4 border border-black rounded-lg bg-white shadow-sm cursor-pointer group hover:shadow-md transition-shadow"
+                >
+                    <div className="absolute inset-0 overflow-hidden rounded-lg">
+                        {getSymbolicVisual(agent.category)}
+                    </div>
+                    <div className="relative z-10">
+                        <div className="flex justify-between items-start">
+                             <div className="flex items-center gap-2">
+                                <span className={cn("w-2 h-2 rounded-full", isActive ? 'bg-green-500' : 'bg-red-500')} />
+                                <h3 className="font-bold text-lg leading-tight">{agent.name}</h3>
+                            </div>
+                             <button onClick={handlePinToggle} className="p-1 text-black/40 hover:text-black">
+                                {isPinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
+                            </button>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs mt-1 text-black/60">
+                           <span>{agent.model}</span>
+                           <span>&middot;</span>
+                           <span>{agent.category}</span>
+                        </div>
+                    </div>
+
+                    <div className="relative z-10">
+                        <p className="text-xs text-black/80 mb-2">{agent.description}</p>
+                        <div className="flex justify-between items-center text-xs text-black/60">
+                            <div className="flex items-center gap-1">
+                                <Users className="w-3 h-3" />
+                                <span>{(agent.peopleUsed / 1000).toFixed(1)}k</span>
+                            </div>
+                             <div className="flex items-center gap-1">
+                                <Heart className="w-3 h-3" />
+                                <span>{(agent.likes / 1000).toFixed(1)}k</span>
+                            </div>
+                            <Switch checked={isActive} onClick={handleActiveToggle} className="h-4 w-7 [&>span]:h-3 [&>span]:w-3 [&>span]:data-[state=checked]:translate-x-3" />
+                        </div>
+                    </div>
+                </motion.div>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+                 <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Close</span>
+                </DialogClose>
+                <DialogHeader>
+                    <div className="flex items-center gap-4">
+                        <Image src={agent.creator.imageUrl} alt={agent.creator.name} width={64} height={64} className="rounded-full border-2 border-black" />
+                        <div>
+                            <DialogTitle className="text-2xl font-bold">{agent.name}</DialogTitle>
+                             <div className="text-sm text-black/60">by {agent.creator.name}</div>
+                             <div className="flex gap-3 mt-2">
+                                <a href={agent.creator.social.x} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Twitter size={16} /></a>
+                                <a href={agent.creator.social.github} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Github size={16} /></a>
+                                <a href={agent.creator.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Linkedin size={16} /></a>
+                             </div>
+                        </div>
+                    </div>
+                </DialogHeader>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4">
+                    <div className="md:col-span-2 space-y-4">
+                        <div>
+                            <h4 className="font-semibold">How it works</h4>
+                            <p className="text-sm text-black/80">{agent.description}</p>
+                        </div>
+                         <div>
+                            <h4 className="font-semibold">Purpose</h4>
+                            <p className="text-sm text-black/80">{agent.purpose}</p>
+                        </div>
+                        <div className="flex gap-4 text-sm">
+                            <div><span className="font-semibold">Model:</span> {agent.model}</div>
+                            <div><span className="font-semibold">Category:</span> {agent.category}</div>
+                        </div>
+                    </div>
+                    <div className="space-y-4">
+                        <div className="p-4 border border-black rounded-lg">
+                           <h4 className="font-semibold mb-2">Donate to Creator</h4>
+                             <Form {...donationForm}>
+                                <form onSubmit={donationForm.handleSubmit(onDonationSubmit)} className="space-y-2">
+                                    <FormField name="amount" control={donationForm.control} render={({ field }) => (
+                                        <FormItem>
+                                            <FormControl>
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-black/60">$</span>
+                                                    <Input type="number" placeholder="10" {...field} className="pl-6 border-black" />
+                                                </div>
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+                                    <Button type="submit" className="w-full bg-black text-white hover:bg-white hover:text-black border border-black">Donate</Button>
+                                </form>
+                             </Form>
+                        </div>
+                        <div className="p-4 border border-black rounded-lg flex justify-around text-center">
+                            <div>
+                                <div className="font-bold text-lg">{(agent.peopleUsed/1000).toFixed(1)}k</div>
+                                <div className="text-xs text-black/60">Users</div>
+                            </div>
+                             <div>
+                                <div className="font-bold text-lg">{(agent.likes/1000).toFixed(1)}k</div>
+                                <div className="text-xs text-black/60">Likes</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: Agent[]) => void}) => {
+    const [filter, setFilter] = React.useState('All');
+    const [searchTerm, setSearchTerm] = React.useState('');
+    const newAgentForm = useForm<NewAgentFormValues>({ resolver: zodResolver(newAgentSchema) });
+    const { toast } = useToast();
+
+    const filteredAgents = useMemo(() => {
+        return agents.filter(agent => {
+            const categoryMatch = filter === 'All' || agent.category === filter;
+            const searchMatch = searchTerm === '' || 
+                agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                agent.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                agent.model.toLowerCase().includes(searchTerm.toLowerCase());
+            return categoryMatch && searchMatch;
+        });
+    }, [agents, filter, searchTerm]);
+
+    const pinnedAgents = useMemo(() => filteredAgents.filter(a => a.pinned), [filteredAgents]);
+    const unpinnedAgents = useMemo(() => filteredAgents.filter(a => !a.pinned), [filteredAgents]);
+
+    const categories = ['All', 'Coding', 'Analysis', 'Creative', 'Productivity', 'Research'];
+
+    const onNewAgentSubmit: SubmitHandler<NewAgentFormValues> = (data) => {
+        const newAgent: Agent = {
+            id: `agent-${Date.now()}`,
+            active: true,
+            pinned: false,
+            peopleUsed: 0,
+            likes: 0,
+            creator: { // Replace with actual creator data
+                name: 'You',
+                imageUrl: 'https://picsum.photos/seed/new/100/100',
+                social: { x: '#', github: '#', linkedin: '#' },
+            },
+            ...data
+        };
+        setAgents([newAgent, ...agents]);
+        toast({ title: "Agent Created!", description: `${data.name} is now available.` });
+        newAgentForm.reset();
+    };
+
+    const handleAgentUpdate = (updatedAgent: Agent) => {
+        setAgents(agents.map(a => a.id === updatedAgent.id ? updatedAgent : a));
+    };
+
+    return (
+        <div className="flex flex-col h-full p-4 md:p-6 bg-white">
+            <header className="mb-6">
+                <h1 className="text-2xl font-bold">Agents</h1>
+                <p className="text-black/60">Browse, manage, and create powerful AI agents.</p>
+                <div className="mt-4 flex flex-col md:flex-row gap-4 justify-between">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/40" />
+                        <Input 
+                            placeholder="Search by name, model..."
+                            className="pl-10 border-black w-full md:w-64"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                        {categories.map(cat => (
+                            <Button 
+                                key={cat}
+                                variant={filter === cat ? 'default' : 'outline'}
+                                onClick={() => setFilter(cat)}
+                                className={cn("border-black", filter === cat ? "bg-black text-white hover:bg-black" : "hover:bg-gray-100")}
+                            >
+                                {cat}
+                            </Button>
+                        ))}
+                    </div>
+                     <Dialog>
+                        <DialogTrigger asChild>
+                             <Button className="bg-black text-white hover:bg-white hover:text-black border border-black"><Plus className="mr-2 h-4 w-4" /> Add New</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
+                              <X className="h-4 w-4" />
+                              <span className="sr-only">Close</span>
+                            </DialogClose>
+                            <DialogHeader><DialogTitle>Create New Agent</DialogTitle></DialogHeader>
+                            <Form {...newAgentForm}>
+                                <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="space-y-4">
+                                     <FormField name="name" control={newAgentForm.control} render={({ field }) => (
+                                        <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                     <FormField name="description" control={newAgentForm.control} render={({ field }) => (
+                                        <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                     <FormField name="purpose" control={newAgentForm.control} render={({ field }) => (
+                                        <FormItem><FormLabel>Purpose</FormLabel><FormControl><Textarea {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField name="model" control={newAgentForm.control} render={({ field }) => (
+                                      <FormItem><FormLabel>Model</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a model" /></SelectTrigger></FormControl><SelectContent><SelectItem value="GPT-4">GPT-4</SelectItem><SelectItem value="Gemini 1.5">Gemini 1.5</SelectItem><SelectItem value="Claude 3">Claude 3</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField name="category" control={newAgentForm.control} render={({ field }) => (
+                                      <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Coding">Coding</SelectItem><SelectItem value="Analysis">Analysis</SelectItem><SelectItem value="Creative">Creative</SelectItem><SelectItem value="Productivity">Productivity</SelectItem><SelectItem value="Research">Research</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                                    )} />
+                                    <DialogFooter><Button type="submit" className="bg-black text-white">Create Agent</Button></DialogFooter>
+                                </form>
+                            </Form>
+                        </DialogContent>
+                    </Dialog>
+                </div>
+            </header>
+            
+            <div className="flex-1 overflow-y-auto">
+                <AnimatePresence>
+                    {pinnedAgents.length > 0 && (
+                        <motion.div
+                            key="pinned-section"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="mb-8"
+                        >
+                            <h2 className="font-bold text-sm uppercase text-black/60 mb-2">Pinned</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {pinnedAgents.map(agent => (
+                                    <AgentCard key={agent.id} agent={agent} onUpdate={handleAgentUpdate} />
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                    {unpinnedAgents.length > 0 && (
+                         <motion.div
+                            key="all-agents-section"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                         >
+                            <h2 className="font-bold text-sm uppercase text-black/60 mb-2">All Agents</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                               {unpinnedAgents.map(agent => (
+                                    <AgentCard key={agent.id} agent={agent} onUpdate={handleAgentUpdate} />
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+                 {filteredAgents.length === 0 && (
+                    <div className="text-center py-16 text-black/60">
+                        <p>No agents found.</p>
+                        <p className="text-sm">Try adjusting your search or filter.</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
 
 
 export default function ChatUI({
@@ -140,6 +549,8 @@ export default function ChatUI({
   const isMobile = useIsMobile();
   const [isSidebarOpen, setSidebarOpen] = React.useState(false);
   const { toast } = useToast();
+  const [activeView, setActiveView] = React.useState('chat');
+  const [agents, setAgents] = React.useState<Agent[]>(allAgents);
 
   const bugReportForm = useForm<BugReportFormValues>({
     resolver: zodResolver(bugReportSchema),
@@ -183,10 +594,18 @@ export default function ChatUI({
 
       <nav className="mt-6 flex flex-col gap-2">
         <Button
-          variant={'default'}
+          variant={activeView === 'chat' ? 'default' : 'ghost'}
+          onClick={() => setActiveView('chat')}
           className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[variant=default]:bg-black data-[variant=default]:text-white"
         >
           <MessageCircle className="mr-3" /> Chat
+        </Button>
+        <Button
+          variant={activeView === 'agents' ? 'default' : 'ghost'}
+          onClick={() => setActiveView('agents')}
+          className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[variant=default]:bg-black data-[variant=default]:text-white"
+        >
+          <Sparkles className="mr-3" /> Agents
         </Button>
         <Button
           variant="ghost"
@@ -424,21 +843,33 @@ export default function ChatUI({
 
         <div className="flex flex-1 flex-col">
             <AnimatePresence mode="wait">
-              <motion.div
-                key={'chat'}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.2 }}
-                className="h-full flex flex-col"
-              >
-                <ChatView />
-              </motion.div>
+              {activeView === 'chat' && (
+                <motion.div
+                    key="chat"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.2 }}
+                    className="h-full flex flex-col"
+                >
+                    <ChatView />
+                </motion.div>
+              )}
+               {activeView === 'agents' && (
+                <motion.div
+                    key="agents"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.2 }}
+                    className="h-full flex flex-col"
+                >
+                    <AgentsView agents={agents} setAgents={setAgents} />
+                </motion.div>
+              )}
             </AnimatePresence>
         </div>
       </div>
     </>
   );
 }
-
-    
