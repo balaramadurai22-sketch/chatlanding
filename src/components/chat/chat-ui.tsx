@@ -324,38 +324,48 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                     <X className="h-4 w-4" />
                     <span className="sr-only">Close</span>
                 </DialogClose>
-                <DialogHeader>
-                    <div className="flex items-center gap-4">
-                        <Image src={agent.creator.imageUrl} alt={agent.creator.name} width={64} height={64} className="rounded-full border-2 border-black" />
-                        <div>
-                            <DialogTitle className="text-2xl font-bold">{agent.name}</DialogTitle>
-                             <div className="text-sm text-black/60">by {agent.creator.name}</div>
-                             <div className="flex gap-3 mt-2">
-                                {agent.creator.social.twitter && <a href={agent.creator.social.twitter} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Twitter size={16} /></a>}
-                                {agent.creator.social.github && <a href={agent.creator.social.github} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Github size={16} /></a>}
-                                {agent.creator.social.linkedin && <a href={agent.creator.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Linkedin size={16} /></a>}
-                             </div>
-                        </div>
-                    </div>
-                </DialogHeader>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4">
-                    <div className="md:col-span-2 space-y-4">
-                        <div>
-                            <h4 className="font-semibold">How it works</h4>
+                    <div className="md:col-span-2 flex flex-col gap-6">
+                        <div className="flex items-start gap-4">
+                            <div className="w-24 h-24 relative flex-shrink-0 border rounded-lg overflow-hidden">
+                                {getSymbolicVisual(agent.category)}
+                            </div>
+                            <div>
+                                <DialogTitle className="text-2xl font-bold">{agent.name}</DialogTitle>
+                                <div className="text-sm text-black/60">by {agent.creator.name}</div>
+                                <div className="flex gap-3 mt-2">
+                                    {agent.creator.social.twitter && <a href={agent.creator.social.twitter} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Twitter size={16} /></a>}
+                                    {agent.creator.social.github && <a href={agent.creator.social.github} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Github size={16} /></a>}
+                                    {agent.creator.social.linkedin && <a href={agent.creator.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Linkedin size={16} /></a>}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-4 border rounded-lg">
+                            <h4 className="font-semibold mb-2">How it works</h4>
                             <p className="text-sm text-black/80">{agent.description}</p>
                         </div>
-                         <div>
-                            <h4 className="font-semibold">Purpose</h4>
+                        <div className="p-4 border rounded-lg">
+                            <h4 className="font-semibold mb-2">Purpose / Task</h4>
                             <p className="text-sm text-black/80">{agent.purpose}</p>
                         </div>
-                        <div className="flex gap-4 text-sm">
-                            <div><span className="font-semibold">Model:</span> {agent.model}</div>
-                            <div><span className="font-semibold">Category:</span> {agent.category}</div>
+                         <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="p-3 border rounded-lg"><span className="font-semibold">Model:</span> {agent.model}</div>
+                            <div className="p-3 border rounded-lg"><span className="font-semibold">Category:</span> {agent.category}</div>
                         </div>
                     </div>
-                    <div className="space-y-4">
-                        <div className="p-4 border border-black rounded-lg">
-                           <h4 className="font-semibold mb-2">Donate to Creator</h4>
+                     <div className="flex flex-col gap-4">
+                        <div className="p-4 border rounded-lg flex justify-around text-center">
+                            <div>
+                                <div className="font-bold text-lg">{(agent.peopleUsed/1000).toFixed(1)}k</div>
+                                <div className="text-xs text-black/60">Users</div>
+                            </div>
+                             <div>
+                                <div className="font-bold text-lg">{(agent.likes/1000).toFixed(1)}k</div>
+                                <div className="text-xs text-black/60">Likes</div>
+                            </div>
+                        </div>
+                        <div className="p-4 border rounded-lg">
+                           <h4 className="font-semibold mb-2">Support the Creator</h4>
                              <Form {...donationForm}>
                                 <form onSubmit={donationForm.handleSubmit(onDonationSubmit)} className="space-y-2">
                                     <FormField name="amount" control={donationForm.control} render={({ field }) => (
@@ -372,16 +382,16 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                                 </form>
                              </Form>
                         </div>
-                        <div className="p-4 border border-black rounded-lg flex justify-around text-center">
-                            <div>
-                                <div className="font-bold text-lg">{(agent.peopleUsed/1000).toFixed(1)}k</div>
-                                <div className="text-xs text-black/60">Users</div>
+                         { (agent.creator.social.paypal || agent.creator.social.upi || agent.creator.social.btc) &&
+                             <div className="p-4 border rounded-lg space-y-2">
+                                <h4 className="font-semibold text-xs text-center text-black/60">Other methods</h4>
+                                <div className="flex justify-center gap-4">
+                                     {agent.creator.social.paypal && <Button variant="outline" size="icon" className="border-black"><DollarSign size={16} /></Button>}
+                                     {agent.creator.social.upi && <Button variant="outline" size="icon" className="border-black">UPI</Button>}
+                                     {agent.creator.social.btc && <Button variant="outline" size="icon" className="border-black"><Bitcoin size={16}/></Button>}
+                                </div>
                             </div>
-                             <div>
-                                <div className="font-bold text-lg">{(agent.likes/1000).toFixed(1)}k</div>
-                                <div className="text-xs text-black/60">Likes</div>
-                            </div>
-                        </div>
+                         }
                     </div>
                 </div>
             </DialogContent>
@@ -500,12 +510,6 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                             <FormField name="category" control={newAgentForm.control} render={({ field }) => (
                                             <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Coding">Coding</SelectItem><SelectItem value="Analysis">Analysis</SelectItem><SelectItem value="Creative">Creative</SelectItem><SelectItem value="Productivity">Productivity</SelectItem><SelectItem value="Research">Research</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                                             )} />
-                                        </div>
-                                        <div className="space-y-4 p-4 border rounded-lg">
-                                             <h3 className="font-bold text-sm uppercase text-black/60">Creator Information</h3>
-                                             <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Creator Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
                                             <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
                                                 <FormItem><FormLabel>Allowed Tools / Access</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
                                             )} />
@@ -513,29 +517,34 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                                 <FormItem><FormLabel>Memory / Context Options</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormItem>
                                             )} />
                                         </div>
-                                         <div className="space-y-4 p-4 border rounded-lg">
-                                             <h3 className="font-bold text-sm uppercase text-black/60">Creator Socials</h3>
-                                            <FormField name="linkedin" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="github" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="twitter" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                        </div>
-                                        <div className="space-y-4 p-4 border rounded-lg">
-                                             <h3 className="font-bold text-sm uppercase text-black/60">Support the Creator (Optional)</h3>
-                                             <FormField name="paypal" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>PayPal Email</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                             <FormField name="upi" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>UPI ID (for India)</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                             <FormField name="btc" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>BTC Wallet Address</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
+                                        <div className="space-y-4">
+                                            <div className="p-4 border rounded-lg space-y-4">
+                                                 <h3 className="font-bold text-sm uppercase text-black/60">Creator Information</h3>
+                                                 <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
+                                                    <FormItem><FormLabel>Creator Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                                )} />
+                                                <FormField name="linkedin" control={newAgentForm.control} render={({ field }) => (
+                                                    <FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                                )} />
+                                                <FormField name="github" control={newAgentForm.control} render={({ field }) => (
+                                                    <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                                )} />
+                                                <FormField name="twitter" control={newAgentForm.control} render={({ field }) => (
+                                                    <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                                )} />
+                                            </div>
+                                             <div className="p-4 border rounded-lg space-y-4">
+                                                 <h3 className="font-bold text-sm uppercase text-black/60">Support the Creator (Optional)</h3>
+                                                 <FormField name="paypal" control={newAgentForm.control} render={({ field }) => (
+                                                    <FormItem><FormLabel>PayPal Email</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                                )} />
+                                                 <FormField name="upi" control={newAgentForm.control} render={({ field }) => (
+                                                    <FormItem><FormLabel>UPI ID (for India)</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                                )} />
+                                                 <FormField name="btc" control={newAgentForm.control} render={({ field }) => (
+                                                    <FormItem><FormLabel>BTC Wallet Address</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                                )} />
+                                            </div>
                                         </div>
                                      </div>
                                     <DialogFooter><Button type="submit" className="bg-black text-white">Create Agent</Button></DialogFooter>
