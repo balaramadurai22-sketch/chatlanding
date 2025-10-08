@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -273,6 +274,10 @@ const AgentsView = ({
       {/* Add New Agent Modal */}
       <Dialog open={openAddAgentModal} onOpenChange={setOpenAddAgentModal}>
         <DialogContent>
+          <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
           <DialogHeader>
             <DialogTitle>Add New Agent</DialogTitle>
             <DialogDescription>Create a new agent to automate your tasks.</DialogDescription>
@@ -377,7 +382,7 @@ const AgentCard = ({ agent, onToggle, onPin, onCardClick }: { agent: Agent; onTo
             case 'Creative':
                  return <div className={cn(baseClass, "bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2210%22%20cy%3D%2210%22%20r%3D%2210%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_10px]")}></div>;
             default:
-                return <div className={cn(baseClass, "bg-[url('data:image/svg+xml,%3Csvg%20width%3D%226%22%20height%3D%226%22%20viewBox%3D%220%200%206%206%22%20xmlns%3D%22http%3A%2F%2Fwww.w.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%23000000%22%20fill-opacity%3D%221%22%20fill-rule%3D%22evenodd%22%3E%3Cpath%20d%3D%22M5%200h1L0%206V5zM6%205v1H5z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')]")}></div>;
+                return <div className={cn(baseClass, "bg-[url('data:image/svg+xml,%3Csvg%20width%3D%226%22%20height%3D%226%22%20viewBox%3D%220%200%206%206%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%23000000%22%20fill-opacity%3D%221%22%20fill-rule%3D%22evenodd%22%3E%3Cpath%20d%3D%22M5%200h1L0%206V5zM6%205v1H5z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')]")}></div>;
         }
     };
     
