@@ -90,31 +90,6 @@ interface ChatUIProps {
   setMessages: (messages: ChatMessage[]) => void;
 }
 
-const bugReportSchema = z.object({
-  title: z.string().min(1, 'Title is required.'),
-  description: z.string().min(10, 'Description must be at least 10 characters.'),
-  stepsToReproduce: z.string().min(10, 'Steps to reproduce are required.'),
-  severity: z.enum(['Low', 'Medium', 'High']),
-});
-
-type BugReportFormValues = z.infer<typeof bugReportSchema>;
-
-const featureRequestSchema = z.object({
-  featureTitle: z.string().min(1, 'Title is required.'),
-  description: z.string().min(10, 'Description must be at least 10 characters.'),
-  priority: z.enum(['Low', 'Medium', 'High']),
-});
-
-type FeatureRequestFormValues = z.infer<typeof featureRequestSchema>;
-
-const newAgentSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters."),
-  description: z.string().min(10, "Description must be at least 10 characters."),
-  model: z.string().min(1, "Please select a model."),
-});
-
-type NewAgentFormValues = z.infer<typeof newAgentSchema>;
-
 const TypingIndicator = () => (
   <div className="flex items-center space-x-1 p-3">
     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-black delay-0"></span>
@@ -146,61 +121,12 @@ export default function ChatUI({
 }: ChatUIProps) {
   const isMobile = useIsMobile();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [isBugReportOpen, setIsBugReportOpen] = useState(false);
-  const [isFeatureRequestOpen, setIsFeatureRequestOpen] = useState(false);
-  const [isNewAgentOpen, setIsNewAgentOpen] = useState(false);
   const [activeView, setActiveView] = useState<'chat' | 'agents'>('chat');
   const [agents, setAgents] = useState<Agent[]>(initialAgents);
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
 
   const { toast } = useToast();
-
-  const bugReportForm = useForm<BugReportFormValues>({
-    resolver: zodResolver(bugReportSchema),
-    defaultValues: { severity: 'Medium' },
-  });
-  const featureRequestForm = useForm<FeatureRequestFormValues>({
-    resolver: zodResolver(featureRequestSchema),
-    defaultValues: { priority: 'Medium' },
-  });
-  const newAgentForm = useForm<NewAgentFormValues>({
-    resolver: zodResolver(newAgentSchema),
-  });
-
-  const onBugSubmit: SubmitHandler<BugReportFormValues> = async (data) => {
-    console.log('Bug Report:', data);
-    await new Promise((res) => setTimeout(res, 1000));
-    toast({ title: 'Bug Report Submitted!', description: 'Thank you for your feedback.' });
-    bugReportForm.reset();
-    setIsBugReportOpen(false);
-  };
-
-  const onFeatureSubmit: SubmitHandler<FeatureRequestFormValues> = async (data) => {
-    console.log('Feature Request:', data);
-    await new Promise((res) => setTimeout(res, 1000));
-    toast({ title: 'Feature Request Submitted!', description: 'Thank you for your suggestion.' });
-    featureRequestForm.reset();
-    setIsFeatureRequestOpen(false);
-  };
-  
-  const onNewAgentSubmit: SubmitHandler<NewAgentFormValues> = async (data) => {
-    const newAgent: Agent = {
-      id: `agent-${String(agents.length + 1).padStart(3, '0')}`,
-      name: data.name,
-      description: data.description,
-      model: data.model,
-      owner: 'current-user',
-      status: 'Draft',
-      tags: ['New'],
-      isActivated: false,
-      pinned: false,
-    };
-    setAgents(prev => [newAgent, ...prev]);
-    toast({ title: 'Agent Created!', description: `${data.name} has been added.` });
-    newAgentForm.reset();
-    setIsNewAgentOpen(false);
-  };
 
   const toggleAgentActivation = (agentId: string) => {
     setAgents(prev => prev.map(agent => 
@@ -209,9 +135,17 @@ export default function ChatUI({
   };
 
   const toggleAgentPin = (agentId: string) => {
-    setAgents(prev => prev.map(agent => 
-      agent.id === agentId ? { ...agent, pinned: !agent.pinned } : agent
-    ));
+    setAgents(prev => {
+        const agent = prev.find(a => a.id === agentId);
+        if (!agent) return prev;
+        const otherAgents = prev.filter(a => a.id !== agentId);
+        const newAgent = { ...agent, pinned: !agent.pinned };
+        if (newAgent.pinned) {
+            return [newAgent, ...otherAgents];
+        } else {
+            return [...otherAgents, newAgent];
+        }
+    });
   }
   
   const filteredAgents = agents.filter(agent => {
@@ -313,22 +247,6 @@ export default function ChatUI({
       </div>
 
       <div className="mt-auto flex flex-col gap-2 pt-4 border-t border-black">
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-base font-bold border-black hover:bg-black hover:text-white"
-          onClick={() => setIsBugReportOpen(true)}
-        >
-          <Bug className="mr-3" /> Bug Report
-        </Button>
-
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-base font-bold border-black hover:bg-black hover:text-white"
-          onClick={() => setIsFeatureRequestOpen(true)}
-        >
-          <Lightbulb className="mr-3" /> Feature Request
-        </Button>
-
         <div className="bg-white p-3 rounded-lg shadow-md border border-gray-200 mt-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -549,9 +467,6 @@ export default function ChatUI({
     <main className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Agents</h1>
-        <Button variant="outline" className="border-black bg-black text-white hover:bg-white hover:text-black" onClick={() => setIsNewAgentOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Add New Agent
-        </Button>
       </div>
       <div className="mb-6 flex flex-col md:flex-row gap-4">
         <div className="relative w-full md:w-1/2 lg:w-1/3">
@@ -654,300 +569,8 @@ export default function ChatUI({
             {activeView === 'chat' ? <ChatView /> : <AgentsView />}
         </div>
       </div>
-
-      {/* Modals */}
-      <Dialog open={isBugReportOpen} onOpenChange={setIsBugReportOpen}>
-        <DialogContent
-          className="bg-white text-black border-black"
-        >
-           <DialogClose asChild>
-            <button className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </button>
-           </DialogClose>
-          <DialogHeader>
-            <DialogTitle className="font-bold text-black">Submit a Bug Report</DialogTitle>
-            <DialogDescription className="text-black/80">
-              Help us improve by reporting any issues you encounter.
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...bugReportForm}>
-            <form onSubmit={bugReportForm.handleSubmit(onBugSubmit)} className="space-y-4">
-              <FormField
-                control={bugReportForm.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-black font-bold">Title</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="border-black bg-white text-black placeholder:text-black/50"
-                        placeholder="e.g., UI glitch on chat page"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={bugReportForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-black font-bold">Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        className="border-black bg-white text-black placeholder:text-black/50"
-                        placeholder="Describe the bug in detail..."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={bugReportForm.control}
-                name="stepsToReproduce"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-black font-bold">Steps to Reproduce</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        className="border-black bg-white text-black placeholder:text-black/50"
-                        placeholder="1. Go to '...'\n2. Click on '...'\n3. See error"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={bugReportForm.control}
-                name="severity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-black font-bold">Severity</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="border-black bg-white text-black">
-                          <SelectValue placeholder="Select severity" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="border-black bg-white text-black">
-                        <SelectItem value="Low">Low</SelectItem>
-                        <SelectItem value="Medium">Medium</SelectItem>
-                        <SelectItem value="High">High</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <Button
-                  type="submit"
-                  variant="outline"
-                  className="w-full bg-white text-black border-black hover:bg-black hover:text-white"
-                  disabled={bugReportForm.formState.isSubmitting}
-                >
-                  {bugReportForm.formState.isSubmitting ? (
-                    <Loader className="mr-2 h-4 w-4 animate-spin" />
-                  ) : null}{' '}
-                  Submit
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isFeatureRequestOpen} onOpenChange={setIsFeatureRequestOpen}>
-        <DialogContent
-          className="bg-white text-black border-black"
-        >
-          <DialogClose asChild>
-            <button className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </button>
-          </DialogClose>
-          <DialogHeader>
-            <DialogTitle className="font-bold text-black">Request a Feature</DialogTitle>
-            <DialogDescription className="text-black/80">
-              Have an idea for a new feature? Let us know!
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...featureRequestForm}>
-            <form onSubmit={featureRequestForm.handleSubmit(onFeatureSubmit)} className="space-y-4">
-              <FormField
-                control={featureRequestForm.control}
-                name="featureTitle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-black font-bold">Feature Title</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="border-black bg-white text-black placeholder:text-black/50"
-                        placeholder="e.g., Add dark mode"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={featureRequestForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-black font-bold">Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        className="border-black bg-white text-black placeholder:text-black/50"
-                        placeholder="Describe the feature and why it would be useful..."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={featureRequestForm.control}
-                name="priority"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-black font-bold">Priority</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="border-black bg-white text-black">
-                          <SelectValue placeholder="Select priority" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="border-black bg-white text-black">
-                        <SelectItem value="Low">Low</SelectItem>
-                        <SelectItem value="Medium">Medium</SelectItem>
-                        <SelectItem value="High">High</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <Button
-                  type="submit"
-                  variant="outline"
-                  className="w-full bg-white text-black border-black hover:bg-black hover:text-white"
-                  disabled={featureRequestForm.formState.isSubmitting}
-                >
-                  {featureRequestForm.formState.isSubmitting ? (
-                    <Loader className="mr-2 h-4 w-4 animate-spin" />
-                  ) : null}{' '}
-                  Submit
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-      
-      <Dialog open={isNewAgentOpen} onOpenChange={setIsNewAgentOpen}>
-        <DialogContent
-          className="bg-white text-black border-black"
-        >
-          <DialogClose asChild>
-           <button className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </button>
-          </DialogClose>
-          <DialogHeader>
-            <DialogTitle className="font-bold text-black">Create a New Agent</DialogTitle>
-            <DialogDescription className="text-black/80">
-              Configure and launch a new autonomous agent.
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...newAgentForm}>
-            <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="space-y-4">
-              <FormField
-                control={newAgentForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-black font-bold">Agent Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="border-black bg-white text-black placeholder:text-black/50"
-                        placeholder="e.g., Daily Report Generator"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={newAgentForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-black font-bold">Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        className="border-black bg-white text-black placeholder:text-black/50"
-                        placeholder="Describe what this agent does..."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={newAgentForm.control}
-                name="model"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-black font-bold">Model</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="border-black bg-white text-black">
-                          <SelectValue placeholder="Select a model" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="border-black bg-white text-black">
-                        <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
-                        <SelectItem value="claude-3-sonnet">Claude 3 Sonnet</SelectItem>
-                        <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <Button
-                  type="submit"
-                  variant="outline"
-                  className="w-full bg-white text-black border-black hover:bg-black hover:text-white"
-                  disabled={newAgentForm.formState.isSubmitting}
-                >
-                  {newAgentForm.formState.isSubmitting ? (
-                    <Loader className="mr-2 h-4 w-4 animate-spin" />
-                  ) : null}{' '}
-                  Create Agent
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
+
+    
