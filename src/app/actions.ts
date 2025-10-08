@@ -24,4 +24,3 @@ export async function continueChat(history: ChatMessage[], selectedAgents: Agent
     });
     return stream;
 }
-

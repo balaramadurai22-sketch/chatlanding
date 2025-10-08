@@ -77,4 +77,3 @@ export async function aiChat(input: AIChatInput): Promise<ReadableStream<string>
     
     return transformStream.readable;
 }
-

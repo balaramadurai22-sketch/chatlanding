@@ -155,11 +155,6 @@ const newAgentSchema = z.object({
 });
 type NewAgentFormValues = z.infer<typeof newAgentSchema>;
 
-const donationSchema = z.object({
-    amount: z.number().positive("Amount must be positive."),
-});
-type DonationFormValues = z.infer<typeof donationSchema>;
-
 const getCategoryIcon = (category: Agent['category']) => {
     switch (category) {
         case 'Coding': return <Code className="w-4 h-4" />;
@@ -324,14 +319,10 @@ const TypingEffect = ({ text }: { text: string }) => {
   );
 };
 
-
 const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent) => void }) => {
     const [isPinned, setIsPinned] = React.useState(agent.pinned);
     const [isActive, setIsActive] = React.useState(agent.active);
-    const [currency, setCurrency] = React.useState('USD');
-
-    const donationForm = useForm<DonationFormValues>({ resolver: zodResolver(donationSchema) });
-
+    
     const handlePinToggle = (e: React.MouseEvent) => {
         e.stopPropagation();
         const newPinned = !isPinned;
@@ -344,42 +335,6 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
       const newActive = !isActive;
       setIsActive(newActive);
       onUpdate({ ...agent, active: newActive });
-    }
-
-    const onDonationSubmit: SubmitHandler<DonationFormValues> = (data) => {
-        console.log(`Donating ${data.amount} ${currency} to ${agent.creator.name}`);
-        // Implement actual donation logic here
-    };
-
-    const renderPaymentOptions = () => {
-        switch (currency) {
-            case 'USD':
-                return (
-                    <>
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white"><Bitcoin className="mr-2 h-4 w-4" /> PayPal</Button>
-                        <Button className="w-full bg-black hover:bg-gray-800 text-white"><Apple className="mr-2 h-4 w-4" /> Apple Pay</Button>
-                        <Button className="w-full bg-gray-200 hover:bg-gray-300 text-black"><CreditCard className="mr-2 h-4 w-4" /> Cards</Button>
-                    </>
-                );
-            case 'INR':
-                 return (
-                    <>
-                        <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white">GPay</Button>
-                        <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">PhonePe</Button>
-                        <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">UPI</Button>
-                    </>
-                );
-            case 'Crypto':
-                 return (
-                    <>
-                        <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black">Binance</Button>
-                        <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white">Trust Wallet</Button>
-                        <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white">Phantom</Button>
-                    </>
-                );
-            default:
-                return null;
-        }
     }
 
     return (
@@ -431,75 +386,30 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                     </div>
                 </motion.div>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8 p-8">
-                <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
-                </DialogClose>
-
-                <div className="md:col-span-2 space-y-6">
-                    <div className="flex items-center gap-4">
-                        <Image src={agent.creator.imageUrl} alt={agent.creator.name} width={80} height={80} className="rounded-full border-2 border-black" />
-                        <div>
-                            <DialogTitle className="text-3xl font-bold">{agent.name}</DialogTitle>
-                            <div className="text-md text-black/60">by {agent.creator.name}</div>
-                             <div className="flex gap-3 mt-2">
-                                {agent.creator.social.twitter && <a href={agent.creator.social.twitter} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Twitter size={16} /></a>}
-                                {agent.creator.social.github && <a href={agent.creator.social.github} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Github size={16} /></a>}
-                                {agent.creator.social.linkedin && <a href={agent.creator.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Linkedin size={16} /></a>}
-                            </div>
-                        </div>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                <DialogTitle>{agent.name}</DialogTitle>
+                <DialogDescription>
+                    {agent.description}
+                </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">
+                        Model
+                        </Label>
+                        <Input id="name" value={agent.model} className="col-span-3" readOnly />
                     </div>
-                    
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                        <h4 className="font-semibold mb-2 text-sm uppercase text-gray-500">Description</h4>
-                        <p className="text-sm text-black/80">{agent.description}</p>
-                    </div>
-
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                        <h4 className="font-semibold mb-2 text-sm uppercase text-gray-500">Purpose / Task</h4>
-                        <p className="text-sm text-black/80">{agent.purpose}</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div className="p-3 border rounded-lg bg-gray-50"><span className="font-semibold">Model:</span> {agent.model}</div>
-                        <div className="p-3 border rounded-lg bg-gray-50"><span className="font-semibold">Category:</span> {agent.category}</div>
-                        <div className="p-3 border rounded-lg bg-gray-50"><span className="font-semibold">Tools:</span> {agent.tools}</div>
-                        <div className="p-3 border rounded-lg bg-gray-50"><span className="font-semibold">Memory:</span> {agent.memory}</div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="username" className="text-right">
+                        Category
+                        </Label>
+                        <Input id="username" value={agent.category} className="col-span-3" readOnly />
                     </div>
                 </div>
-
-                <div className="space-y-6 p-6 border rounded-lg bg-gray-50">
-                    <h3 className="font-bold text-lg text-center">Support the Creator</h3>
-                     <Form {...donationForm}>
-                        <form onSubmit={donationForm.handleSubmit(onDonationSubmit)} className="space-y-4">
-                            <Tabs value={currency} onValueChange={setCurrency} className="w-full">
-                                <TabsList className="grid w-full grid-cols-3">
-                                    <TabsTrigger value="USD">USD</TabsTrigger>
-                                    <TabsTrigger value="INR">INR</TabsTrigger>
-                                    <TabsTrigger value="Crypto">Crypto</TabsTrigger>
-                                </TabsList>
-                            </Tabs>
-                            
-                            <FormField name="amount" control={donationForm.control} render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Amount</FormLabel>
-                                    <FormControl>
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{currency}</span>
-                                            <Input {...field} type="number" placeholder="10" className="pl-12 border-black" onChange={e => field.onChange(parseFloat(e.target.value))} />
-                                        </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                             )} />
-                             
-                             <div className="space-y-2">
-                                {renderPaymentOptions()}
-                             </div>
-                        </form>
-                    </Form>
-                </div>
+                <DialogFooter>
+                <Button type="submit">Close</Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
@@ -592,28 +502,35 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                               <X className="h-4 w-4" />
                               <span className="sr-only">Close</span>
                             </DialogClose>
-                            <DialogHeader><DialogTitle className="text-2xl font-bold text-center my-4">Create a New Agent</DialogTitle></DialogHeader>
+                            <DialogHeader>
+                                <DialogTitle className="text-2xl font-bold">Create a New Agent</DialogTitle>
+                                <DialogDescription>Fill out the details to create a new AI agent.</DialogDescription>
+                            </DialogHeader>
                             <Form {...newAgentForm}>
-                                <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                                        
+                                <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                    
+                                    <div className="space-y-4 p-4 border rounded-lg">
+                                        <h3 className="font-bold text-sm uppercase text-black/60">Agent Information</h3>
+                                        <FormField name="name" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="description" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="purpose" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Task / Role</FormLabel><FormControl><Textarea {...field} className="border-black" placeholder="What is the primary task of this agent?" /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                         <FormField name="model" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Model</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a model" /></SelectTrigger></FormControl><SelectContent><SelectItem value="GPT-4">GPT-4</SelectItem><SelectItem value="Gemini 1.5">Gemini 1.5</SelectItem><SelectItem value="Claude 3">Claude 3</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="category" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Coding">Coding</SelectItem><SelectItem value="Analysis">Analysis</SelectItem><SelectItem value="Creative">Creative</SelectItem><SelectItem value="Productivity">Productivity</SelectItem><SelectItem value="Research">Research</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                                        )} />
+                                    </div>
+
+                                    <div className="space-y-6">
                                         <div className="space-y-4 p-4 border rounded-lg">
-                                            <h3 className="font-bold text-sm uppercase text-black/60">Agent Information</h3>
-                                            <FormField name="name" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="description" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="purpose" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Task / Role</FormLabel><FormControl><Textarea {...field} className="border-black" placeholder="What is the primary task of this agent?" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                             <FormField name="model" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Model</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a model" /></SelectTrigger></FormControl><SelectContent><SelectItem value="GPT-4">GPT-4</SelectItem><SelectItem value="Gemini 1.5">Gemini 1.5</SelectItem><SelectItem value="Claude 3">Claude 3</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="category" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Coding">Coding</SelectItem><SelectItem value="Analysis">Analysis</SelectItem><SelectItem value="Creative">Creative</SelectItem><SelectItem value="Productivity">Productivity</SelectItem><SelectItem value="Research">Research</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                                            )} />
+                                            <h3 className="font-bold text-sm uppercase text-black/60">Advanced Options</h3>
                                             <FormField name="command" control={newAgentForm.control} render={({ field }) => (
                                                 <FormItem><FormLabel>Command (Optional)</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. /analyze" /></FormControl><FormMessage /></FormItem>
                                             )} />
@@ -624,26 +541,24 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                                 <FormItem><FormLabel>Memory / Context Options</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormItem>
                                             )} />
                                         </div>
-
-                                        <div className="space-y-6">
-                                            <div className="space-y-4 p-4 border rounded-lg">
-                                                <h3 className="font-bold text-sm uppercase text-black/60">Creator Information</h3>
-                                                <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
-                                                    <FormItem><FormLabel>Creator Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                                )} />
-                                                <FormField name="linkedin" control={newAgentForm.control} render={({ field }) => (
-                                                    <FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                                )} />
-                                                <FormField name="github" control={newAgentForm.control} render={({ field }) => (
-                                                    <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                                )} />
-                                                <FormField name="twitter" control={newAgentForm.control} render={({ field }) => (
-                                                    <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                                )} />
-                                            </div>
+                                        <div className="space-y-4 p-4 border rounded-lg">
+                                            <h3 className="font-bold text-sm uppercase text-black/60">Creator Information</h3>
+                                            <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>Creator Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                            <FormField name="linkedin" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                            <FormField name="github" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                            <FormField name="twitter" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                            )} />
                                         </div>
-                                     </div>
-                                    <DialogFooter><Button type="submit" className="bg-black text-white w-full">Create Agent</Button></DialogFooter>
+                                    </div>
+
+                                    <div className="md:col-span-2"><Button type="submit" className="bg-black text-white w-full">Create Agent</Button></div>
                                 </form>
                             </Form>
                         </DialogContent>
@@ -1253,4 +1168,3 @@ export default function ChatUI({
     </>
   );
 }
-
