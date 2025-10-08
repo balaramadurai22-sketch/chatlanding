@@ -158,10 +158,15 @@ const newAgentSchema = z.object({
 });
 type NewAgentFormValues = z.infer<typeof newAgentSchema>;
 
-const donationSchema = z.object({
-  amount: z.coerce.number().min(1, "Please enter an amount greater than 0."),
-});
-type DonationFormValues = z.infer<typeof donationSchema>;
+const getCategoryIcon = (category: Agent['category']) => {
+    switch (category) {
+        case 'Coding': return <Code className="w-4 h-4" />;
+        case 'Analysis': return <LineChart className="w-4 h-4" />;
+        case 'Creative': return <Palette className="w-4 h-4" />;
+        case 'Research': return <Lightbulb className="w-4 h-4" />;
+        default: return <Sparkles className="w-4 h-4" />;
+    }
+}
 
 
 const getSymbolicVisual = (category: Agent['category']) => {
@@ -321,8 +326,6 @@ const TypingEffect = ({ text }: { text: string }) => {
 const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent) => void }) => {
     const [isPinned, setIsPinned] = React.useState(agent.pinned);
     const [isActive, setIsActive] = React.useState(agent.active);
-    const donationForm = useForm<DonationFormValues>({ resolver: zodResolver(donationSchema) });
-    const [currency, setCurrency] = React.useState('usd');
 
     const handlePinToggle = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -337,43 +340,6 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
       setIsActive(newActive);
       onUpdate({ ...agent, active: newActive });
     }
-
-    const onDonationSubmit: SubmitHandler<DonationFormValues> = (data) => {
-      console.log(`Donating amount: ${data.amount} in ${currency} to ${agent.creator.name}`);
-      donationForm.reset();
-    };
-
-    const renderPaymentOptions = () => {
-        switch (currency) {
-            case 'usd':
-                return (
-                    <div className="flex flex-col gap-2">
-                        <Button variant="outline" className="w-full border-black justify-start"><DollarSign size={16} className="mr-2" /> PayPal</Button>
-                        <Button variant="outline" className="w-full border-black justify-start"><Apple size={16} className="mr-2" /> Apple Pay</Button>
-                        <Button variant="outline" className="w-full border-black justify-start"><CreditCard size={16} className="mr-2" /> Card</Button>
-                    </div>
-                );
-            case 'inr':
-                 return (
-                    <div className="flex flex-col gap-2">
-                        <Button variant="outline" className="w-full border-black justify-start">GPay</Button>
-                        <Button variant="outline" className="w-full border-black justify-start">PhonePe</Button>
-                        <Button variant="outline" className="w-full border-black justify-start">UPI</Button>
-                    </div>
-                );
-            case 'crypto':
-                return (
-                    <div className="flex flex-col gap-2">
-                        <Button variant="outline" className="w-full border-black justify-start"><Bitcoin size={16} className="mr-2" /> Binance Pay</Button>
-                        <Button variant="outline" className="w-full border-black justify-start">Trust Wallet</Button>
-                        <Button variant="outline" className="w-full border-black justify-start">Phantom</Button>
-                    </div>
-                );
-            default:
-                return null;
-        }
-    };
-
 
     return (
         <Dialog>
@@ -458,39 +424,6 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                         <div className="p-3 border rounded-lg bg-gray-50"><span className="font-semibold">Category:</span> {agent.category}</div>
                         <div className="p-3 border rounded-lg bg-gray-50"><span className="font-semibold">Tools:</span> {agent.tools}</div>
                         <div className="p-3 border rounded-lg bg-gray-50"><span className="font-semibold">Memory:</span> {agent.memory}</div>
-                    </div>
-
-                    <div className="flex flex-col gap-4">
-                        <div className="p-4 border rounded-lg">
-                            <h3 className="font-bold text-sm uppercase text-black/60 mb-4 text-center">Support the Creator</h3>
-                             <Form {...donationForm}>
-                                <form onSubmit={donationForm.handleSubmit(onDonationSubmit)} className="space-y-4">
-                                     <Tabs value={currency} onValueChange={setCurrency} className="w-full">
-                                        <TabsList className="grid w-full grid-cols-3">
-                                            <TabsTrigger value="usd">USD</TabsTrigger>
-                                            <TabsTrigger value="inr">INR</TabsTrigger>
-                                            <TabsTrigger value="crypto">Crypto</TabsTrigger>
-                                        </TabsList>
-                                    </Tabs>
-                                     <FormField name="amount" control={donationForm.control} render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Amount</FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <Input type="number" placeholder="Enter amount" {...field} className="border-black pl-8" />
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-black/60">{currency === 'usd' ? '$' : currency === 'inr' ? '₹' : '₿'}</span>
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )} />
-
-                                    <div className="space-y-2">
-                                        {renderPaymentOptions()}
-                                    </div>
-                                </form>
-                            </Form>
-                        </div>
                     </div>
                 </div>
             </DialogContent>
@@ -707,180 +640,214 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
 
 
 const AgentSelector = ({
-    agents,
-    selectedAgents,
-    setSelectedAgents,
-  }: {
-    agents: Agent[];
-    selectedAgents: Agent[];
-    setSelectedAgents: (agents: Agent[]) => void;
-  }) => {
-    const [isOpen, setIsOpen] = React.useState(false);
-    const [tempSelected, setTempSelected] = React.useState<Agent[]>(selectedAgents);
-    const [searchTerm, setSearchTerm] = React.useState('');
-    const { toast } = useToast();
-  
-    const enabledAgents = agents.filter((agent) => agent.active);
-  
-    const filteredEnabledAgents = enabledAgents.filter(
-      (agent) =>
-        agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        agent.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        agent.model.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  
-    const handleSelectAgent = (agent: Agent) => {
-      setTempSelected((prev) => {
-        const isSelected = prev.some((a) => a.id === agent.id);
-        if (isSelected) {
-          return prev.filter((a) => a.id !== agent.id);
-        } else {
-          if (prev.length >= 5) {
-            toast({
-              title: 'Agent limit reached',
-              description: 'You can select a maximum of 5 agents.',
-              variant: 'destructive',
-            });
-            return prev;
-          }
-          return [...prev, agent];
-        }
-      });
-    };
-  
-    const handleApply = () => {
-      setSelectedAgents(tempSelected);
-      setIsOpen(false);
-    };
-  
-    const handleCancel = () => {
-      setTempSelected(selectedAgents);
-      setIsOpen(false);
-    };
+  agents,
+  selectedAgents,
+  setSelectedAgents,
+}: {
+  agents: Agent[];
+  selectedAgents: Agent[];
+  setSelectedAgents: (agents: Agent[]) => void;
+}) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [tempSelected, setTempSelected] = React.useState<Agent[]>(selectedAgents);
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const { toast } = useToast();
 
-    const handleRemoveAgent = (agentId: string) => {
-        const newSelected = selectedAgents.filter(a => a.id !== agentId);
-        setSelectedAgents(newSelected);
-        setTempSelected(newSelected);
-    }
-  
+  const enabledAgents = agents.filter((agent) => agent.active);
+
+  const filteredEnabledAgents = enabledAgents.filter(
+    (agent) =>
+      agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agent.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agent.model.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleSelectAgent = (agent: Agent) => {
+    setTempSelected((prev) => {
+      const isSelected = prev.some((a) => a.id === agent.id);
+      if (isSelected) {
+        return prev.filter((a) => a.id !== agent.id);
+      } else {
+        if (prev.length >= 5) {
+          toast({
+            title: 'Agent limit reached',
+            description: 'You can select a maximum of 5 agents.',
+            variant: 'destructive',
+          });
+          return prev;
+        }
+        return [...prev, agent];
+      }
+    });
+  };
+
+  const handleApply = () => {
+    setSelectedAgents(tempSelected);
+    setIsOpen(false);
+  };
+
+  const handleCancel = () => {
+    setTempSelected(selectedAgents);
+    setIsOpen(false);
+  };
+
+  const handleRemoveAgent = (agentId: string) => {
+    const newSelected = selectedAgents.filter((a) => a.id !== agentId);
+    setSelectedAgents(newSelected);
+    setTempSelected(newSelected);
+  };
+
+  const AgentCapsule = ({ agent }: { agent: Agent }) => {
+    const isSelected = tempSelected.some((a) => a.id === agent.id);
     return (
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <div className="mx-auto w-full max-w-4xl rounded-lg border border-black/10 bg-white/50 p-3 shadow-sm backdrop-blur-sm">
+      <motion.div
+        layout
+        onClick={() => handleSelectAgent(agent)}
+        className={cn(
+          'relative aspect-square cursor-pointer rounded-2xl border p-4 text-center transition-all duration-300',
+          isSelected
+            ? 'border-cyan-400/50 bg-cyan-500/10 shadow-[0_0_15px_rgba(56,189,248,0.3)]'
+            : 'border-black/10 bg-white/50 hover:border-black/30 hover:scale-105'
+        )}
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        {isSelected && (
+          <motion.div
+            layoutId='selection-glow'
+            className="absolute -inset-px rounded-2xl border-2 border-cyan-400"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          />
+        )}
+        <div className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full border border-black/10 bg-white/50">
+          <AnimatePresence>
+            {isSelected && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+              >
+                <Check className="h-3 w-3 text-cyan-500" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        <div className="flex h-full flex-col items-center justify-center gap-2">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black/5 text-black/50">
+            {getCategoryIcon(agent.category)}
+          </div>
+          <p className="font-bold text-sm">{agent.name}</p>
+          <p className="text-xs text-black/60">{agent.model}</p>
+        </div>
+      </motion.div>
+    );
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <div className="mx-auto w-full max-w-4xl rounded-xl border border-black/10 bg-white/50 p-3 shadow-sm backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-                <BrainCircuit className="h-5 w-5 text-black/60" />
-                <span className="font-bold text-sm">Agents</span>
-                <DialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-xs" onClick={() => setTempSelected(selectedAgents)}>+ Select Agents</Button>
-                </DialogTrigger>
+              <BrainCircuit className="h-5 w-5 text-black/60" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto px-2 py-1 text-sm font-bold"
+                onClick={() => setTempSelected(selectedAgents)}
+              >
+                Select Agents
+              </Button>
             </div>
-            <div className="text-xs text-black/60">{selectedAgents.length}/5 Active</div>
+            <div className="text-xs font-medium text-black/60">{selectedAgents.length}/5 Active</div>
           </div>
           {selectedAgents.length > 0 && (
-            <div className="mt-2">
-                <AnimatePresence>
-                    <motion.div layout className="flex flex-wrap gap-2">
-                        {selectedAgents.map(agent => (
-                            <motion.div
-                                key={agent.id}
-                                layout
-                                initial={{ opacity: 0, y: -10, scale: 0.8 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, x: -10, scale: 0.8 }}
-                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                className="flex items-center gap-2 rounded-full border border-black bg-white py-1 pl-2 pr-1 text-xs font-medium"
-                            >
-                               <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <span className='truncate max-w-[100px]'>{agent.name}</span>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p className='font-bold'>{agent.name}</p>
-                                        <p>{agent.description}</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                               </TooltipProvider>
-
-                                <button
-                                    onClick={() => handleRemoveAgent(agent.id)}
-                                    className="rounded-full bg-black text-white p-0.5 transition-colors hover:bg-red-500"
-                                >
-                                    <X className="h-3 w-3" />
-                                </button>
-                            </motion.div>
-                        ))}
-                    </motion.div>
-                </AnimatePresence>
-            </div>
+            <AnimatePresence>
+              <motion.div layout className="mt-2 flex flex-wrap gap-2">
+                {selectedAgents.map((agent) => (
+                  <motion.div
+                    key={agent.id}
+                    layout
+                    initial={{ opacity: 0, y: -10, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: -10, scale: 0.8 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                    className="flex items-center gap-2 rounded-full border border-black bg-white py-1 pl-2 pr-1 text-xs font-medium"
+                  >
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="max-w-[100px] truncate">{agent.name}</span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="font-bold">{agent.name}</p>
+                          <p>{agent.description}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <button
+                      onClick={() => handleRemoveAgent(agent.id)}
+                      className="rounded-full bg-black p-0.5 text-white transition-colors hover:bg-red-500"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
           )}
         </div>
-        <DialogContent className="max-w-2xl bg-white/80 p-0 backdrop-blur-lg">
-            <DialogHeader className="p-6 pb-0">
-                <DialogTitle className="text-2xl font-bold">Select Agents</DialogTitle>
-                <DialogDescription>
-                    Choose up to 5 active agents to assist with your query.
-                </DialogDescription>
-                <div className="relative pt-2">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/40" />
-                    <Input 
-                        placeholder="Search enabled agents..."
-                        className="pl-10 border-black"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-            </DialogHeader>
-            <ScrollArea className="h-96">
-                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredEnabledAgents.map((agent) => {
-                    const isSelected = tempSelected.some((a) => a.id === agent.id);
-                    return (
-                    <motion.div
-                        key={agent.id}
-                        onClick={() => handleSelectAgent(agent)}
-                        className={cn(
-                        'flex cursor-pointer items-start gap-4 rounded-lg border p-4 transition-all',
-                        isSelected
-                            ? 'border-black bg-black text-white shadow-md'
-                            : 'border-black/20 bg-white hover:border-black'
-                        )}
-                        whileTap={{ scale: 0.98 }}
-                    >
-                        <div className="mt-1 flex h-5 w-5 items-center justify-center rounded-full border">
-                            {isSelected && <Check className="h-3 w-3" />}
-                        </div>
-
-                        <div>
-                        <p className="font-bold">{agent.name}</p>
-                        <p className="text-xs opacity-70">
-                            {agent.model} &middot; {agent.category}
-                        </p>
-                        </div>
-                    </motion.div>
-                    );
-                })}
-                </div>
-            </ScrollArea>
-            <DialogFooter className="border-t p-6 bg-white/50">
-                <div className="flex w-full items-center justify-between">
-                <div className="text-sm font-medium">
-                    {tempSelected.length}/5 Selected
-                </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" onClick={handleCancel} className="border-black">
-                    Cancel
-                    </Button>
-                    <Button onClick={handleApply} className="bg-black text-white">Apply</Button>
-                </div>
-                </div>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl border-white/10 bg-black/20 p-0 text-white shadow-[0_0_25px_rgba(0,0,0,0.2)] backdrop-blur-md sm:rounded-2xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+        >
+          <DialogHeader className="p-6 text-center">
+            <DialogTitle className="text-2xl font-bold">Select Agents</DialogTitle>
+            <DialogDescription className="text-white/60">
+              Choose up to 5 enabled AI agents to assist with your query.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="px-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+              <Input
+                placeholder="Search agents..."
+                className="w-full border-white/20 bg-white/5 pl-10 text-white placeholder:text-white/40 focus:ring-cyan-500"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+          <ScrollArea className="h-96">
+            <div className="p-6 grid grid-cols-2 md:grid-cols-3 gap-4">
+              {filteredEnabledAgents.map((agent) => (
+                <AgentCapsule key={agent.id} agent={agent} />
+              ))}
+            </div>
+          </ScrollArea>
+          <DialogFooter className="border-t border-white/10 p-6 bg-black/20">
+            <div className="flex w-full items-center justify-between">
+              <div className="text-sm font-medium text-white/70">{tempSelected.length}/5 Selected</div>
+              <div className="flex gap-2">
+                <Button variant="ghost" onClick={handleCancel} className="text-white/70 hover:bg-white/10 hover:text-white">
+                  Cancel
+                </Button>
+                <Button onClick={handleApply} className="bg-cyan-500 text-black hover:bg-cyan-400">
+                  Apply
+                </Button>
+              </div>
+            </div>
+          </DialogFooter>
+        </motion.div>
+      </DialogContent>
+    </Dialog>
+  );
 };
-
 
 
 export default function ChatUI({
@@ -1228,3 +1195,5 @@ export default function ChatUI({
     </>
   );
 }
+
+    
