@@ -30,12 +30,15 @@ export async function aiChat(input: AIChatInput): Promise<Stream<string>> {
       history: input.history.map(m => ({...m, content: [{text: m.content}]})),
     });
     
-    const textStream = new Stream<string>(async (writer) => {
-        for await (const chunk of stream) {
-            writer.write(chunk.text);
-        }
-        writer.end();
+    const transformStream = new TransformStream<any, string>({
+        transform(chunk, controller) {
+            if (chunk.text) {
+                controller.enqueue(chunk.text);
+            }
+        },
     });
 
-  return textStream;
+    stream.pipeTo(transformStream.writable);
+
+    return transformStream.readable;
 }
