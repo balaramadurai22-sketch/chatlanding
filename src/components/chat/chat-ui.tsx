@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -473,7 +474,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                         <DialogTrigger asChild>
                              <Button className="bg-black text-white hover:bg-white hover:text-black border border-black w-full md:w-auto shadow-sm hover:shadow-md transition-shadow"><Plus className="mr-2 h-4 w-4" /> Add New Agent</Button>
                         </DialogTrigger>
-                        <DialogContent className="max-h-[90vh] overflow-y-auto">
+                        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                             <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
                               <X className="h-4 w-4" />
                               <span className="sr-only">Close</span>
@@ -920,5 +921,3 @@ export default function ChatUI({
     </>
   );
 }
-
-    
