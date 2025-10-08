@@ -474,62 +474,70 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                         <DialogTrigger asChild>
                              <Button className="bg-black text-white hover:bg-white hover:text-black border border-black w-full md:w-auto shadow-sm hover:shadow-md transition-shadow"><Plus className="mr-2 h-4 w-4" /> Add New Agent</Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
                             <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
                               <X className="h-4 w-4" />
                               <span className="sr-only">Close</span>
                             </DialogClose>
                             <DialogHeader><DialogTitle>Create New Agent</DialogTitle></DialogHeader>
                             <Form {...newAgentForm}>
-                                <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="space-y-4">
-                                     <h3 className="font-bold text-sm uppercase text-black/60">Agent Information</h3>
-                                     <FormField name="name" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                     <FormField name="description" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                     <FormField name="purpose" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Task / Role</FormLabel><FormControl><Textarea {...field} className="border-black" placeholder="What is the primary task of this agent?" /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                    <FormField name="model" control={newAgentForm.control} render={({ field }) => (
-                                      <FormItem><FormLabel>Model</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a model" /></SelectTrigger></FormControl><SelectContent><SelectItem value="GPT-4">GPT-4</SelectItem><SelectItem value="Gemini 1.5">Gemini 1.5</SelectItem><SelectItem value="Claude 3">Claude 3</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                                    )} />
-                                    <FormField name="category" control={newAgentForm.control} render={({ field }) => (
-                                      <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Coding">Coding</SelectItem><SelectItem value="Analysis">Analysis</SelectItem><SelectItem value="Creative">Creative</SelectItem><SelectItem value="Productivity">Productivity</SelectItem><SelectItem value="Research">Research</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                                    )} />
-                                     <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Allowed Tools / Access</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                    <FormField name="memory" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Memory / Context Options</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormItem>
-                                    )} />
-
-                                     <h3 className="font-bold text-sm uppercase text-black/60 pt-4">Creator Information</h3>
-                                     <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Creator Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                    <FormField name="linkedin" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                     <FormField name="github" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                    <FormField name="twitter" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                    
-                                     <h3 className="font-bold text-sm uppercase text-black/60 pt-4">Support the Creator (Optional)</h3>
-                                     <FormField name="paypal" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>PayPal Email</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                     <FormField name="upi" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>UPI ID (for India)</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                     <FormField name="btc" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>BTC Wallet Address</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                    )} />
-
+                                <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="space-y-6">
+                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-4 p-4 border rounded-lg">
+                                            <h3 className="font-bold text-sm uppercase text-black/60">Agent Information</h3>
+                                            <FormField name="name" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                            <FormField name="description" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                            <FormField name="purpose" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>Task / Role</FormLabel><FormControl><Textarea {...field} className="border-black" placeholder="What is the primary task of this agent?" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                            <FormField name="model" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Model</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a model" /></SelectTrigger></FormControl><SelectContent><SelectItem value="GPT-4">GPT-4</SelectItem><SelectItem value="Gemini 1.5">Gemini 1.5</SelectItem><SelectItem value="Claude 3">Claude 3</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                                            )} />
+                                            <FormField name="category" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Coding">Coding</SelectItem><SelectItem value="Analysis">Analysis</SelectItem><SelectItem value="Creative">Creative</SelectItem><SelectItem value="Productivity">Productivity</SelectItem><SelectItem value="Research">Research</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                                            )} />
+                                        </div>
+                                        <div className="space-y-4 p-4 border rounded-lg">
+                                             <h3 className="font-bold text-sm uppercase text-black/60">Creator Information</h3>
+                                             <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>Creator Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                            <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>Allowed Tools / Access</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                            <FormField name="memory" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>Memory / Context Options</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                        </div>
+                                         <div className="space-y-4 p-4 border rounded-lg">
+                                             <h3 className="font-bold text-sm uppercase text-black/60">Creator Socials</h3>
+                                            <FormField name="linkedin" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                            <FormField name="github" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                            <FormField name="twitter" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                        </div>
+                                        <div className="space-y-4 p-4 border rounded-lg">
+                                             <h3 className="font-bold text-sm uppercase text-black/60">Support the Creator (Optional)</h3>
+                                             <FormField name="paypal" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>PayPal Email</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                             <FormField name="upi" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>UPI ID (for India)</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                             <FormField name="btc" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>BTC Wallet Address</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                        </div>
+                                     </div>
                                     <DialogFooter><Button type="submit" className="bg-black text-white">Create Agent</Button></DialogFooter>
                                 </form>
                             </Form>
