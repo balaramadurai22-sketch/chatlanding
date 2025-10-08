@@ -587,7 +587,7 @@ export default function ChatUI({
         {pinnedAgents.length > 0 && (
           <div className="mb-8">
             <h2 className="text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2"><Pin className="h-4 w-4" /> Pinned</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {pinnedAgents.map(agent => <AgentCard key={agent.id} agent={agent} />)}
             </div>
           </div>
@@ -596,7 +596,7 @@ export default function ChatUI({
         {unpinnedAgents.length > 0 && (
            <div>
              <h2 className="text-sm font-bold uppercase tracking-wider mb-4">All Agents</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {unpinnedAgents.map(agent => <AgentCard key={agent.id} agent={agent} />)}
               </div>
            </div>
