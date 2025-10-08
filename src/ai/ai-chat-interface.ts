@@ -11,7 +11,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { generate } from 'genkit';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
@@ -29,7 +28,7 @@ const AIChatOutputSchema = z.object({
 export type AIChatOutput = z.infer<typeof AIChatOutputSchema>;
 
 export async function aiChat(input: AIChatInput): Promise<AIChatOutput> {
-  const llmResponse = await generate({
+  const llmResponse = await ai.generate({
       model: 'googleai/gemini-2.5-flash',
       prompt: `You are a helpful AI assistant from TECHismust. Answer the user's question.`,
       history: input.history.map(m => ({...m, content: [{text: m.content}]})),
