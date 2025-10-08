@@ -27,7 +27,9 @@ import {
   Copy,
   MoreVertical,
   X,
-  Filter as FilterIcon
+  Filter as FilterIcon,
+  Pin,
+  PinOff
 } from 'lucide-react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -77,6 +79,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 interface ChatUIProps {
   messages: ChatMessage[];
@@ -149,6 +152,7 @@ export default function ChatUI({
   const [activeView, setActiveView] = useState<'chat' | 'agents'>('chat');
   const [agents, setAgents] = useState<Agent[]>(initialAgents);
   const [activeFilter, setActiveFilter] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { toast } = useToast();
 
@@ -190,6 +194,7 @@ export default function ChatUI({
       status: 'Draft',
       tags: ['New'],
       isActivated: false,
+      pinned: false,
     };
     setAgents(prev => [newAgent, ...prev]);
     toast({ title: 'Agent Created!', description: `${data.name} has been added.` });
@@ -202,11 +207,24 @@ export default function ChatUI({
       agent.id === agentId ? { ...agent, isActivated: !agent.isActivated } : agent
     ));
   };
-  
-  const filteredAgents = activeFilter === 'All' 
-    ? agents 
-    : agents.filter(agent => agent.tags.includes(activeFilter));
 
+  const toggleAgentPin = (agentId: string) => {
+    setAgents(prev => prev.map(agent => 
+      agent.id === agentId ? { ...agent, pinned: !agent.pinned } : agent
+    ));
+  }
+  
+  const filteredAgents = agents.filter(agent => {
+    const categoryMatch = activeFilter === 'All' || agent.tags.includes(activeFilter);
+    const searchMatch = searchTerm === '' || 
+                        agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        agent.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        agent.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    return categoryMatch && searchMatch;
+  });
+
+  const pinnedAgents = filteredAgents.filter(a => a.pinned);
+  const unpinnedAgents = filteredAgents.filter(a => !a.pinned);
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-white text-black p-4 border-r border-black">
@@ -231,14 +249,14 @@ export default function ChatUI({
         <Button
           variant={activeView === 'chat' ? 'outline' : 'ghost'}
           onClick={() => setActiveView('chat')}
-          className="w-full justify-start text-base font-bold border-black hover:bg-black hover:text-white data-[variant=outline]:bg-black data-[variant=outline]:text-white"
+          className="w-full justify-start text-base font-bold border-black hover:bg-black hover:text-white data-[state=active]:bg-black data-[state=active]:text-white"
         >
           <MessageCircle className="mr-3" /> Chat
         </Button>
         <Button
           variant={activeView === 'agents' ? 'outline' : 'ghost'}
           onClick={() => setActiveView('agents')}
-          className="w-full justify-start text-base font-bold border-black hover:bg-black hover:text-white data-[variant=outline]:bg-black data-[variant=outline]:text-white"
+          className="w-full justify-start text-base font-bold border-black hover:bg-black hover:text-white data-[state=active]:bg-black data-[state=active]:text-white"
         >
           <Bot className="mr-3" /> Agents
         </Button>
@@ -452,94 +470,138 @@ export default function ChatUI({
     </>
   );
   
-  const AgentsView = () => (
-    <main className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col">
-        <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">Agents</h1>
-            <Button variant="outline" className="border-black bg-black text-white hover:bg-white hover:text-black" onClick={() => setIsNewAgentOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Add New Agent
-            </Button>
-        </div>
-        <div className="mb-6">
-            <div className="flex items-center gap-2 flex-wrap">
-                <FilterIcon className="mr-2 h-4 w-4" />
-                {agentCategories.map(category => (
-                    <Button 
-                        key={category}
-                        variant={activeFilter === category ? "outline" : "ghost"}
-                        onClick={() => setActiveFilter(category)}
-                        className={cn(
-                            "border-black",
-                            activeFilter === category ? "bg-black text-white" : "bg-white text-black"
-                        )}
-                    >
-                        {category}
-                    </Button>
-                ))}
+  const AgentCard = ({ agent }: { agent: Agent }) => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <div className="border border-black rounded-lg p-4 flex flex-col cursor-pointer hover:bg-black/5 transition-colors duration-200 aspect-square justify-between shadow-sm hover:shadow-md">
+          <div>
+            <div className="flex items-start justify-between mb-2">
+              <h3 className="font-bold text-lg mb-1 pr-2">{agent.name}</h3>
+              <div className="flex items-center gap-2">
+                 <Button variant="ghost" size="icon" className="h-6 w-6 text-black/50 hover:text-black" onClick={(e) => {e.stopPropagation(); toggleAgentPin(agent.id)}}>
+                  {agent.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+                </Button>
+                <Switch
+                  checked={agent.isActivated}
+                  onCheckedChange={(checked) => {
+                    const e = window.event as any;
+                    e.stopPropagation();
+                    toggleAgentActivation(agent.id);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
             </div>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredAgents.map(agent => (
-                <Dialog key={agent.id}>
-                    <DialogTrigger asChild>
-                        <div className="border border-black rounded-lg p-4 flex flex-col cursor-pointer hover:bg-black/5 transition-colors duration-200">
-                          <div className="flex items-start justify-between mb-2">
-                              <h3 className="font-bold text-lg mb-1 pr-2">{agent.name}</h3>
-                              <Switch 
-                                checked={agent.isActivated}
-                                onCheckedChange={(checked) => {
-                                    // Prevent dialog from opening when switch is clicked
-                                    const e = window.event as any;
-                                    e.stopPropagation();
-                                    toggleAgentActivation(agent.id)
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                          </div>
-                          <p className="text-sm text-black/70 flex-grow">{agent.description}</p>
-                          <div className="flex flex-wrap gap-1 mt-4">
-                              {agent.tags.map(tag => (
-                                  <Badge key={tag} variant="outline" className="border-black text-black">{tag}</Badge>
-                              ))}
-                          </div>
-                        </div>
-                    </DialogTrigger>
-                    <DialogContent className="bg-white text-black border-black sm:max-w-md">
-                        <DialogHeader>
-                            <DialogTitle className="font-bold text-xl">{agent.name}</DialogTitle>
-                            <DialogDescription className="text-black/70">{agent.description}</DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4">
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm font-medium">Status</span>
-                                <Badge variant={agent.status === 'Active' ? 'default' : 'secondary'} className={cn(agent.status === 'Active' ? "bg-green-600" : "bg-gray-500", "text-white")}>{agent.status}</Badge>
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-medium mb-1">Model</h4>
-                                <p className="text-sm p-2 border border-black rounded-md bg-black/5">{agent.model}</p>
-                            </div>
-                             <div>
-                                <h4 className="text-sm font-medium mb-1">Owner</h4>
-                                <p className="text-sm p-2 border border-black rounded-md bg-black/5">{agent.owner}</p>
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-medium mb-1">Tags</h4>
-                                <div className="flex flex-wrap gap-1">
-                                    {agent.tags.map(tag => <Badge key={tag} variant="outline" className="border-black">{tag}</Badge>)}
-                                </div>
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <DialogClose asChild>
-                                <Button type="button" variant="outline" className="border-black hover:bg-black hover:text-white">Close</Button>
-                            </DialogClose>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-              ))}
+            <p className="text-sm text-black/70 flex-grow line-clamp-2">{agent.description}</p>
+          </div>
+          <div className="flex flex-col gap-2 mt-4 text-xs">
+              <div className="flex items-center gap-1">
+                <Bot className="h-3 w-3" /> 
+                <span className="font-semibold">Model:</span>
+                <span>{agent.model}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                 <Badge variant={agent.status === 'Active' ? 'default' : 'secondary'} className={cn(agent.status === 'Active' ? 'bg-green-600' : 'bg-gray-500', 'text-white text-xs')}>{agent.status}</Badge>
+              </div>
+             <div className="flex flex-wrap gap-1 mt-1">
+                {agent.tags.slice(0,2).map(tag => (
+                    <Badge key={tag} variant="outline" className="border-black text-black">{tag}</Badge>
+                ))}
+             </div>
           </div>
         </div>
+      </DialogTrigger>
+      <DialogContent className="bg-white text-black border-black sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-bold text-xl">{agent.name}</DialogTitle>
+          <DialogDescription className="text-black/70">{agent.description}</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">Status</span>
+            <Badge variant={agent.status === 'Active' ? 'default' : 'secondary'} className={cn(agent.status === 'Active' ? 'bg-green-600' : 'bg-gray-500', 'text-white')}>{agent.status}</Badge>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium mb-1">Model</h4>
+            <p className="text-sm p-2 border border-black rounded-md bg-black/5">{agent.model}</p>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium mb-1">Owner</h4>
+            <p className="text-sm p-2 border border-black rounded-md bg-black/5">{agent.owner}</p>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium mb-1">Tags</h4>
+            <div className="flex flex-wrap gap-1">
+              {agent.tags.map(tag => <Badge key={tag} variant="outline" className="border-black">{tag}</Badge>)}
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button type="button" variant="outline" className="border-black hover:bg-black hover:text-white">Close</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
+  const AgentsView = () => (
+    <main className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Agents</h1>
+        <Button variant="outline" className="border-black bg-black text-white hover:bg-white hover:text-black" onClick={() => setIsNewAgentOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" /> Add New Agent
+        </Button>
+      </div>
+      <div className="mb-6 flex flex-col md:flex-row gap-4">
+        <div className="relative w-full md:w-1/2 lg:w-1/3">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/50"/>
+          <Input 
+            placeholder="Search agents by name, model or tag..."
+            className="border-black pl-10"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <ScrollArea className="w-full md:w-1/2 lg:w-2/3 whitespace-nowrap">
+           <div className="flex items-center gap-2 pb-2">
+            <FilterIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+            {agentCategories.map(category => (
+              <Button
+                key={category}
+                variant={activeFilter === category ? "outline" : "ghost"}
+                onClick={() => setActiveFilter(category)}
+                className={cn(
+                  "border-black text-black",
+                  activeFilter === category ? "bg-black text-white" : "bg-white"
+                )}
+              >
+                {category}
+              </Button>
+            ))}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      </div>
+      <div className="flex-1 overflow-y-auto pr-2">
+        {pinnedAgents.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2"><Pin className="h-4 w-4" /> Pinned</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {pinnedAgents.map(agent => <AgentCard key={agent.id} agent={agent} />)}
+            </div>
+          </div>
+        )}
+
+        {unpinnedAgents.length > 0 && (
+           <div>
+             <h2 className="text-sm font-bold uppercase tracking-wider mb-4">All Agents</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {unpinnedAgents.map(agent => <AgentCard key={agent.id} agent={agent} />)}
+              </div>
+           </div>
+        )}
+      </div>
     </main>
   );
 
@@ -593,13 +655,10 @@ export default function ChatUI({
         </div>
       </div>
 
-       {/* Modals */}
+      {/* Modals */}
       <Dialog open={isBugReportOpen} onOpenChange={setIsBugReportOpen}>
         <DialogContent
           className="bg-white text-black border-black"
-          onInteractOutside={(e) => {
-            e.preventDefault();
-          }}
         >
            <DialogClose asChild>
             <button className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
@@ -709,9 +768,6 @@ export default function ChatUI({
       <Dialog open={isFeatureRequestOpen} onOpenChange={setIsFeatureRequestOpen}>
         <DialogContent
           className="bg-white text-black border-black"
-          onInteractOutside={(e) => {
-            e.preventDefault();
-          }}
         >
           <DialogClose asChild>
             <button className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
@@ -804,9 +860,6 @@ export default function ChatUI({
       <Dialog open={isNewAgentOpen} onOpenChange={setIsNewAgentOpen}>
         <DialogContent
           className="bg-white text-black border-black"
-          onInteractOutside={(e) => {
-            e.preventDefault();
-          }}
         >
           <DialogClose asChild>
            <button className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
@@ -898,5 +951,3 @@ export default function ChatUI({
     </>
   );
 }
-
-    

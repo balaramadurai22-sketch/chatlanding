@@ -11,6 +11,7 @@ export interface Agent {
   tags: string[];
   model: string;
   isActivated: boolean;
+  pinned: boolean;
 }
 
 export const agents: Agent[] = [
@@ -23,6 +24,7 @@ export const agents: Agent[] = [
     tags: ['Triage', 'GitHub', 'Classification'],
     model: 'gpt-4o-mini',
     isActivated: true,
+    pinned: true,
   },
   {
     id: 'agent-002',
@@ -33,6 +35,7 @@ export const agents: Agent[] = [
     tags: ['Summarization', 'Productivity'],
     model: 'gpt-4o-mini',
     isActivated: true,
+    pinned: true,
   },
   {
     id: 'agent-003',
@@ -43,6 +46,7 @@ export const agents: Agent[] = [
     tags: ['CRM', 'Salesforce', 'Data Entry'],
     model: 'claude-3-sonnet',
     isActivated: false,
+    pinned: false,
   },
   {
     id: 'agent-004',
@@ -53,6 +57,7 @@ export const agents: Agent[] = [
     tags: ['DevOps', 'CI/CD', 'Debugging'],
     model: 'gemini-1.5-pro',
     isActivated: true,
+    pinned: true,
   },
   {
     id: 'agent-005',
@@ -63,6 +68,7 @@ export const agents: Agent[] = [
     tags: ['Support', 'Customer Service', 'RAG'],
     model: 'gpt-4o-mini',
     isActivated: false,
+    pinned: false,
   },
   {
     id: 'agent-006',
@@ -73,6 +79,7 @@ export const agents: Agent[] = [
     tags: ['Social Media', 'Marketing', 'Sentiment'],
     model: 'gemini-1.5-flash',
     isActivated: true,
+    pinned: false,
   },
   {
     id: 'agent-007',
@@ -83,6 +90,7 @@ export const agents: Agent[] = [
     tags: ['Forecasting', 'Retail', 'Logistics'],
     model: 'claude-3-opus',
     isActivated: true,
+    pinned: false,
   },
   {
     id: 'agent-008',
@@ -93,7 +101,7 @@ export const agents: Agent[] = [
     tags: ['Translation', 'Audio', 'Real-time'],
     model: 'gemini-1.5-pro',
     isActivated: true,
-
+    pinned: false,
   },
   {
     id: 'agent-009',
@@ -104,6 +112,7 @@ export const agents: Agent[] = [
     tags: ['Code', 'Review', 'Quality'],
     model: 'gpt-4o',
     isActivated: false,
+    pinned: false,
   },
   {
     id: 'agent-010',
@@ -114,8 +123,8 @@ export const agents: Agent[] = [
     tags: ['Research', 'Finance', 'Summarization'],
     model: 'gpt-4o',
     isActivated: true,
+    pinned: false,
   },
-  // Add 40 more agents
   ...Array.from({ length: 40 }, (_, i) => {
     const id = i + 11;
     const agentTypes = ['Data Scraper', 'Email Classifier', 'Image Generator', 'Report Creator', 'API Integrator', 'Slack Bot', 'Discord Mod', 'Knowledge Base QA', 'HR Onboarding Helper', 'Contract Analyzer'];
@@ -132,6 +141,7 @@ export const agents: Agent[] = [
         tags: [agentType.split(' ')[0], `v${Math.floor(id / agentTypes.length) + 1}`],
         model: models[i % models.length],
         isActivated: Math.random() > 0.5,
+        pinned: false,
     };
   }),
 ];
