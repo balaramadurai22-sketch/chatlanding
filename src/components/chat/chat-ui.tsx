@@ -3,7 +3,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import {
   MessageCircle,
   Bot,
@@ -273,6 +273,43 @@ const getSymbolicVisual = (category: Agent['category']) => {
     }
 };
 
+const TypingEffect = ({ text }: { text: string }) => {
+  const [displayedText, setDisplayedText] = React.useState('');
+  const ref = React.useRef(null);
+  const isInView = useInView(ref, { once: true }); // `once: true` makes it fire only once when it enters view
+
+  React.useEffect(() => {
+    if (isInView) {
+      let i = 0;
+      const interval = setInterval(() => {
+        if (i < text.length) {
+          setDisplayedText(text.substring(0, i + 1));
+          i++;
+        } else {
+          clearInterval(interval);
+        }
+      }, 50); // Adjust speed here
+      return () => clearInterval(interval);
+    }
+  }, [isInView, text]);
+
+  // Reset when it goes out of view, to replay when it comes back
+  React.useEffect(() => {
+    if (!isInView) {
+      setDisplayedText('');
+    }
+  }, [isInView]);
+
+
+  return (
+    <p ref={ref} className="text-xs text-black/80 h-8">
+      {displayedText}
+      <span className="animate-pulse">|</span>
+    </p>
+  );
+};
+
+
 const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent) => void }) => {
     const [isPinned, setIsPinned] = React.useState(agent.pinned);
     const [isActive, setIsActive] = React.useState(agent.active);
@@ -329,9 +366,11 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                         </div>
                     </div>
 
-                    <div className="relative z-10">
-                        <p className="text-xs text-black/80 mb-2 line-clamp-2">{agent.description}</p>
-                        <div className="flex justify-between items-center text-xs text-black/60">
+                    <div className="relative z-10 mt-auto">
+                        <div className="p-2 border border-black/10 rounded-md bg-white/50 backdrop-blur-sm">
+                           <TypingEffect text={agent.description} />
+                        </div>
+                        <div className="flex justify-between items-center text-xs text-black/60 mt-2">
                             <div className="flex items-center gap-1">
                                 <Users className="w-3 h-3" />
                                 <span>{(agent.peopleUsed / 1000).toFixed(1)}k</span>
@@ -412,7 +451,8 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                                 <div className="text-xs text-black/60">Users</div>
                             </div>
                              <div>
-                                <div className="font-bold text-lg">{(agent.likes/1000).toFixed(1)}k</div>
+                                <div className="font-bold text-lg">{(agent.likes/1000).toFixed(1)
+                                }k</div>
                                 <div className="text-xs text-black/60">Likes</div>
                             </div>
                         </div>
@@ -517,6 +557,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                             <Form {...newAgentForm}>
                                 <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                        {/* Column 1: Agent Info */}
                                         <div className="space-y-4 p-4 border rounded-lg">
                                             <h3 className="font-bold text-sm uppercase text-black/60">Agent Information</h3>
                                             <FormField name="name" control={newAgentForm.control} render={({ field }) => (
@@ -534,18 +575,16 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                             <FormField name="category" control={newAgentForm.control} render={({ field }) => (
                                                 <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Coding">Coding</SelectItem><SelectItem value="Analysis">Analysis</SelectItem><SelectItem value="Creative">Creative</SelectItem><SelectItem value="Productivity">Productivity</SelectItem><SelectItem value="Research">Research</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                                             )} />
+                                            <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>Allowed Tools / Access</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
+                                            )} />
+                                            <FormField name="memory" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>Memory / Context Options</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormItem>
+                                            )} />
                                         </div>
 
                                         <div className="space-y-6">
-                                             <div className="space-y-4 p-4 border rounded-lg">
-                                                <h3 className="font-bold text-sm uppercase text-black/60">Technical Details</h3>
-                                                <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
-                                                    <FormItem><FormLabel>Allowed Tools / Access</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
-                                                )} />
-                                                <FormField name="memory" control={newAgentForm.control} render={({ field }) => (
-                                                    <FormItem><FormLabel>Memory / Context Options</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormItem>
-                                                )} />
-                                            </div>
+                                            {/* Column 2: Creator & Socials */}
                                             <div className="space-y-4 p-4 border rounded-lg">
                                                 <h3 className="font-bold text-sm uppercase text-black/60">Creator Information</h3>
                                                 <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
@@ -561,6 +600,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                                     <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                                                 )} />
                                             </div>
+                                            {/* Column 4: Donations */}
                                              <div className="space-y-4 p-4 border rounded-lg">
                                                  <h3 className="font-bold text-sm uppercase text-black/60">Support the Creator (Optional)</h3>
                                                  <FormField name="paypal" control={newAgentForm.control} render={({ field }) => (
