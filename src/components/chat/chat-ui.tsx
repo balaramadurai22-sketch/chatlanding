@@ -39,6 +39,8 @@ import {
   Palette,
   Bitcoin,
   DollarSign,
+  Apple,
+  CreditCard,
 } from 'lucide-react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -82,6 +84,7 @@ import {
 import { Switch } from '../ui/switch';
 import { agents as allAgents, type Agent } from '@/lib/agents-data';
 import { useMemo } from 'react';
+import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 
 interface ChatUIProps {
   messages: ChatMessage[];
@@ -314,6 +317,7 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
     const [isPinned, setIsPinned] = React.useState(agent.pinned);
     const [isActive, setIsActive] = React.useState(agent.active);
     const donationForm = useForm<DonationFormValues>({ resolver: zodResolver(donationSchema) });
+    const [currency, setCurrency] = React.useState('usd');
 
     const handlePinToggle = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -334,6 +338,38 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
       // toast({ title: 'Donation Successful!', description: `Thank you for supporting ${agent.creator.name}!` });
       donationForm.reset();
     };
+
+    const renderPaymentOptions = () => {
+        switch (currency) {
+            case 'usd':
+                return (
+                    <div className="flex gap-2">
+                        <Button variant="outline" className="flex-1 border-black"><DollarSign size={16} className="mr-2" /> PayPal</Button>
+                        <Button variant="outline" className="flex-1 border-black"><Apple size={16} className="mr-2" /> Apple Pay</Button>
+                        <Button variant="outline" className="flex-1 border-black"><CreditCard size={16} className="mr-2" /> Card</Button>
+                    </div>
+                );
+            case 'inr':
+                 return (
+                    <div className="flex gap-2">
+                        <Button variant="outline" className="flex-1 border-black">GPay</Button>
+                        <Button variant="outline" className="flex-1 border-black">PhonePe</Button>
+                        <Button variant="outline" className="flex-1 border-black">UPI</Button>
+                    </div>
+                );
+            case 'crypto':
+                return (
+                    <div className="flex flex-col gap-2">
+                        <Button variant="outline" className="w-full border-black">Binance Pay</Button>
+                        <Button variant="outline" className="w-full border-black">Trust Wallet</Button>
+                        <Button variant="outline" className="w-full border-black">Phantom</Button>
+                    </div>
+                );
+            default:
+                return null;
+        }
+    };
+
 
     return (
         <Dialog>
@@ -392,33 +428,31 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4">
                     <div className="flex flex-col gap-4">
                         <Image src={agent.creator.imageUrl} alt={agent.creator.name} width={128} height={128} className="rounded-lg border-2 border-black w-full aspect-square object-cover" />
-                         <div className="p-4 border rounded-lg flex-grow">
-                           <h4 className="font-semibold mb-2">Support the Creator</h4>
-                             <Form {...donationForm}>
-                                <form onSubmit={donationForm.handleSubmit(onDonationSubmit)} className="space-y-2">
+                        <div className="p-4 border rounded-lg flex flex-col gap-4">
+                            <h4 className="font-semibold text-center">Support the Creator</h4>
+                            <Tabs value={currency} onValueChange={setCurrency} className="w-full">
+                                <TabsList className="grid w-full grid-cols-3">
+                                    <TabsTrigger value="usd">USD</TabsTrigger>
+                                    <TabsTrigger value="inr">INR</TabsTrigger>
+                                    <TabsTrigger value="crypto">Crypto</TabsTrigger>
+                                </TabsList>
+                            </Tabs>
+                            <Form {...donationForm}>
+                                <form onSubmit={donationForm.handleSubmit(onDonationSubmit)} className="space-y-4">
                                     <FormField name="amount" control={donationForm.control} render={({ field }) => (
                                         <FormItem>
                                             <FormControl>
                                                 <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-black/60">$</span>
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-black/60">{currency === 'usd' ? '$' : currency === 'inr' ? '₹' : ''}</span>
                                                     <Input type="number" placeholder="10" {...field} className="pl-6 border-black" />
                                                 </div>
                                             </FormControl>
                                         </FormItem>
                                     )} />
+                                    {renderPaymentOptions()}
                                     <Button type="submit" className="w-full bg-black text-white hover:bg-white hover:text-black border border-black">Donate</Button>
                                 </form>
-                             </Form>
-                             { (agent.creator.social.paypal || agent.creator.social.upi || agent.creator.social.btc) &&
-                                 <div className="p-4 border rounded-lg space-y-2 mt-4">
-                                    <h4 className="font-semibold text-xs text-center text-black/60">Other methods</h4>
-                                    <div className="flex justify-center gap-4">
-                                         {agent.creator.social.paypal && <Button variant="outline" size="icon" className="border-black"><DollarSign size={16} /></Button>}
-                                         {agent.creator.social.upi && <Button variant="outline" size="icon" className="border-black">UPI</Button>}
-                                         {agent.creator.social.btc && <Button variant="outline" size="icon" className="border-black"><Bitcoin size={16}/></Button>}
-                                    </div>
-                                </div>
-                             }
+                            </Form>
                         </div>
                     </div>
                      <div className="md:col-span-2 flex flex-col gap-6">
