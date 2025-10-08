@@ -25,7 +25,8 @@ import {
   Edit,
   Trash,
   Copy,
-  MoreVertical
+  MoreVertical,
+  X,
 } from 'lucide-react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
