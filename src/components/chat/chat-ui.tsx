@@ -115,6 +115,9 @@ export default function ChatUI({
 }: ChatUIProps) {
     const isMobile = useIsMobile();
     const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const [isBugReportOpen, setIsBugReportOpen] = useState(false);
+    const [isFeatureRequestOpen, setIsFeatureRequestOpen] = useState(false);
+
     const { toast } = useToast();
 
     const bugReportForm = useForm<BugReportFormValues>({ resolver: zodResolver(bugReportSchema), defaultValues: { severity: "Medium" }});
@@ -125,7 +128,7 @@ export default function ChatUI({
         await new Promise(res => setTimeout(res, 1000));
         toast({ title: "Bug Report Submitted!", description: "Thank you for your feedback." });
         bugReportForm.reset();
-        // Keep modal open to show success or close it
+        setIsBugReportOpen(false);
     };
     
     const onFeatureSubmit: SubmitHandler<FeatureRequestFormValues> = async (data) => {
@@ -133,6 +136,7 @@ export default function ChatUI({
         await new Promise(res => setTimeout(res, 1000));
         toast({ title: "Feature Request Submitted!", description: "Thank you for your suggestion." });
         featureRequestForm.reset();
+        setIsFeatureRequestOpen(false);
     };
 
     const SidebarContent = () => (
@@ -187,86 +191,13 @@ export default function ChatUI({
             </div>
 
             <div className="mt-auto flex flex-col gap-2">
-                 <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start text-base font-bold border-black hover:bg-black hover:text-white">
-                            <Bug className="mr-3" /> Bug Report
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-white text-black border-black">
-                        <DialogHeader>
-                            <DialogTitle className="font-bold text-black">Submit a Bug Report</DialogTitle>
-                            <DialogDescription className="text-black/80">
-                                Help us improve by reporting any issues you encounter.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <Form {...bugReportForm}>
-                            <form onSubmit={bugReportForm.handleSubmit(onBugSubmit)} className="space-y-4">
-                                <FormField control={bugReportForm.control} name="title" render={({ field }) => (
-                                    <FormItem><FormLabel className="text-black font-bold">Title</FormLabel><FormControl><Input className="border-black bg-white text-black placeholder:text-black/50" placeholder="e.g., UI glitch on chat page" {...field} /></FormControl><FormMessage /></FormItem>
-                                )}/>
-                                <FormField control={bugReportForm.control} name="description" render={({ field }) => (
-                                    <FormItem><FormLabel className="text-black font-bold">Description</FormLabel><FormControl><Textarea className="border-black bg-white text-black placeholder:text-black/50" placeholder="Describe the bug in detail..." {...field} /></FormControl><FormMessage /></FormItem>
-                                )}/>
-                                <FormField control={bugReportForm.control} name="stepsToReproduce" render={({ field }) => (
-                                    <FormItem><FormLabel className="text-black font-bold">Steps to Reproduce</FormLabel><FormControl><Textarea className="border-black bg-white text-black placeholder:text-black/50" placeholder="1. Go to '...'\n2. Click on '...'\n3. See error" {...field} /></FormControl><FormMessage /></FormItem>
-                                )}/>
-                                 <FormField control={bugReportForm.control} name="severity" render={({ field }) => (
-                                    <FormItem><FormLabel className="text-black font-bold">Severity</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger className="border-black bg-white text-black"><SelectValue placeholder="Select severity" /></SelectTrigger></FormControl>
-                                            <SelectContent className="border-black bg-white text-black"><SelectItem value="Low">Low</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="High">High</SelectItem></SelectContent>
-                                        </Select>
-                                    <FormMessage /></FormItem>
-                                )}/>
-                                <DialogFooter>
-                                    <Button type="submit" variant="outline" className="w-full bg-white text-black border-black hover:bg-black hover:text-white" disabled={bugReportForm.formState.isSubmitting}>
-                                        {bugReportForm.formState.isSubmitting ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : null} Submit
-                                    </Button>
-                                </DialogFooter>
-                            </form>
-                        </Form>
-                    </DialogContent>
-                 </Dialog>
+                <Button variant="outline" className="w-full justify-start text-base font-bold border-black hover:bg-black hover:text-white" onClick={() => setIsBugReportOpen(true)}>
+                    <Bug className="mr-3" /> Bug Report
+                </Button>
 
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start text-base font-bold border-black hover:bg-black hover:text-white">
-                            <Lightbulb className="mr-3" /> Feature Request
-                        </Button>
-                    </DialogTrigger>
-                     <DialogContent className="bg-white text-black border-black">
-                        <DialogHeader>
-                            <DialogTitle className="font-bold text-black">Request a Feature</DialogTitle>
-                            <DialogDescription className="text-black/80">
-                                Have an idea for a new feature? Let us know!
-                            </DialogDescription>
-                        </DialogHeader>
-                        <Form {...featureRequestForm}>
-                            <form onSubmit={featureRequestForm.handleSubmit(onFeatureSubmit)} className="space-y-4">
-                                <FormField control={featureRequestForm.control} name="featureTitle" render={({ field }) => (
-                                    <FormItem><FormLabel className="text-black font-bold">Feature Title</FormLabel><FormControl><Input className="border-black bg-white text-black placeholder:text-black/50" placeholder="e.g., Add dark mode" {...field} /></FormControl><FormMessage /></FormItem>
-                                )}/>
-                                <FormField control={featureRequestForm.control} name="description" render={({ field }) => (
-                                    <FormItem><FormLabel className="text-black font-bold">Description</FormLabel><FormControl><Textarea className="border-black bg-white text-black placeholder:text-black/50" placeholder="Describe the feature and why it would be useful..." {...field} /></FormControl><FormMessage /></FormItem>
-                                )}/>
-                                 <FormField control={featureRequestForm.control} name="priority" render={({ field }) => (
-                                    <FormItem><FormLabel className="text-black font-bold">Priority</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger className="border-black bg-white text-black"><SelectValue placeholder="Select priority" /></SelectTrigger></FormControl>
-                                            <SelectContent className="border-black bg-white text-black"><SelectItem value="Low">Low</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="High">High</SelectItem></SelectContent>
-                                        </Select>
-                                    <FormMessage /></FormItem>
-                                )}/>
-                                <DialogFooter>
-                                    <Button type="submit" variant="outline" className="w-full bg-white text-black border-black hover:bg-black hover:text-white" disabled={featureRequestForm.formState.isSubmitting}>
-                                        {featureRequestForm.formState.isSubmitting ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : null} Submit
-                                    </Button>
-                                </DialogFooter>
-                            </form>
-                        </Form>
-                    </DialogContent>
-                </Dialog>
+                <Button variant="outline" className="w-full justify-start text-base font-bold border-black hover:bg-black hover:text-white" onClick={() => setIsFeatureRequestOpen(true)}>
+                    <Lightbulb className="mr-3" /> Feature Request
+                </Button>
 
                 <div className="bg-white p-3 rounded-lg shadow-md border border-gray-200 mt-2">
                     <div className="flex items-center justify-between">
@@ -321,6 +252,7 @@ export default function ChatUI({
   };
 
   return (
+    <>
     <div className="flex h-screen w-full bg-white text-black font-sans">
       
       {isMobile && (
@@ -411,5 +343,81 @@ export default function ChatUI({
         </footer>
       </div>
     </div>
+    
+    {/* Bug Report Modal */}
+    <Dialog open={isBugReportOpen} onOpenChange={setIsBugReportOpen}>
+      <DialogContent className="bg-white text-black border-black" onInteractOutside={(e) => e.preventDefault()}>
+          <DialogHeader>
+              <DialogTitle className="font-bold text-black">Submit a Bug Report</DialogTitle>
+              <DialogDescription className="text-black/80">
+                  Help us improve by reporting any issues you encounter.
+              </DialogDescription>
+          </DialogHeader>
+          <Form {...bugReportForm}>
+              <form onSubmit={bugReportForm.handleSubmit(onBugSubmit)} className="space-y-4">
+                  <FormField control={bugReportForm.control} name="title" render={({ field }) => (
+                      <FormItem><FormLabel className="text-black font-bold">Title</FormLabel><FormControl><Input className="border-black bg-white text-black placeholder:text-black/50" placeholder="e.g., UI glitch on chat page" {...field} /></FormControl><FormMessage /></FormItem>
+                  )}/>
+                  <FormField control={bugReportForm.control} name="description" render={({ field }) => (
+                      <FormItem><FormLabel className="text-black font-bold">Description</FormLabel><FormControl><Textarea className="border-black bg-white text-black placeholder:text-black/50" placeholder="Describe the bug in detail..." {...field} /></FormControl><FormMessage /></FormItem>
+                  )}/>
+                  <FormField control={bugReportForm.control} name="stepsToReproduce" render={({ field }) => (
+                      <FormItem><FormLabel className="text-black font-bold">Steps to Reproduce</FormLabel><FormControl><Textarea className="border-black bg-white text-black placeholder:text-black/50" placeholder="1. Go to '...'\n2. Click on '...'\n3. See error" {...field} /></FormControl><FormMessage /></FormItem>
+                  )}/>
+                    <FormField control={bugReportForm.control} name="severity" render={({ field }) => (
+                      <FormItem><FormLabel className="text-black font-bold">Severity</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl><SelectTrigger className="border-black bg-white text-black"><SelectValue placeholder="Select severity" /></SelectTrigger></FormControl>
+                              <SelectContent className="border-black bg-white text-black"><SelectItem value="Low">Low</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="High">High</SelectItem></SelectContent>
+                          </Select>
+                      <FormMessage /></FormItem>
+                  )}/>
+                  <DialogFooter>
+                      <Button type="submit" variant="outline" className="w-full bg-white text-black border-black hover:bg-black hover:text-white" disabled={bugReportForm.formState.isSubmitting}>
+                          {bugReportForm.formState.isSubmitting ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : null} Submit
+                      </Button>
+                  </DialogFooter>
+              </form>
+          </Form>
+      </DialogContent>
+    </Dialog>
+
+    {/* Feature Request Modal */}
+    <Dialog open={isFeatureRequestOpen} onOpenChange={setIsFeatureRequestOpen}>
+        <DialogContent className="bg-white text-black border-black" onInteractOutside={(e) => e.preventDefault()}>
+            <DialogHeader>
+                <DialogTitle className="font-bold text-black">Request a Feature</DialogTitle>
+                <DialogDescription className="text-black/80">
+                    Have an idea for a new feature? Let us know!
+                </DialogDescription>
+            </DialogHeader>
+            <Form {...featureRequestForm}>
+                <form onSubmit={featureRequestForm.handleSubmit(onFeatureSubmit)} className="space-y-4">
+                    <FormField control={featureRequestForm.control} name="featureTitle" render={({ field }) => (
+                        <FormItem><FormLabel className="text-black font-bold">Feature Title</FormLabel><FormControl><Input className="border-black bg-white text-black placeholder:text-black/50" placeholder="e.g., Add dark mode" {...field} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                    <FormField control={featureRequestForm.control} name="description" render={({ field }) => (
+                        <FormItem><FormLabel className="text-black font-bold">Description</FormLabel><FormControl><Textarea className="border-black bg-white text-black placeholder:text-black/50" placeholder="Describe the feature and why it would be useful..." {...field} /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                        <FormField control={featureRequestForm.control} name="priority" render={({ field }) => (
+                        <FormItem><FormLabel className="text-black font-bold">Priority</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl><SelectTrigger className="border-black bg-white text-black"><SelectValue placeholder="Select priority" /></SelectTrigger></FormControl>
+                                <SelectContent className="border-black bg-white text-black"><SelectItem value="Low">Low</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="High">High</SelectItem></SelectContent>
+                            </Select>
+                        <FormMessage /></FormItem>
+                    )}/>
+                    <DialogFooter>
+                        <Button type="submit" variant="outline" className="w-full bg-white text-black border-black hover:bg-black hover:text-white" disabled={featureRequestForm.formState.isSubmitting}>
+                            {featureRequestForm.formState.isSubmitting ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : null} Submit
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </Form>
+        </DialogContent>
+    </Dialog>
+    </>
   );
 }
+
+    
