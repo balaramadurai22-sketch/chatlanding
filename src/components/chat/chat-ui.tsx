@@ -194,16 +194,16 @@ const getSymbolicVisual = (category: string) => {
         return (
            <motion.div {...animationProps} className="absolute inset-0 overflow-hidden">
              <Palette size={120} className="text-black/5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-12" strokeWidth={0.5} />
+               <svg width="100%" height="100%" className="absolute inset-0">
                {Array.from({ length: 5 }).map((_, i) => (
-                 <motion.div
+                 <motion.circle
                     key={i}
-                    className="absolute rounded-full border border-black/10"
-                    style={{
-                        top: `${Math.random() * 80 + 10}%`,
-                        left: `${Math.random() * 80 + 10}%`,
-                    }}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
+                    className="stroke-black/10 fill-transparent"
+                    strokeWidth="1"
+                    cx={`${Math.random() * 80 + 10}%`}
+                    cy={`${Math.random() * 80 + 10}%`}
+                    initial={{ r: 0, opacity: 0 }}
+                    animate={{ r: [0, 20, 0], opacity: [0, 1, 0] }}
                     transition={{
                         duration: Math.random() * 3 + 2,
                         repeat: Infinity,
@@ -212,31 +212,34 @@ const getSymbolicVisual = (category: string) => {
                     }}
                  />
                ))}
+              </svg>
            </motion.div>
         );
       default:
         return (
           <motion.div {...animationProps} className="absolute inset-0 flex items-center justify-center overflow-hidden">
             <Bot size={120} className="text-black/5 absolute" strokeWidth={0.5} />
-             {Array.from({ length: 10 }).map((_, i) => (
-                <motion.circle
-                    key={i}
-                    cx={Math.random() * 100 + '%'}
-                    cy={Math.random() * 100 + '%'}
-                    r={Math.random() * 2 + 1}
-                    className="absolute fill-black/10"
-                    animate={{
-                        x: [0, Math.random() * 20 - 10, 0],
-                        y: [0, Math.random() * 20 - 10, 0],
-                    }}
-                    transition={{
-                        duration: Math.random() * 5 + 3,
-                        repeat: Infinity,
-                        repeatType: 'mirror',
-                        ease: 'easeInOut'
-                    }}
-                 />
-             ))}
+             <svg width="100%" height="100%" className="absolute inset-0">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <motion.circle
+                      key={i}
+                      cx={`${Math.random() * 100}%`}
+                      cy={`${Math.random() * 100}%`}
+                      r={Math.random() * 2 + 1}
+                      className="fill-black/10"
+                      animate={{
+                          x: [0, Math.random() * 20 - 10, 0],
+                          y: [0, Math.random() * 20 - 10, 0],
+                      }}
+                      transition={{
+                          duration: Math.random() * 5 + 3,
+                          repeat: Infinity,
+                          repeatType: 'mirror',
+                          ease: 'easeInOut'
+                      }}
+                  />
+                ))}
+            </svg>
           </motion.div>
         );
     }
@@ -665,7 +668,7 @@ export default function ChatUI({
         return <a key={index} href={linkMatch[2]} target="_blank" rel="noopener noreferrer" className="text-black underline">{linkMatch[1]}</a>;
       }
       return part.split('\n').map((line, lineIndex) => (
-        <React.Fragment key={`${index}-${lineIndex}`}>{line}{lineIndex < part.split('\n').length - 1 && <br />}</React.Fragment>
+        <React.Fragment key={`${index}-${lineIndex}`}>{line}{lineIndex < part.split('\n').length - 1 && <br /></React.Fragment>
       ));
     });
   };
@@ -788,3 +791,5 @@ export default function ChatUI({
     </>
   );
 }
+
+    
