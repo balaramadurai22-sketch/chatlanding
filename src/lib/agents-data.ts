@@ -34,6 +34,8 @@ export const agents: Agent[] = [
     model: 'GPT-4',
     category: 'Coding',
     purpose: 'Analyzes pull requests and provides feedback.',
+    tools: ['github_api', 'linter'],
+    memory: 'short-term',
     active: true,
     pinned: true,
     peopleUsed: 2300,
@@ -45,6 +47,7 @@ export const agents: Agent[] = [
         twitter: 'https://x.com/techismust',
         github: 'https://github.com/techismust',
         linkedin: 'https://linkedin.com/in/balaramadurai',
+        paypal: 'paypal@example.com',
       },
     },
   },
@@ -55,6 +58,8 @@ export const agents: Agent[] = [
     model: 'Gemini 1.5',
     category: 'Analysis',
     purpose: 'Generates charts and insights from raw data.',
+    tools: ['chart_generator', 'sql_runner'],
+    memory: 'long-term',
     active: false,
     pinned: true,
     peopleUsed: 5400,
@@ -66,6 +71,7 @@ export const agents: Agent[] = [
         twitter: '#',
         github: '#',
         linkedin: '#',
+        upi: 'vijay@okhdfcbank',
       },
     },
   },
@@ -87,6 +93,7 @@ export const agents: Agent[] = [
         twitter: '#',
         github: '#',
         linkedin: '#',
+        btc: 'bc1q...',
       },
     },
   },
@@ -144,6 +151,8 @@ export const agents: Agent[] = [
       model: models[i % models.length],
       category,
       purpose: `Automates and assists in ${category.toLowerCase()} workflows.`,
+      tools: ['web_search'],
+      memory: 'short-term',
       active: Math.random() > 0.5,
       pinned: false,
       peopleUsed: Math.floor(Math.random() * 5000),
@@ -156,3 +165,5 @@ export const agents: Agent[] = [
     };
   }),
 ];
+
+    

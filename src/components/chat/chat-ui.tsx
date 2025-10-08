@@ -134,16 +134,16 @@ const newAgentSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters."),
   model: z.string().min(1, "Please select a model."),
   category: z.enum(['Coding', 'Analysis', 'Creative', 'Productivity', 'Research']),
-  purpose: z.string().min(10, "Purpose must be at least 10 characters."),
+  purpose: z.string().min(10, "Task/Role must be at least 10 characters."),
   creatorName: z.string().min(2, "Creator name is required."),
-  linkedin: z.string().url().optional().or(z.literal('')),
-  github: z.string().url().optional().or(z.literal('')),
-  twitter: z.string().url().optional().or(z.literal('')),
+  linkedin: z.string().url("Please enter a valid LinkedIn URL.").optional().or(z.literal('')),
+  github: z.string().url("Please enter a valid GitHub URL.").optional().or(z.literal('')),
+  twitter: z.string().url("Please enter a valid Twitter/X URL.").optional().or(z.literal('')),
   paypal: z.string().email("Invalid PayPal email").optional().or(z.literal('')),
   upi: z.string().optional(),
   btc: z.string().optional(),
-  tools: z.string().optional(),
-  memory: z.string().optional(),
+  tools: z.string().min(1, "Please specify allowed tools."),
+  memory: z.string().min(1, "Please specify memory options."),
 });
 type NewAgentFormValues = z.infer<typeof newAgentSchema>;
 
@@ -430,8 +430,6 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                     btc: data.btc || undefined,
                 },
             },
-            tools: data.tools?.split(',').map(t => t.trim()),
-            memory: data.memory,
             ...data
         };
         setAgents([newAgent, ...agents]);
@@ -473,7 +471,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                     </div>
                      <Dialog open={isAddAgentOpen} onOpenChange={setIsAddAgentOpen}>
                         <DialogTrigger asChild>
-                             <Button className="bg-black text-white hover:bg-white hover:text-black border border-black"><Plus className="mr-2 h-4 w-4" /> Add New</Button>
+                             <Button className="bg-black text-white hover:bg-white hover:text-black border border-black w-full md:w-auto shadow-sm hover:shadow-md transition-shadow"><Plus className="mr-2 h-4 w-4" /> Add New Agent</Button>
                         </DialogTrigger>
                         <DialogContent className="max-h-[90vh] overflow-y-auto">
                             <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
@@ -500,10 +498,10 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                       <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Coding">Coding</SelectItem><SelectItem value="Analysis">Analysis</SelectItem><SelectItem value="Creative">Creative</SelectItem><SelectItem value="Productivity">Productivity</SelectItem><SelectItem value="Research">Research</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                                     )} />
                                      <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Allowed Tools (Optional)</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Allowed Tools / Access</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField name="memory" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Memory Options (Optional)</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Memory / Context Options</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormItem>
                                     )} />
 
                                      <h3 className="font-bold text-sm uppercase text-black/60 pt-4">Creator Information</h3>
@@ -922,3 +920,5 @@ export default function ChatUI({
     </>
   );
 }
+
+    
