@@ -7,7 +7,6 @@ import { continueChat } from '@/app/actions';
 import type { ChatMessage } from '@/app/actions';
 import ChatUI from '@/components/chat/chat-ui';
 import { useToast } from '@/hooks/use-toast';
-import { Stream } from 'genkit/streaming';
 
 export default function ChatPage() {
   const searchParams = useSearchParams();
@@ -18,13 +17,20 @@ export default function ChatPage() {
   const [input, setInput] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const processStream = async (stream: Stream<string>) => {
+  const processStream = async (stream: ReadableStream<string>) => {
     let fullResponse = '';
-    const assistantMessage: ChatMessage = { role: 'assistant', content: '' };
-    setMessages(prev => [...prev, assistantMessage]);
+    const reader = stream.getReader();
+    const decoder = new TextDecoder();
 
-    for await (const chunk of stream) {
-        fullResponse += chunk;
+    // Add an empty assistant message to start
+    setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+            break;
+        }
+        fullResponse += decoder.decode(value, { stream: true });
         setMessages(prev =>
             prev.map((msg, index) =>
                 index === prev.length - 1 ? { ...msg, content: fullResponse } : msg
@@ -81,8 +87,8 @@ export default function ChatPage() {
         variant: "destructive",
       });
       console.error(error);
-      // Remove the user message that failed to get a response
-      setMessages(prev => prev.slice(0, prev.length - 1));
+      // Remove the user message and the empty assistant message
+      setMessages(prev => prev.slice(0, prev.length - 2));
     } finally {
       setIsLoading(false);
     }

@@ -10,7 +10,7 @@ export interface ChatMessage {
   content: string;
 }
 
-export async function continueChat(history: ChatMessage[]): Promise<Stream<string>> {
+export async function continueChat(history: ChatMessage[]): Promise<ReadableStream<string>> {
     const stream = await aiChat({ history });
     return stream;
 }
