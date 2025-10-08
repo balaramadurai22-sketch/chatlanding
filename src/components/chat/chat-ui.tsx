@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -32,11 +31,16 @@ import {
   Twitter,
   Github,
   Linkedin,
+  Filter,
+  Code,
+  LineChart,
+  Palette,
 } from 'lucide-react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
+import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -72,13 +76,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '../ui/switch';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
-import Image from 'next/image';
+import { agents as initialAgents, Agent } from '@/lib/agents-data';
+
 
 interface ChatUIProps {
   messages: ChatMessage[];
@@ -98,15 +97,19 @@ const TypingIndicator = () => (
 );
 
 const PixelLogo = () => (
-  <div className="w-16 h-16 flex items-center justify-center">
-    <div className="w-12 h-12 relative">
-      <div className="w-4 h-4 bg-black absolute bottom-0 left-0"></div>
-      <div className="w-4 h-4 bg-black absolute bottom-0 left-4"></div>
-      <div className="w-4 h-4 bg-black absolute bottom-0 left-8"></div>
-      <div className="w-4 h-4 bg-black absolute bottom-4 left-4"></div>
-    </div>
-  </div>
+    <Link href="/" className="flex items-center gap-2">
+      <div className="w-8 h-8 flex items-center justify-center">
+        <div className="w-6 h-6 relative">
+          <div className="w-2 h-2 bg-black absolute bottom-0 left-0"></div>
+          <div className="w-2 h-2 bg-black absolute bottom-0 left-2"></div>
+          <div className="w-2 h-2 bg-black absolute bottom-0 left-4"></div>
+          <div className="w-2 h-2 bg-black absolute bottom-2 left-2"></div>
+        </div>
+      </div>
+      <span className="font-bold text-lg">Le Chat</span>
+    </Link>
 );
+
 
 const bugReportSchema = z.object({
   title: z.string().min(1, 'Title is required.'),
@@ -123,6 +126,280 @@ const featureRequestSchema = z.object({
 });
 type FeatureRequestFormValues = z.infer<typeof featureRequestSchema>;
 
+const newAgentSchema = z.object({
+  name: z.string().min(3, "Agent name must be at least 3 characters."),
+  description: z.string().min(10, "Description must be at least 10 characters."),
+  category: z.string().min(1, "Category is required."),
+  model: z.string().min(1, "Model is required."),
+  purpose: z.string().min(10, "Purpose must be at least 10 characters."),
+});
+type NewAgentFormValues = z.infer<typeof newAgentSchema>;
+
+
+const AgentCard = ({ agent, onToggle, onPin }: { agent: Agent, onToggle: (id: string) => void, onPin: (id: string) => void }) => {
+    
+    const getSymbolicVisual = (category: string) => {
+    const animationProps = {
+      initial: { opacity: 0 },
+      animate: { opacity: 1 },
+      transition: { duration: 0.5, ease: 'easeInOut' },
+    };
+
+    switch (category) {
+      case 'Coding':
+        return (
+          <motion.div {...animationProps} className="absolute inset-0 overflow-hidden">
+            <div className="absolute inset-0 opacity-10">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute bg-black h-[1px]"
+                  style={{ top: `${i * 10}%`, width: `${Math.random() * 50 + 20}%` }}
+                  initial={{ x: '-100%' }}
+                  animate={{ x: '100%' }}
+                  transition={{ duration: Math.random() * 5 + 5, repeat: Infinity, repeatType: 'loop', ease: 'linear' }}
+                />
+              ))}
+            </div>
+          </motion.div>
+        );
+      case 'Analysis':
+         return (
+          <motion.div {...animationProps} className="absolute inset-0 flex items-center justify-center p-4">
+             <LineChart size={80} className="text-black/10" strokeWidth={1} />
+          </motion.div>
+        );
+      case 'Creative':
+        return (
+          <motion.div {...animationProps} className="absolute inset-0 overflow-hidden">
+             <Palette size={80} className="text-black/10 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" strokeWidth={1} />
+          </motion.div>
+        );
+      default:
+        return (
+          <motion.div {...animationProps} className="absolute inset-0 flex items-center justify-center">
+            <Bot size={80} className="text-black/10" strokeWidth={1} />
+          </motion.div>
+        );
+    }
+  };
+    
+    return (
+    <Dialog>
+        <DialogTrigger asChild>
+            <motion.div 
+              layout
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.3 }}
+              className="relative aspect-square w-full bg-white border border-black rounded-lg p-4 flex flex-col justify-between group cursor-pointer hover:shadow-lg transition-shadow"
+            >
+                <div className="absolute inset-0 -z-10">{getSymbolicVisual(agent.category)}</div>
+                <div>
+                    <div className="flex justify-between items-start">
+                        <div className="flex-grow">
+                             <h3 className="font-bold text-lg truncate">{agent.name}</h3>
+                             <p className="text-xs text-black/60">{agent.model}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <div className={cn("w-2 h-2 rounded-full", agent.active ? 'bg-green-500' : 'bg-red-500')}></div>
+                           <Switch checked={agent.active} onCheckedChange={() => onToggle(agent.id)} className="h-5 w-9" />
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-3 text-xs mt-2 text-black/70">
+                         <div className="flex items-center gap-1"><Users size={12} /> {agent.peopleUsed}</div>
+                         <div className="flex items-center gap-1"><Heart size={12} /> {agent.likes}</div>
+                     </div>
+                </div>
+
+                <div>
+                    <p className="text-xs text-black/70 italic mb-2 line-clamp-2">&quot;{agent.purpose}&quot;</p>
+                     <Badge variant="outline" className="text-xs">{agent.category}</Badge>
+                </div>
+
+                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(agent.id); }} className="absolute top-2 right-12 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {agent.pinned ? <PinOff size={16} /> : <Pin size={16} />}
+                </Button>
+
+            </motion.div>
+        </DialogTrigger>
+         <DialogContent>
+            <DialogHeader>
+                <DialogTitle className="text-2xl font-bold">{agent.name}</DialogTitle>
+                <DialogDescription>
+                    {agent.purpose}
+                </DialogDescription>
+            </DialogHeader>
+             <div className="my-4">
+                <div className="flex items-center gap-4 mb-4 pb-4 border-b border-black">
+                     <Image src={agent.creator.imageUrl} alt={agent.creator.name} width={48} height={48} className="rounded-full border-2 border-black" />
+                     <div>
+                         <p className="font-semibold">{agent.creator.name}</p>
+                         <div className="flex items-center gap-3 mt-1">
+                             <a href={agent.creator.social.x} target="_blank" rel="noopener noreferrer"><Twitter size={16} /></a>
+                             <a href={agent.creator.social.github} target="_blank" rel="noopener noreferrer"><Github size={16} /></a>
+                             <a href={agent.creator.social.linkedin} target="_blank" rel="noopener noreferrer"><Linkedin size={16} /></a>
+                         </div>
+                     </div>
+                </div>
+                 <p className="text-sm text-black/80 mb-4">{agent.description}</p>
+                 <div className="flex justify-between text-sm">
+                    <span>Model: <Badge variant="secondary">{agent.model}</Badge></span>
+                    <span>Category: <Badge variant="secondary">{agent.category}</Badge></span>
+                 </div>
+             </div>
+             <DialogFooter className="flex-col items-start gap-4">
+                 <p className="font-semibold">Support the Creator</p>
+                 <div className="flex w-full gap-2">
+                    <Input type="number" placeholder="Amount ($)" className="border-black" />
+                    <Button className="bg-black text-white">Donate</Button>
+                 </div>
+             </DialogFooter>
+        </DialogContent>
+    </Dialog>
+    )
+}
+
+const AgentsView = () => {
+    const [agents, setAgents] = React.useState<Agent[]>(initialAgents);
+    const [filter, setFilter] = React.useState('All');
+    const [searchTerm, setSearchTerm] = React.useState('');
+    const [isAddAgentOpen, setAddAgentOpen] = React.useState(false);
+    const { toast } = useToast();
+    
+    const categories = ['All', ...Array.from(new Set(initialAgents.map(a => a.category)))];
+
+    const filteredAgents = agents.filter(agent => {
+        const categoryMatch = filter === 'All' || agent.category === filter;
+        const searchMatch = searchTerm === '' || 
+            agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            agent.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            agent.category.toLowerCase().includes(searchTerm.toLowerCase());
+        return categoryMatch && searchMatch;
+    });
+
+    const pinnedAgents = filteredAgents.filter(a => a.pinned);
+    const unpinnedAgents = filteredAgents.filter(a => !a.pinned);
+
+    const handleToggle = (id: string) => {
+        setAgents(agents.map(a => a.id === id ? { ...a, active: !a.active } : a));
+    };
+    
+    const handlePin = (id: string) => {
+        setAgents(agents.map(a => a.id === id ? { ...a, pinned: !a.pinned } : a));
+    };
+    
+    const addAgentForm = useForm<NewAgentFormValues>({ resolver: zodResolver(newAgentSchema) });
+
+    const onAddAgentSubmit: SubmitHandler<NewAgentFormValues> = (data) => {
+        const newAgent: Agent = {
+            id: `agent-${Date.now()}`,
+            active: true,
+            pinned: false,
+            name: data.name,
+            description: data.description,
+            model: data.model,
+            category: data.category,
+            purpose: data.purpose,
+            peopleUsed: 0,
+            likes: 0,
+            creator: { // Placeholder creator
+                name: 'New User',
+                imageUrl: 'https://picsum.photos/seed/newuser/100/100',
+                social: { x: '#', github: '#', linkedin: '#' }
+            }
+        };
+        setAgents(prev => [newAgent, ...prev]);
+        addAgentForm.reset();
+        setAddAgentOpen(false);
+        toast({ title: 'Agent Added!', description: `${data.name} has been added to your agents.` });
+    };
+
+    return (
+        <div className="flex flex-col h-full bg-white p-4 md:p-6">
+            <header className="mb-6">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-3xl font-bold">Agents</h1>
+                    <Button onClick={() => setAddAgentOpen(true)}><Plus className="mr-2 h-4 w-4"/>Add New Agent</Button>
+                </div>
+                 <div className="mt-4 flex items-center gap-4">
+                    <div className="relative flex-grow">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/50" />
+                        <Input 
+                            placeholder="Search by name, model, or category..." 
+                            className="pl-10 border-black"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                 </div>
+                 <div className="mt-4 overflow-x-auto pb-2">
+                    <div className="flex items-center gap-2">
+                        {categories.map(cat => (
+                            <Button key={cat} variant={filter === cat ? 'default' : 'outline'} size="sm" onClick={() => setFilter(cat)}>
+                                {cat}
+                            </Button>
+                        ))}
+                    </div>
+                </div>
+            </header>
+            
+            <div className="flex-1 overflow-y-auto">
+                <AnimatePresence>
+                    {pinnedAgents.length > 0 && (
+                        <div className="mb-8">
+                            <h2 className="font-bold text-sm uppercase text-black/60 mb-2">Pinned</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                                {pinnedAgents.map(agent => <AgentCard key={agent.id} agent={agent} onToggle={handleToggle} onPin={handlePin}/>)}
+                            </div>
+                        </div>
+                    )}
+                    <div>
+                         <h2 className="font-bold text-sm uppercase text-black/60 mb-2">All Agents</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                            {unpinnedAgents.map(agent => <AgentCard key={agent.id} agent={agent} onToggle={handleToggle} onPin={handlePin}/>)}
+                        </div>
+                    </div>
+                </AnimatePresence>
+            </div>
+             <Dialog open={isAddAgentOpen} onOpenChange={setAddAgentOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Agent</DialogTitle>
+                  <DialogDescription>
+                    Create a new AI agent to handle specific tasks and workflows.
+                  </DialogDescription>
+                </DialogHeader>
+                 <Form {...addAgentForm}>
+                    <form onSubmit={addAgentForm.handleSubmit(onAddAgentSubmit)} className="space-y-4">
+                        <FormField name="name" control={addAgentForm.control} render={({ field }) => (
+                            <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} placeholder="e.g., Code Reviewer" className="border-black" /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField name="description" control={addAgentForm.control} render={({ field }) => (
+                            <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} placeholder="A detailed description of what this agent does." className="border-black" /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField name="purpose" control={addAgentForm.control} render={({ field }) => (
+                            <FormItem><FormLabel>Purpose / "How it works"</FormLabel><FormControl><Input {...field} placeholder="e.g., Analyzes pull requests for style issues." className="border-black" /></FormControl><FormMessage /></FormItem>
+                        )} />
+                         <div className="grid grid-cols-2 gap-4">
+                            <FormField name="category" control={addAgentForm.control} render={({ field }) => (
+                                <FormItem><FormLabel>Category</FormLabel><FormControl><Input {...field} placeholder="e.g., Coding" className="border-black" /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField name="model" control={addAgentForm.control} render={({ field }) => (
+                                <FormItem><FormLabel>Model</FormLabel><FormControl><Input {...field} placeholder="e.g., GPT-4" className="border-black" /></FormControl><FormMessage /></FormItem>
+                            )} />
+                        </div>
+                        <DialogFooter>
+                            <Button type="submit" className="bg-black text-white">Create Agent</Button>
+                        </DialogFooter>
+                    </form>
+                 </Form>
+              </DialogContent>
+            </Dialog>
+        </div>
+    );
+}
 
 export default function ChatUI({
   messages,
@@ -134,6 +411,7 @@ export default function ChatUI({
 }: ChatUIProps) {
   const isMobile = useIsMobile();
   const [isSidebarOpen, setSidebarOpen] = React.useState(false);
+  const [activeView, setActiveView] = React.useState('chat'); // 'chat' or 'agents'
   const { toast } = useToast();
 
   const bugReportForm = useForm<BugReportFormValues>({
@@ -178,10 +456,18 @@ export default function ChatUI({
 
       <nav className="mt-6 flex flex-col gap-2">
         <Button
-          variant={'default'}
+          variant={activeView === 'chat' ? 'default' : 'ghost'}
+          onClick={() => setActiveView('chat')}
           className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[variant=default]:bg-black data-[variant=default]:text-white"
         >
           <MessageCircle className="mr-3" /> Chat
+        </Button>
+        <Button
+          variant={activeView === 'agents' ? 'default' : 'ghost'}
+          onClick={() => setActiveView('agents')}
+          className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[variant=default]:bg-black data-[variant=default]:text-white"
+        >
+          <Bot className="mr-3" /> Agents
         </Button>
         <Button
           variant="ghost"
@@ -191,12 +477,6 @@ export default function ChatUI({
           <span className="ml-auto text-xs opacity-60">Ctrl+K</span>
         </Button>
       </nav>
-
-      <div className="mt-8 flex-grow overflow-y-auto">
-        <h3 className="text-sm font-bold uppercase tracking-wider mb-2">Projects</h3>
-        {/* Placeholder for projects */}
-      </div>
-
 
       <div className="mt-auto flex flex-col gap-2 pt-4 border-t border-black">
         <Dialog>
@@ -424,7 +704,18 @@ export default function ChatUI({
         )}
 
         <div className="flex flex-1 flex-col">
-          <ChatView />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeView}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+                className="h-full flex flex-col"
+              >
+                {activeView === 'chat' ? <ChatView /> : <AgentsView />}
+              </motion.div>
+            </AnimatePresence>
         </div>
       </div>
     </>
