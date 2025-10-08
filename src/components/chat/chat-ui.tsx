@@ -168,8 +168,8 @@ const AgentsView = ({
       peopleUsed: 0,
       likes: 0,
       pinned: false,
-      creator: { 
-        name: 'You', 
+      creator: {
+        name: 'You',
         profileUrl: '#',
         imageUrl: 'https://picsum.photos/seed/user/100/100',
         social: {
@@ -251,7 +251,7 @@ const AgentsView = ({
           ))}
         </div>
       </div>
-      
+
       {pinnedAgents.length > 0 && (
         <div className="mb-8">
             <h2 className="text-lg font-semibold mb-4 flex items-center"><Pin className="mr-2 h-4 w-4" /> Pinned Agents</h2>
@@ -305,7 +305,7 @@ const AgentsView = ({
           </Form>
         </DialogContent>
       </Dialog>
-      
+
        {/* Agent Detail Modal */}
       {agentForDetail && (
         <Dialog open={!!agentForDetail} onOpenChange={() => setAgentForDetail(null)}>
@@ -377,24 +377,23 @@ const AgentCard = ({ agent, onToggle, onPin, onCardClick }: { agent: Agent; onTo
             case 'Coding':
                 return <div className={cn(baseClass, "bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%220%200%2040%2040%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%23000000%22%20fill-opacity%3D%221%22%20fill-rule%3D%22evenodd%22%3E%3Cpath%20d%3D%22M0%200h20v20H0zM20%2020h20v20H20z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')]")}></div>;
             case 'Analysis':
-                return <div className={cn(baseClass, "bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M10%200v20M0%2010h20%22%20stroke%3D%22%23000000%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')]")}></div>;
+                 return <div className={cn(baseClass, "bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M10%200v20M0%2010h20%22%20stroke%3D%22%23000000%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')]")}></div>;
             case 'Creative':
                  return <div className={cn(baseClass, "bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2210%22%20cy%3D%2210%22%20r%3D%2210%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_10px]")}></div>;
             default:
                 return <div className={cn(baseClass, "bg-[url('data:image/svg+xml,%3Csvg%20width%3D%226%22%20height%3D%226%22%20viewBox%3D%220%200%206%206%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%23000000%22%20fill-opacity%3D%221%22%20fill-rule%3D%22evenodd%22%3E%3Cpath%20d%3D%22M5%200h1L0%206V5zM6%205v1H5z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')]")}></div>;
         }
     };
-    
+
     return (
-        <motion.div 
+        <motion.div
             className="border border-black rounded-lg p-4 flex flex-col justify-between aspect-square cursor-pointer hover:shadow-lg transition-shadow relative overflow-hidden group"
             onClick={onCardClick}
             layout
         >
-            {getSymbolicVisual(agent.category)}
-            <div className="relative z-10">
+            <div className="relative z-10 flex flex-col h-full">
                 <div className="flex justify-between items-start mb-2">
-                     <h3 className="font-bold text-lg pr-2 flex items-center">
+                    <h3 className="font-bold text-lg pr-2 flex items-center">
                         <span className={cn("w-2 h-2 rounded-full mr-2", agent.status === 'Active' ? 'bg-green-500' : 'bg-red-500')}></span>
                         {agent.name}
                     </h3>
@@ -405,22 +404,31 @@ const AgentCard = ({ agent, onToggle, onPin, onCardClick }: { agent: Agent; onTo
                         <Switch checked={agent.status === 'Active'} onCheckedChange={() => onToggle(agent.id)} onClick={(e) => e.stopPropagation()} />
                     </div>
                 </div>
+
                 <div className="flex flex-wrap gap-1 mb-3">
                     <Badge variant="outline" className="border-black text-xs">{agent.model}</Badge>
                     <Badge variant="outline" className="border-black text-xs">{agent.category}</Badge>
                 </div>
-                 <p className="text-xs text-black/70 mb-2 line-clamp-2">
+
+                <p className="text-xs text-black/70 mb-4 line-clamp-2">
                     <span className="font-semibold">How it works:</span> {agent.howItWorks}
                 </p>
-            </div>
-             <div className="relative z-10 flex items-center gap-4 text-xs text-black/60 mt-auto">
-                <div className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    <span>{agent.peopleUsed.toLocaleString()}</span>
+
+                <div className="flex-grow flex items-center justify-center w-full">
+                    <div className="relative w-full h-16">
+                        {getSymbolicVisual(agent.category)}
+                    </div>
                 </div>
-                <div className="flex items-center gap-1">
-                    <Star className="h-3 w-3" />
-                    <span>{agent.likes.toLocaleString()}</span>
+                
+                <div className="flex items-center gap-4 text-xs text-black/60 mt-auto pt-4">
+                    <div className="flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        <span>{agent.peopleUsed.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <Heart className="h-3 w-3" />
+                        <span>{agent.likes.toLocaleString()}</span>
+                    </div>
                 </div>
             </div>
         </motion.div>
