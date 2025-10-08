@@ -15,42 +15,28 @@ import {
   User,
   PanelLeft,
   ChevronsRight,
-  Infinity,
-  Lightbulb,
-  Grid,
   Bug,
-  Loader,
-  Edit,
-  Trash,
-  Copy,
-  MoreVertical,
-  X,
-  Filter as FilterIcon,
-  Pin,
-  PinOff,
-  Heart,
-  Users as UsersIcon,
-  Star,
+  Lightbulb,
 } from 'lucide-react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import type { ChatMessage } from '@/app/actions';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
-import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
   DialogTrigger,
-  DialogClose,
+  DialogClose
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -69,18 +55,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { agents as initialAgents, Agent } from '@/lib/agents-data';
-import { Switch } from '@/components/ui/switch';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { useForm, SubmitHandler } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 
 interface ChatUIProps {
   messages: ChatMessage[];
@@ -110,15 +84,20 @@ const PixelLogo = () => (
     </div>
 );
 
-const newAgentSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters.'),
-  description: z.string().min(10, 'Description must be at least 10 characters.'),
-  task: z.string().min(3, 'Task/Role is required.'),
-  tools: z.string().optional(),
-  memory: z.string().optional(),
+const bugReportSchema = z.object({
+  title: z.string().min(1, 'Title is required.'),
+  description: z.string().min(1, 'Description is required.'),
+  steps: z.string().min(1, 'Steps to reproduce are required.'),
+  severity: z.enum(['Low', 'Medium', 'High']),
 });
-type NewAgentFormValues = z.infer<typeof newAgentSchema>;
+type BugReportFormValues = z.infer<typeof bugReportSchema>;
 
+const featureRequestSchema = z.object({
+  title: z.string().min(1, 'Title is required.'),
+  description: z.string().min(1, 'Description is required.'),
+  priority: z.enum(['Low', 'Medium', 'High']),
+});
+type FeatureRequestFormValues = z.infer<typeof featureRequestSchema>;
 
 export default function ChatUI({
   messages,
@@ -128,38 +107,30 @@ export default function ChatUI({
   setInput,
 }: ChatUIProps) {
   const isMobile = useIsMobile();
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [activeView, setActiveView] = useState<'chat' | 'agents'>('chat');
-  const [agents, setAgents] = useState<Agent[]>(initialAgents);
-  
+  const [isSidebarOpen, setSidebarOpen] = React.useState(false);
   const { toast } = useToast();
 
-  const newAgentForm = useForm<NewAgentFormValues>({
-    resolver: zodResolver(newAgentSchema),
+  const bugReportForm = useForm<BugReportFormValues>({
+    resolver: zodResolver(bugReportSchema),
+    defaultValues: { severity: 'Medium' },
+  });
+  const featureRequestForm = useForm<FeatureRequestFormValues>({
+    resolver: zodResolver(featureRequestSchema),
+    defaultValues: { priority: 'Medium' },
   });
 
-  const onAddNewAgent: SubmitHandler<NewAgentFormValues> = (data) => {
-    const newAgent: Agent = {
-      id: `agent-${Date.now()}`,
-      name: data.name,
-      description: data.description,
-      owner: 'current_user',
-      status: 'Draft',
-      tags: data.task.split(',').map(t => t.trim()),
-      model: 'gpt-4o-mini',
-      isActivated: false,
-      pinned: false,
-      peopleUsed: 0,
-      likes: 0,
-      creator: { name: 'You', social: '#' },
-      purpose: data.task,
-      category: data.task.split(',')[0]?.trim() || 'General',
-    };
-    setAgents(prev => [newAgent, ...prev]);
-    toast({ title: 'Agent Created!', description: `${data.name} has been added.` });
-    newAgentForm.reset();
+  const onBugReportSubmit: SubmitHandler<BugReportFormValues> = data => {
+    console.log('Bug Report:', data);
+    toast({ title: 'Bug Report Submitted!', description: 'Thank you for your feedback.' });
+    bugReportForm.reset();
   };
-  
+
+  const onFeatureRequestSubmit: SubmitHandler<FeatureRequestFormValues> = data => {
+    console.log('Feature Request:', data);
+    toast({ title: 'Feature Request Submitted!', description: 'Thank you for your suggestion.' });
+    featureRequestForm.reset();
+  };
+
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-white text-black p-4 border-r border-black">
       <div className="flex items-center gap-3 p-2 border border-black rounded-md">
@@ -181,18 +152,10 @@ export default function ChatUI({
 
       <nav className="mt-6 flex flex-col gap-2">
         <Button
-          variant={activeView === 'chat' ? 'default' : 'ghost'}
-          onClick={() => setActiveView('chat')}
+          variant={'default'}
           className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[variant=default]:bg-black data-[variant=default]:text-white"
         >
           <MessageCircle className="mr-3" /> Chat
-        </Button>
-        <Button
-          variant={activeView === 'agents' ? 'default' : 'ghost'}
-          onClick={() => setActiveView('agents')}
-          className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[variant=default]:bg-black data-[variant=default]:text-white"
-        >
-          <Bot className="mr-3" /> Agents
         </Button>
         <Button
           variant="ghost"
@@ -247,7 +210,73 @@ export default function ChatUI({
       </div>
 
       <div className="mt-auto flex flex-col gap-2 pt-4 border-t border-black">
-        {/* The "Upgrade to Pro" section is preserved as requested. */}
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start text-sm font-bold border border-black hover:bg-black hover:text-white">
+                    <Bug className="mr-3 h-4 w-4" /> Bug Report
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Submit a Bug Report</DialogTitle>
+                </DialogHeader>
+                <Form {...bugReportForm}>
+                    <form onSubmit={bugReportForm.handleSubmit(onBugReportSubmit)} className="space-y-4">
+                        <FormField name="title" control={bugReportForm.control} render={({ field }) => (
+                            <FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField name="description" control={bugReportForm.control} render={({ field }) => (
+                            <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField name="steps" control={bugReportForm.control} render={({ field }) => (
+                            <FormItem><FormLabel>Steps to Reproduce</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField name="severity" control={bugReportForm.control} render={({ field }) => (
+                            <FormItem><FormLabel>Severity</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                <SelectContent><SelectItem value="Low">Low</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="High">High</SelectItem></SelectContent>
+                            </Select><FormMessage /></FormItem>
+                        )} />
+                        <DialogFooter>
+                            <Button type="submit">Submit</Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start text-sm font-bold border border-black hover:bg-black hover:text-white">
+                    <Lightbulb className="mr-3 h-4 w-4" /> Feature Request
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Request a Feature</DialogTitle>
+                </DialogHeader>
+                <Form {...featureRequestForm}>
+                    <form onSubmit={featureRequestForm.handleSubmit(onFeatureRequestSubmit)} className="space-y-4">
+                        <FormField name="title" control={featureRequestForm.control} render={({ field }) => (
+                            <FormItem><FormLabel>Feature Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField name="description" control={featureRequestForm.control} render={({ field }) => (
+                            <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField name="priority" control={featureRequestForm.control} render={({ field }) => (
+                            <FormItem><FormLabel>Priority</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                <SelectContent><SelectItem value="Low">Low</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="High">High</SelectItem></SelectContent>
+                            </Select><FormMessage /></FormItem>
+                        )} />
+                        <DialogFooter>
+                            <Button type="submit">Submit</Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+        
         <div className="bg-white p-3 rounded-lg shadow-md border border-gray-200 mt-2">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -353,168 +382,6 @@ export default function ChatUI({
     </>
   );
 
-  const AgentsView = () => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [activeCategory, setActiveCategory] = useState('All');
-
-    const allCategories = ['All', ...Array.from(new Set(agents.flatMap(a => a.tags)))];
-
-    const filteredAgents = agents.filter(agent => {
-        const categoryMatch = activeCategory === 'All' || agent.tags.includes(activeCategory);
-        const searchMatch = searchTerm === '' || 
-            agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            agent.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            agent.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-        return categoryMatch && searchMatch;
-    });
-
-    const pinnedAgents = filteredAgents.filter(a => a.pinned);
-    const unpinnedAgents = filteredAgents.filter(a => !a.pinned);
-
-    const toggleActivation = (id: string) => {
-      setAgents(agents.map(a => a.id === id ? { ...a, isActivated: !a.isActivated } : a));
-    };
-
-    const togglePin = (id: string) => {
-        setAgents(agents.map(a => a.id === id ? { ...a, pinned: !a.pinned } : a));
-    };
-
-    const AgentCard = ({ agent }: { agent: Agent }) => (
-      <Dialog>
-        <DialogTrigger asChild>
-            <motion.div 
-                className="border border-black rounded-lg p-4 flex flex-col aspect-square justify-between shadow-sm hover:shadow-lg hover:-translate-y-1 transition-transform cursor-pointer bg-white"
-                layout
-            >
-                <div>
-                    <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-bold text-lg mb-1 pr-2">{agent.name}</h3>
-                        <Switch checked={agent.isActivated} onCheckedChange={() => toggleActivation(agent.id)} />
-                    </div>
-                    <p className="text-xs text-black/60 font-semibold uppercase">How it works</p>
-                    <p className="text-sm text-black/70 flex-grow line-clamp-2 mt-1">{agent.description}</p>
-                </div>
-                <div className="flex flex-col gap-2 mt-4 text-xs">
-                    <div className="flex items-center gap-1">
-                        <Bot className="h-3 w-3" />
-                        <span className="font-semibold">Model:</span>
-                        <span>{agent.model}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <UsersIcon className="h-3 w-3" />
-                        <span className="font-semibold">Used by:</span>
-                        <span>{agent.peopleUsed}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <Heart className="h-3 w-3" />
-                        <span className="font-semibold">Likes:</span>
-                        <span>{agent.likes}</span>
-                    </div>
-                     <div className="flex flex-wrap gap-1 mt-1">
-                        {agent.tags.slice(0,2).map(tag => (
-                            <Badge key={tag} variant="outline" className="border-black text-black">{tag}</Badge>
-                        ))}
-                    </div>
-                </div>
-            </motion.div>
-        </DialogTrigger>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle className="font-bold text-2xl">{agent.name}</DialogTitle>
-                <DialogDescription>
-                    Created by: <a href={agent.creator.social} target="_blank" rel="noopener noreferrer" className="underline">{agent.creator.name}</a>
-                </DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-                <p className="font-semibold">Full Description:</p>
-                <p>{agent.description}</p>
-                 <Button className="mt-4 w-full bg-black text-white hover:bg-gray-800">Donate to Creator</Button>
-            </div>
-        </DialogContent>
-      </Dialog>
-    );
-
-    return (
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col bg-white">
-            <div className="mb-6">
-                <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-4">
-                    <h1 className="text-2xl font-bold">Agents</h1>
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button variant="outline" className="border-black bg-black text-white hover:bg-white hover:text-black transition-colors">
-                                <Plus className="mr-2 h-4 w-4" /> Add New Agent
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Create a New Agent</DialogTitle>
-                            </DialogHeader>
-                            <Form {...newAgentForm}>
-                                <form onSubmit={newAgentForm.handleSubmit(onAddNewAgent)} className="space-y-4">
-                                     <FormField control={newAgentForm.control} name="name" render={({ field }) => (
-                                        <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input placeholder="e.g., Meeting Summarizer" {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                     <FormField control={newAgentForm.control} name="description" render={({ field }) => (
-                                        <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="What does this agent do?" {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                     <FormField control={newAgentForm.control} name="task" render={({ field }) => (
-                                        <FormItem><FormLabel>Task/Role (comma-separated)</FormLabel><FormControl><Input placeholder="e.g., Summarization, Productivity" {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                     <FormField control={newAgentForm.control} name="tools" render={({ field }) => (
-                                        <FormItem><FormLabel>Allowed Tools (Optional)</FormLabel><FormControl><Input placeholder="e.g., Calendar API" {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                     <FormField control={newAgentForm.control} name="memory" render={({ field }) => (
-                                        <FormItem><FormLabel>Memory/Context (Optional)</FormLabel><FormControl><Input placeholder="e.g., Last 5 interactions" {...field} /></FormControl><FormMessage /></FormItem>
-                                    )} />
-                                    <DialogFooter>
-                                        <Button type="submit" className="bg-black text-white hover:bg-gray-800">Create Agent</Button>
-                                    </DialogFooter>
-                                </form>
-                            </Form>
-                        </DialogContent>
-                    </Dialog>
-                </div>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/50" />
-                    <Input placeholder="Search agents..." className="pl-10 w-full border-black" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-                </div>
-                <ScrollArea className="w-full whitespace-nowrap rounded-md mt-4">
-                    <div className="flex w-max space-x-2 pb-2">
-                        {allCategories.map(category => (
-                            <Button
-                                key={category}
-                                variant={activeCategory === category ? 'default' : 'outline'}
-                                onClick={() => setActiveCategory(category)}
-                                className="border-black data-[variant=default]:bg-black data-[variant=default]:text-white"
-                            >
-                                {category}
-                            </Button>
-                        ))}
-                    </div>
-                    <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto pr-2">
-                 {pinnedAgents.length > 0 && (
-                    <div className="mb-8">
-                        <h2 className="text-sm font-bold uppercase tracking-wider mb-4">Pinned Agents</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                           {pinnedAgents.map(agent => <AgentCard key={agent.id} agent={agent} />)}
-                        </div>
-                    </div>
-                 )}
-               <div>
-                 <h2 className="text-sm font-bold uppercase tracking-wider mb-4">All Agents</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {unpinnedAgents.map(agent => <AgentCard key={agent.id} agent={agent} />)}
-                  </div>
-               </div>
-            </div>
-        </main>
-    );
-  }
-
   return (
     <>
       <div className="flex h-screen w-full bg-white text-black font-sans">
@@ -560,7 +427,7 @@ export default function ChatUI({
         )}
 
         <div className="flex flex-1 flex-col">
-            {activeView === 'chat' ? <ChatView /> : <AgentsView />}
+            <ChatView />
         </div>
       </div>
     </>
