@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -124,7 +125,7 @@ const featureRequestSchema = z.object({
   description: z.string().min(1, 'Description is required.'),
   priority: z.enum(['Low', 'Medium', 'High']),
 });
-type FeatureRequestFormValues = z-infer<typeof featureRequestSchema>;
+type FeatureRequestFormValues = z.infer<typeof featureRequestSchema>;
 
 const newAgentSchema = z.object({
   name: z.string().min(3, "Agent name must be at least 3 characters."),
