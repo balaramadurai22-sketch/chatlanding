@@ -23,7 +23,7 @@ const AIChatInputSchema = z.object({
 export type AIChatInput = z.infer<typeof AIChatInputSchema>;
 
 
-export async function aiChat(input: AIChatInput): Promise<Stream<string>> {
+export async function aiChat(input: AIChatInput): Promise<ReadableStream<string>> {
   const {stream} = await ai.generateStream({
       model: 'googleai/gemini-2.5-flash',
       prompt: `You are a helpful AI assistant from TECHismust. Answer the user's question.`,
@@ -38,7 +38,21 @@ export async function aiChat(input: AIChatInput): Promise<Stream<string>> {
         },
     });
 
-    stream.pipeTo(transformStream.writable);
-
+    (async () => {
+        const writer = transformStream.writable.getWriter();
+        try {
+            for await (const chunk of stream) {
+                if (chunk.text) {
+                    await writer.write(chunk.text);
+                }
+            }
+        } catch (e) {
+            console.error('Streaming error:', e);
+            writer.abort(e);
+        } finally {
+            writer.close();
+        }
+    })();
+    
     return transformStream.readable;
 }
