@@ -156,89 +156,115 @@ type DonationFormValues = z.infer<typeof donationSchema>;
 
 const getSymbolicVisual = (category: Agent['category']) => {
     const commonProps = {
-        className: "absolute inset-0 w-full h-full opacity-10",
+        className: "absolute inset-0 w-full h-full opacity-10 group-hover:opacity-20 transition-opacity",
     };
 
     switch (category) {
         case 'Coding':
-            return (
-                <div {...commonProps}>
-                    {Array.from({ length: 8 }).map((_, i) => (
+            const codeLines = [
+              "const fetchData = async () => {",
+              "  const response = await fetch(API_URL);",
+              "  const data = await response.json();",
+              "  return data;",
+              "};",
+              "fetchData().then(console.log);",
+            ];
+             return (
+                <div {...commonProps} className="font-mono text-xs p-2 overflow-hidden">
+                    {codeLines.map((line, i) => (
                         <motion.div
                             key={i}
-                            className="absolute h-px bg-black"
-                            style={{
-                                width: `${Math.random() * 30 + 10}%`,
-                                top: `${i * 12.5}%`,
-                            }}
-                            initial={{ x: '-100%' }}
-                            animate={{ x: '100%' }}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
                             transition={{
-                                duration: Math.random() * 5 + 5,
+                                duration: 0.5,
                                 repeat: Infinity,
-                                repeatType: 'loop',
-                                ease: 'linear',
-                                delay: i * 0.5,
+                                repeatType: 'mirror',
+                                delay: i * 0.3 + Math.random() * 1,
                             }}
-                        />
+                        >
+                           <span className="text-purple-400">const</span> <span className="text-yellow-400">fetchData</span> = ...
+                        </motion.div>
                     ))}
                 </div>
             );
         case 'Analysis':
+             const points = Array.from({ length: 7 }, (_, i) => `${i * 15},${30 + Math.random() * 40 - 20}`).join(' ');
             return (
-                <motion.div {...commonProps} className="flex items-end justify-between p-2 absolute inset-0 w-full h-full opacity-20">
-                     <LineChart className="w-full h-full" strokeWidth={0.5} />
-                </motion.div>
+                <motion.svg {...commonProps} viewBox="0 0 100 60">
+                    <motion.polyline
+                        points={points}
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse', ease: "easeInOut" }}
+                    />
+                </motion.svg>
             );
         case 'Creative':
             return (
                 <motion.svg {...commonProps} viewBox="0 0 100 100">
-                    <motion.circle
-                        cx="50"
-                        cy="50"
-                        r="30"
-                        stroke="black"
-                        strokeWidth="0.5"
+                    <motion.path
+                        d="M20,50 C20,80 80,80 80,50 C80,20 20,20 20,50 Z"
                         fill="none"
-                        initial={{ pathLength: 0.5, rotate: 0 }}
-                        animate={{ pathLength: 1, rotate: 360 }}
-                        transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
-                    />
-                     <motion.circle
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        stroke="black"
-                        strokeWidth="0.2"
-                        fill="none"
-                        initial={{ pathLength: 1, rotate: 360 }}
-                        animate={{ pathLength: 0.5, rotate: 0 }}
-                        transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+                        stroke="currentColor"
+                        strokeWidth="1"
+                        animate={{
+                            d: [
+                                "M20,50 C20,80 80,80 80,50 C80,20 20,20 20,50 Z",
+                                "M30,50 C10,70 90,70 70,50 C90,30 10,30 30,50 Z",
+                                "M20,50 C20,80 80,80 80,50 C80,20 20,20 20,50 Z",
+                            ]
+                        }}
+                        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
                     />
                 </motion.svg>
             );
-        default:
+        case 'Research':
              return (
                 <motion.svg {...commonProps} viewBox="0 0 100 100">
-                    <Bot size={120} className="text-black/5 absolute" strokeWidth={0.5} />
-                     {Array.from({ length: 10 }).map((_, i) => (
+                     {/* Nodes */}
+                     {[...Array(5)].map((_, i) => (
+                         <motion.circle
+                             key={`node-${i}`}
+                             cx={20 + (i * 15)}
+                             cy={50 + Math.sin(i) * 20}
+                             r="3"
+                             fill="currentColor"
+                             animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                             transition={{ duration: 3, repeat: Infinity, delay: i * 0.2 }}
+                         />
+                     ))}
+                     {/* Connections */}
+                     <motion.path d="M20 50 L35 70 L50 50 L65 30 L80 50" stroke="currentColor" strokeWidth="0.5" fill="none" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 4, repeat: Infinity, repeatType: "reverse" }}/>
+                </motion.svg>
+             )
+        default: // Productivity & others
+             return (
+                <motion.svg {...commonProps} viewBox="0 0 100 100">
+                     {Array.from({ length: 5 }).map((_, i) => (
                         <motion.circle
                             key={i}
-                            cx={`${Math.random() * 100}%`}
-                            cy={`${Math.random() * 100}%`}
-                            r={Math.random() * 1.5 + 0.5}
-                            fill="black"
-                            initial={{ opacity: 0 }}
+                            r="2"
+                            fill="currentColor"
+                            initial={{
+                                cx: 50,
+                                cy: 50,
+                                opacity: 0
+                            }}
                             animate={{
+                                cx: 50 + 40 * Math.cos( (i/5) * 2 * Math.PI),
+                                cy: 50 + 40 * Math.sin( (i/5) * 2 * Math.PI),
                                 opacity: [0, 1, 0],
-                                scale: [1, 1.2, 1],
-                                x: Math.random() * 20 - 10,
-                                y: Math.random() * 20 - 10,
+                                rotate: 360
                             }}
                             transition={{
-                                duration: Math.random() * 5 + 5,
+                                duration: 10,
                                 repeat: Infinity,
-                                delay: i * 0.5,
+                                delay: i * 1,
+                                ease: 'linear'
                             }}
                         />
                     ))}
@@ -281,7 +307,7 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
                     transition={{ duration: 0.3 }}
-                    className="relative aspect-square flex flex-col justify-between p-4 border border-black rounded-lg bg-white shadow-sm cursor-pointer group hover:shadow-md transition-shadow"
+                    className="relative aspect-square flex flex-col justify-between p-4 border border-black rounded-lg bg-white shadow-sm cursor-pointer group hover:shadow-md transition-shadow hover:-translate-y-1"
                 >
                     <div className="absolute inset-0 overflow-hidden rounded-lg">
                         {getSymbolicVisual(agent.category)}
@@ -325,46 +351,9 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                     <span className="sr-only">Close</span>
                 </DialogClose>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4">
-                    <div className="md:col-span-2 flex flex-col gap-6">
-                        <div className="flex items-start gap-4">
-                            <div className="w-24 h-24 relative flex-shrink-0 border rounded-lg overflow-hidden">
-                                <Image src={agent.creator.imageUrl} alt={agent.creator.name} layout="fill" objectFit="cover" />
-                            </div>
-                            <div>
-                                <DialogTitle className="text-2xl font-bold">{agent.name}</DialogTitle>
-                                <div className="text-sm text-black/60">by {agent.creator.name}</div>
-                                <div className="flex gap-3 mt-2">
-                                    {agent.creator.social.twitter && <a href={agent.creator.social.twitter} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Twitter size={16} /></a>}
-                                    {agent.creator.social.github && <a href={agent.creator.social.github} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Github size={16} /></a>}
-                                    {agent.creator.social.linkedin && <a href={agent.creator.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Linkedin size={16} /></a>}
-                                </div>
-                            </div>
-                        </div>
-                        <div className="p-4 border rounded-lg">
-                            <h4 className="font-semibold mb-2">How it works</h4>
-                            <p className="text-sm text-black/80">{agent.description}</p>
-                        </div>
-                        <div className="p-4 border rounded-lg">
-                            <h4 className="font-semibold mb-2">Purpose / Task</h4>
-                            <p className="text-sm text-black/80">{agent.purpose}</p>
-                        </div>
-                         <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div className="p-3 border rounded-lg"><span className="font-semibold">Model:</span> {agent.model}</div>
-                            <div className="p-3 border rounded-lg"><span className="font-semibold">Category:</span> {agent.category}</div>
-                        </div>
-                    </div>
-                     <div className="flex flex-col gap-4">
-                        <div className="p-4 border rounded-lg flex justify-around text-center">
-                            <div>
-                                <div className="font-bold text-lg">{(agent.peopleUsed/1000).toFixed(1)}k</div>
-                                <div className="text-xs text-black/60">Users</div>
-                            </div>
-                             <div>
-                                <div className="font-bold text-lg">{(agent.likes/1000).toFixed(1)}k</div>
-                                <div className="text-xs text-black/60">Likes</div>
-                            </div>
-                        </div>
-                        <div className="p-4 border rounded-lg">
+                    <div className="flex flex-col gap-4">
+                        <Image src={agent.creator.imageUrl} alt={agent.creator.name} width={128} height={128} className="rounded-lg border-2 border-black w-full aspect-square object-cover" />
+                         <div className="p-4 border rounded-lg flex-grow">
                            <h4 className="font-semibold mb-2">Support the Creator</h4>
                              <Form {...donationForm}>
                                 <form onSubmit={donationForm.handleSubmit(onDonationSubmit)} className="space-y-2">
@@ -381,17 +370,52 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                                     <Button type="submit" className="w-full bg-black text-white hover:bg-white hover:text-black border border-black">Donate</Button>
                                 </form>
                              </Form>
-                        </div>
-                         { (agent.creator.social.paypal || agent.creator.social.upi || agent.creator.social.btc) &&
-                             <div className="p-4 border rounded-lg space-y-2">
-                                <h4 className="font-semibold text-xs text-center text-black/60">Other methods</h4>
-                                <div className="flex justify-center gap-4">
-                                     {agent.creator.social.paypal && <Button variant="outline" size="icon" className="border-black"><DollarSign size={16} /></Button>}
-                                     {agent.creator.social.upi && <Button variant="outline" size="icon" className="border-black">UPI</Button>}
-                                     {agent.creator.social.btc && <Button variant="outline" size="icon" className="border-black"><Bitcoin size={16}/></Button>}
+                             { (agent.creator.social.paypal || agent.creator.social.upi || agent.creator.social.btc) &&
+                                 <div className="p-4 border rounded-lg space-y-2 mt-4">
+                                    <h4 className="font-semibold text-xs text-center text-black/60">Other methods</h4>
+                                    <div className="flex justify-center gap-4">
+                                         {agent.creator.social.paypal && <Button variant="outline" size="icon" className="border-black"><DollarSign size={16} /></Button>}
+                                         {agent.creator.social.upi && <Button variant="outline" size="icon" className="border-black">UPI</Button>}
+                                         {agent.creator.social.btc && <Button variant="outline" size="icon" className="border-black"><Bitcoin size={16}/></Button>}
+                                    </div>
                                 </div>
+                             }
+                        </div>
+                    </div>
+                     <div className="md:col-span-2 flex flex-col gap-6">
+                        <div>
+                            <DialogTitle className="text-3xl font-bold">{agent.name}</DialogTitle>
+                            <div className="text-sm text-black/60">by {agent.creator.name}</div>
+                            <div className="flex gap-3 mt-2">
+                                {agent.creator.social.twitter && <a href={agent.creator.social.twitter} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Twitter size={16} /></a>}
+                                {agent.creator.social.github && <a href={agent.creator.social.github} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Github size={16} /></a>}
+                                {agent.creator.social.linkedin && <a href={agent.creator.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Linkedin size={16} /></a>}
                             </div>
-                         }
+                        </div>
+                        <div className="p-4 border rounded-lg">
+                            <h4 className="font-semibold mb-2">How it works</h4>
+                            <p className="text-sm text-black/80">{agent.description}</p>
+                        </div>
+                        <div className="p-4 border rounded-lg">
+                            <h4 className="font-semibold mb-2">Purpose / Task</h4>
+                            <p className="text-sm text-black/80">{agent.purpose}</p>
+                        </div>
+                         <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="p-3 border rounded-lg"><span className="font-semibold">Model:</span> {agent.model}</div>
+                            <div className="p-3 border rounded-lg"><span className="font-semibold">Category:</span> {agent.category}</div>
+                            <div className="p-3 border rounded-lg"><span className="font-semibold">Tools:</span> {agent.tools}</div>
+                            <div className="p-3 border rounded-lg"><span className="font-semibold">Memory:</span> {agent.memory}</div>
+                        </div>
+                         <div className="p-4 border rounded-lg flex justify-around text-center mt-auto">
+                            <div>
+                                <div className="font-bold text-lg">{(agent.peopleUsed/1000).toFixed(1)}k</div>
+                                <div className="text-xs text-black/60">Users</div>
+                            </div>
+                             <div>
+                                <div className="font-bold text-lg">{(agent.likes/1000).toFixed(1)}k</div>
+                                <div className="text-xs text-black/60">Likes</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </DialogContent>
@@ -489,7 +513,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                               <X className="h-4 w-4" />
                               <span className="sr-only">Close</span>
                             </DialogClose>
-                            <DialogHeader><DialogTitle>Create New Agent</DialogTitle></DialogHeader>
+                            <DialogHeader><DialogTitle className="text-2xl font-bold text-center my-4">Create a New Agent</DialogTitle></DialogHeader>
                             <Form {...newAgentForm}>
                                 <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
@@ -513,11 +537,8 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                         </div>
 
                                         <div className="space-y-6">
-                                            <div className="space-y-4 p-4 border rounded-lg">
-                                                <h3 className="font-bold text-sm uppercase text-black/60">Creator Information</h3>
-                                                <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
-                                                    <FormItem><FormLabel>Creator Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                                )} />
+                                             <div className="space-y-4 p-4 border rounded-lg">
+                                                <h3 className="font-bold text-sm uppercase text-black/60">Technical Details</h3>
                                                 <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
                                                     <FormItem><FormLabel>Allowed Tools / Access</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
                                                 )} />
@@ -526,8 +547,11 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                                 )} />
                                             </div>
                                             <div className="space-y-4 p-4 border rounded-lg">
-                                                <h3 className="font-bold text-sm uppercase text-black/60">Creator Socials</h3>
-                                                 <FormField name="linkedin" control={newAgentForm.control} render={({ field }) => (
+                                                <h3 className="font-bold text-sm uppercase text-black/60">Creator Information</h3>
+                                                <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
+                                                    <FormItem><FormLabel>Creator Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                                )} />
+                                                <FormField name="linkedin" control={newAgentForm.control} render={({ field }) => (
                                                     <FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                                                 )} />
                                                 <FormField name="github" control={newAgentForm.control} render={({ field }) => (
@@ -551,7 +575,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                             </div>
                                         </div>
                                      </div>
-                                    <DialogFooter><Button type="submit" className="bg-black text-white">Create Agent</Button></DialogFooter>
+                                    <DialogFooter><Button type="submit" className="bg-black text-white w-full">Create Agent</Button></DialogFooter>
                                 </form>
                             </Form>
                         </DialogContent>
@@ -942,5 +966,3 @@ export default function ChatUI({
     </>
   );
 }
-
-    
