@@ -124,7 +124,7 @@ const featureRequestSchema = z.object({
   description: z.string().min(1, 'Description is required.'),
   priority: z.enum(['Low', 'Medium', 'High']),
 });
-type FeatureRequestFormValues = z.infer<typeof featureRequestSchema>;
+type FeatureRequestFormValues = z-infer<typeof featureRequestSchema>;
 
 const newAgentSchema = z.object({
   name: z.string().min(3, "Agent name must be at least 3 characters."),
@@ -138,11 +138,11 @@ type NewAgentFormValues = z.infer<typeof newAgentSchema>;
 
 const AgentCard = ({ agent, onToggle, onPin }: { agent: Agent, onToggle: (id: string) => void, onPin: (id: string) => void }) => {
     
-    const getSymbolicVisual = (category: string) => {
+const getSymbolicVisual = (category: string) => {
     const animationProps = {
       initial: { opacity: 0 },
       animate: { opacity: 1 },
-      transition: { duration: 0.5, ease: 'easeInOut' },
+      transition: { duration: 0.8, ease: 'easeInOut' },
     };
 
     switch (category) {
@@ -154,31 +154,88 @@ const AgentCard = ({ agent, onToggle, onPin }: { agent: Agent, onToggle: (id: st
                 <motion.div
                   key={i}
                   className="absolute bg-black h-[1px]"
-                  style={{ top: `${i * 10}%`, width: `${Math.random() * 50 + 20}%` }}
-                  initial={{ x: '-100%' }}
-                  animate={{ x: '100%' }}
-                  transition={{ duration: Math.random() * 5 + 5, repeat: Infinity, repeatType: 'loop', ease: 'linear' }}
+                  style={{
+                    top: `${i * 10}%`,
+                    width: `${Math.random() * 40 + 10}%`,
+                    left: `${Math.random() * 50}%`,
+                  }}
+                  initial={{ x: '-110%' }}
+                  animate={{ x: '110%' }}
+                  transition={{
+                    duration: Math.random() * 4 + 4,
+                    repeat: Infinity,
+                    repeatType: 'loop',
+                    ease: 'linear',
+                    delay: Math.random() * 2,
+                  }}
                 />
               ))}
             </div>
           </motion.div>
         );
       case 'Analysis':
-         return (
-          <motion.div {...animationProps} className="absolute inset-0 flex items-center justify-center p-4">
-             <LineChart size={80} className="text-black/10" strokeWidth={1} />
+        return (
+          <motion.div {...animationProps} className="absolute inset-0 flex items-center justify-center p-4 overflow-hidden">
+            <LineChart size={120} className="text-black/5 absolute -rotate-12" strokeWidth={0.5} />
+            <motion.div
+                className="absolute bottom-4 left-4 right-4 h-1/2"
+                initial={{ opacity: 0.5 }}
+                animate={{ opacity: [0.5, 0.2, 0.5] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            >
+                <div className="w-full h-full border border-black/10 rounded-md p-1">
+                    <div className="w-full h-full bg-gradient-to-t from-black/5 to-transparent rounded-sm"/>
+                </div>
+            </motion.div>
           </motion.div>
         );
       case 'Creative':
         return (
-          <motion.div {...animationProps} className="absolute inset-0 overflow-hidden">
-             <Palette size={80} className="text-black/10 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" strokeWidth={1} />
-          </motion.div>
+           <motion.div {...animationProps} className="absolute inset-0 overflow-hidden">
+             <Palette size={120} className="text-black/5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-12" strokeWidth={0.5} />
+               {Array.from({ length: 5 }).map((_, i) => (
+                 <motion.div
+                    key={i}
+                    className="absolute rounded-full border border-black/10"
+                    style={{
+                        top: `${Math.random() * 80 + 10}%`,
+                        left: `${Math.random() * 80 + 10}%`,
+                    }}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
+                    transition={{
+                        duration: Math.random() * 3 + 2,
+                        repeat: Infinity,
+                        ease: 'circOut',
+                        delay: Math.random() * 3
+                    }}
+                 />
+               ))}
+           </motion.div>
         );
       default:
         return (
-          <motion.div {...animationProps} className="absolute inset-0 flex items-center justify-center">
-            <Bot size={80} className="text-black/10" strokeWidth={1} />
+          <motion.div {...animationProps} className="absolute inset-0 flex items-center justify-center overflow-hidden">
+            <Bot size={120} className="text-black/5 absolute" strokeWidth={0.5} />
+             {Array.from({ length: 10 }).map((_, i) => (
+                <motion.circle
+                    key={i}
+                    cx={Math.random() * 100 + '%'}
+                    cy={Math.random() * 100 + '%'}
+                    r={Math.random() * 2 + 1}
+                    className="absolute fill-black/10"
+                    animate={{
+                        x: [0, Math.random() * 20 - 10, 0],
+                        y: [0, Math.random() * 20 - 10, 0],
+                    }}
+                    transition={{
+                        duration: Math.random() * 5 + 3,
+                        repeat: Infinity,
+                        repeatType: 'mirror',
+                        ease: 'easeInOut'
+                    }}
+                 />
+             ))}
           </motion.div>
         );
     }
@@ -193,32 +250,41 @@ const AgentCard = ({ agent, onToggle, onPin }: { agent: Agent, onToggle: (id: st
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.3 }}
-              className="relative aspect-square w-full bg-white border border-black rounded-lg p-4 flex flex-col justify-between group cursor-pointer hover:shadow-lg transition-shadow"
+              className="relative aspect-square w-full bg-white border border-black rounded-lg p-4 flex flex-col justify-between group cursor-pointer hover:shadow-lg transition-shadow overflow-hidden"
             >
                 <div className="absolute inset-0 -z-10">{getSymbolicVisual(agent.category)}</div>
-                <div>
+                
+                {/* Top Section */}
+                <div className="z-10">
                     <div className="flex justify-between items-start">
-                        <div className="flex-grow">
-                             <h3 className="font-bold text-lg truncate">{agent.name}</h3>
-                             <p className="text-xs text-black/60">{agent.model}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                           <div className={cn("w-2 h-2 rounded-full", agent.active ? 'bg-green-500' : 'bg-red-500')}></div>
+                        <h3 className="font-bold text-lg truncate mr-2">{agent.name}</h3>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                           <div className={cn("w-2 h-2 rounded-full transition-colors", agent.active ? 'bg-green-500' : 'bg-red-500')}></div>
                            <Switch checked={agent.active} onCheckedChange={() => onToggle(agent.id)} className="h-5 w-9" />
                         </div>
                     </div>
-                     <div className="flex items-center gap-3 text-xs mt-2 text-black/70">
-                         <div className="flex items-center gap-1"><Users size={12} /> {agent.peopleUsed}</div>
-                         <div className="flex items-center gap-1"><Heart size={12} /> {agent.likes}</div>
+                     <div className="flex items-center gap-4 text-xs mt-1 text-black/70">
+                         <Badge variant="outline" className="text-xs font-normal">{agent.model}</Badge>
+                         <Badge variant="outline" className="text-xs font-normal">{agent.category}</Badge>
                      </div>
                 </div>
 
-                <div>
-                    <p className="text-xs text-black/70 italic mb-2 line-clamp-2">&quot;{agent.purpose}&quot;</p>
-                     <Badge variant="outline" className="text-xs">{agent.category}</Badge>
+                {/* Bottom Section */}
+                <div className="z-10">
+                    <p className="text-xs text-black/70 mb-2 line-clamp-2 h-8">{agent.purpose}</p>
+                    <div className="flex justify-between items-center text-xs text-black/60">
+                        <div className="flex items-center gap-1">
+                            <Users size={12} /> 
+                            <span>{(agent.peopleUsed / 1000).toFixed(1)}k</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <Heart size={12} />
+                            <span>{(agent.likes / 1000).toFixed(1)}k</span>
+                        </div>
+                    </div>
                 </div>
 
-                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(agent.id); }} className="absolute top-2 right-12 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onPin(agent.id); }} className="absolute top-2 right-12 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                     {agent.pinned ? <PinOff size={16} /> : <Pin size={16} />}
                 </Button>
 
@@ -300,13 +366,14 @@ const AgentsView = () => {
             name: data.name,
             description: data.description,
             model: data.model,
-            category: data.category,
+            category: data.category as any,
             purpose: data.purpose,
             peopleUsed: 0,
             likes: 0,
-            creator: { // Placeholder creator
+            creator: { 
                 name: 'New User',
                 imageUrl: 'https://picsum.photos/seed/newuser/100/100',
+                profileUrl: '#',
                 social: { x: '#', github: '#', linkedin: '#' }
             }
         };
