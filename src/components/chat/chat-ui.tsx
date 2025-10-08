@@ -415,14 +415,14 @@ const AgentsView = () => {
             <div className="flex-1 overflow-y-auto">
                 <AnimatePresence>
                     {pinnedAgents.length > 0 && (
-                        <div className="mb-8">
+                        <div key="pinned-agents" className="mb-8">
                             <h2 className="font-bold text-sm uppercase text-black/60 mb-2">Pinned</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                                 {pinnedAgents.map(agent => <AgentCard key={agent.id} agent={agent} onToggle={handleToggle} onPin={handlePin}/>)}
                             </div>
                         </div>
                     )}
-                    <div>
+                    <div key="all-agents">
                          <h2 className="font-bold text-sm uppercase text-black/60 mb-2">All Agents</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                             {unpinnedAgents.map(agent => <AgentCard key={agent.id} agent={agent} onToggle={handleToggle} onPin={handlePin}/>)}
