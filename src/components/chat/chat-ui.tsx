@@ -374,7 +374,6 @@ const AgentsView = () => {
             creator: { 
                 name: 'New User',
                 imageUrl: 'https://picsum.photos/seed/newuser/100/100',
-                profileUrl: '#',
                 social: { x: '#', github: '#', linkedin: '#' }
             }
         };
@@ -789,3 +788,5 @@ export default function ChatUI({
     </>
   );
 }
+
+    
