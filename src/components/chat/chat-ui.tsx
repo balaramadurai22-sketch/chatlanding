@@ -27,6 +27,7 @@ import {
   Copy,
   MoreVertical,
   X,
+  Filter as FilterIcon
 } from 'lucide-react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -130,6 +131,8 @@ const PixelLogo = () => (
     </div>
 );
 
+const agentCategories = ['All', ...Array.from(new Set(initialAgents.flatMap(agent => agent.tags)))];
+
 
 export default function ChatUI({
   messages,
@@ -145,6 +148,7 @@ export default function ChatUI({
   const [isNewAgentOpen, setIsNewAgentOpen] = useState(false);
   const [activeView, setActiveView] = useState<'chat' | 'agents'>('chat');
   const [agents, setAgents] = useState<Agent[]>(initialAgents);
+  const [activeFilter, setActiveFilter] = useState('All');
 
   const { toast } = useToast();
 
@@ -198,6 +202,10 @@ export default function ChatUI({
       agent.id === agentId ? { ...agent, isActivated: !agent.isActivated } : agent
     ));
   };
+  
+  const filteredAgents = activeFilter === 'All' 
+    ? agents 
+    : agents.filter(agent => agent.tags.includes(activeFilter));
 
 
   const SidebarContent = () => (
@@ -452,36 +460,83 @@ export default function ChatUI({
                 <Plus className="mr-2 h-4 w-4" /> Add New Agent
             </Button>
         </div>
+        <div className="mb-6">
+            <div className="flex items-center gap-2 flex-wrap">
+                <FilterIcon className="mr-2 h-4 w-4" />
+                {agentCategories.map(category => (
+                    <Button 
+                        key={category}
+                        variant={activeFilter === category ? "outline" : "ghost"}
+                        onClick={() => setActiveFilter(category)}
+                        className={cn(
+                            "border-black",
+                            activeFilter === category ? "bg-black text-white" : "bg-white text-black"
+                        )}
+                    >
+                        {category}
+                    </Button>
+                ))}
+            </div>
+        </div>
         <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {agents.map(agent => (
-                  <div key={agent.id} className="border border-black rounded-lg p-4 flex flex-col">
-                      <div className="flex items-center justify-between mb-2">
-                          <Switch 
-                            checked={agent.isActivated}
-                            onCheckedChange={() => toggleAgentActivation(agent.id)}
-                          />
-                           <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                                      <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="border-black bg-white">
-                                  <DropdownMenuItem className="hover:bg-black hover:text-white"><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-                                  <DropdownMenuItem className="hover:bg-black hover:text-white"><Copy className="mr-2 h-4 w-4" />Duplicate</DropdownMenuItem>
-                                  <DropdownMenuItem className="text-red-500 hover:bg-red-500 hover:text-white"><Trash className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
-                              </DropdownMenuContent>
-                          </DropdownMenu>
-                      </div>
-                      <h3 className="font-bold text-lg mb-1">{agent.name}</h3>
-                      <p className="text-sm text-black/70 flex-grow">{agent.description}</p>
-                      <div className="flex flex-wrap gap-1 mt-4">
-                          {agent.tags.map(tag => (
-                              <Badge key={tag} variant="outline" className="border-black text-black">{tag}</Badge>
-                          ))}
-                      </div>
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredAgents.map(agent => (
+                <Dialog key={agent.id}>
+                    <DialogTrigger asChild>
+                        <div className="border border-black rounded-lg p-4 flex flex-col cursor-pointer hover:bg-black/5 transition-colors duration-200">
+                          <div className="flex items-start justify-between mb-2">
+                              <h3 className="font-bold text-lg mb-1 pr-2">{agent.name}</h3>
+                              <Switch 
+                                checked={agent.isActivated}
+                                onCheckedChange={(checked) => {
+                                    // Prevent dialog from opening when switch is clicked
+                                    const e = window.event as any;
+                                    e.stopPropagation();
+                                    toggleAgentActivation(agent.id)
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                          </div>
+                          <p className="text-sm text-black/70 flex-grow">{agent.description}</p>
+                          <div className="flex flex-wrap gap-1 mt-4">
+                              {agent.tags.map(tag => (
+                                  <Badge key={tag} variant="outline" className="border-black text-black">{tag}</Badge>
+                              ))}
+                          </div>
+                        </div>
+                    </DialogTrigger>
+                    <DialogContent className="bg-white text-black border-black sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="font-bold text-xl">{agent.name}</DialogTitle>
+                            <DialogDescription className="text-black/70">{agent.description}</DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm font-medium">Status</span>
+                                <Badge variant={agent.status === 'Active' ? 'default' : 'secondary'} className={cn(agent.status === 'Active' ? "bg-green-600" : "bg-gray-500", "text-white")}>{agent.status}</Badge>
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-medium mb-1">Model</h4>
+                                <p className="text-sm p-2 border border-black rounded-md bg-black/5">{agent.model}</p>
+                            </div>
+                             <div>
+                                <h4 className="text-sm font-medium mb-1">Owner</h4>
+                                <p className="text-sm p-2 border border-black rounded-md bg-black/5">{agent.owner}</p>
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-medium mb-1">Tags</h4>
+                                <div className="flex flex-wrap gap-1">
+                                    {agent.tags.map(tag => <Badge key={tag} variant="outline" className="border-black">{tag}</Badge>)}
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline" className="border-black hover:bg-black hover:text-white">Close</Button>
+                            </DialogClose>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
               ))}
           </div>
         </div>
@@ -542,12 +597,16 @@ export default function ChatUI({
       <Dialog open={isBugReportOpen} onOpenChange={setIsBugReportOpen}>
         <DialogContent
           className="bg-white text-black border-black"
-          onInteractOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => {
+            e.preventDefault();
+          }}
         >
-           <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </DialogClose>
+           <DialogClose asChild>
+            <button className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </button>
+           </DialogClose>
           <DialogHeader>
             <DialogTitle className="font-bold text-black">Submit a Bug Report</DialogTitle>
             <DialogDescription className="text-black/80">
@@ -650,11 +709,15 @@ export default function ChatUI({
       <Dialog open={isFeatureRequestOpen} onOpenChange={setIsFeatureRequestOpen}>
         <DialogContent
           className="bg-white text-black border-black"
-          onInteractOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => {
+            e.preventDefault();
+          }}
         >
-          <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
+          <DialogClose asChild>
+            <button className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </button>
           </DialogClose>
           <DialogHeader>
             <DialogTitle className="font-bold text-black">Request a Feature</DialogTitle>
@@ -741,11 +804,15 @@ export default function ChatUI({
       <Dialog open={isNewAgentOpen} onOpenChange={setIsNewAgentOpen}>
         <DialogContent
           className="bg-white text-black border-black"
-          onInteractOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => {
+            e.preventDefault();
+          }}
         >
-          <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
+          <DialogClose asChild>
+           <button className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </button>
           </DialogClose>
           <DialogHeader>
             <DialogTitle className="font-bold text-black">Create a New Agent</DialogTitle>
@@ -831,3 +898,5 @@ export default function ChatUI({
     </>
   );
 }
+
+    
