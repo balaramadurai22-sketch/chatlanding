@@ -6,6 +6,7 @@ export interface Agent {
   model: string;
   category: 'Coding' | 'Analysis' | 'Creative' | 'Productivity' | 'Research';
   purpose: string;
+  command?: string;
   tools?: string[];
   memory?: string;
   active: boolean;
@@ -34,6 +35,7 @@ export const agents: Agent[] = [
     model: 'GPT-4',
     category: 'Coding',
     purpose: 'Analyzes pull requests and provides feedback.',
+    command: '/review',
     tools: ['github_api', 'linter'],
     memory: 'short-term',
     active: true,
@@ -58,9 +60,10 @@ export const agents: Agent[] = [
     model: 'Gemini 1.5',
     category: 'Analysis',
     purpose: 'Generates charts and insights from raw data.',
+    command: '/analyze',
     tools: ['chart_generator', 'sql_runner'],
     memory: 'long-term',
-    active: false,
+    active: true,
     pinned: true,
     peopleUsed: 5400,
     likes: 3200,
@@ -82,6 +85,7 @@ export const agents: Agent[] = [
     model: 'Claude 3',
     category: 'Creative',
     purpose: 'Assists with blog posts, scripts, and marketing copy.',
+    command: '/write',
     active: true,
     pinned: false,
     peopleUsed: 1800,
@@ -104,6 +108,7 @@ export const agents: Agent[] = [
     model: 'GPT-4o',
     category: 'Research',
     purpose: 'Analyzes user interviews and surveys for actionable insights.',
+    command: '/research',
     active: true,
     pinned: false,
     peopleUsed: 890,
@@ -125,6 +130,7 @@ export const agents: Agent[] = [
     model: 'Mistral',
     category: 'Productivity',
     purpose: 'Connects to various APIs to automate processes.',
+    command: '/automate',
     active: false,
     pinned: false,
     peopleUsed: 3200,
@@ -151,6 +157,7 @@ export const agents: Agent[] = [
       model: models[i % models.length],
       category,
       purpose: `Automates and assists in ${category.toLowerCase()} workflows.`,
+      command: `/${category.toLowerCase()}`,
       tools: ['web_search'],
       memory: 'short-term',
       active: Math.random() > 0.5,
@@ -165,5 +172,3 @@ export const agents: Agent[] = [
     };
   }),
 ];
-
-    

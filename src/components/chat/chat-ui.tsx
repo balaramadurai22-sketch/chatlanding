@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -41,6 +40,7 @@ import {
   DollarSign,
   Apple,
   CreditCard,
+  Check,
 } from 'lucide-react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -85,6 +85,8 @@ import { Switch } from '../ui/switch';
 import { agents as allAgents, type Agent } from '@/lib/agents-data';
 import { useMemo } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
+import { ScrollArea } from '../ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 interface ChatUIProps {
   messages: ChatMessage[];
@@ -93,6 +95,10 @@ interface ChatUIProps {
   handleSendMessage: (e: React.FormEvent) => void;
   setInput: (input: string) => void;
   setMessages: (messages: ChatMessage[]) => void;
+  agents: Agent[];
+  setAgents: (agents: Agent[]) => void;
+  selectedAgents: Agent[];
+  setSelectedAgents: (agents: Agent[]) => void;
 }
 
 const TypingIndicator = () => (
@@ -139,6 +145,7 @@ const newAgentSchema = z.object({
   model: z.string().min(1, "Please select a model."),
   category: z.enum(['Coding', 'Analysis', 'Creative', 'Productivity', 'Research']),
   purpose: z.string().min(10, "Task/Role must be at least 10 characters."),
+  command: z.string().optional(),
   creatorName: z.string().min(2, "Creator name is required."),
   linkedin: z.string().url("Please enter a valid LinkedIn URL.").optional().or(z.literal('')),
   github: z.string().url("Please enter a valid GitHub URL.").optional().or(z.literal('')),
@@ -146,8 +153,8 @@ const newAgentSchema = z.object({
   paypal: z.string().email("Invalid PayPal email").optional().or(z.literal('')),
   upi: z.string().optional(),
   btc: z.string().optional(),
-  tools: z.string().min(1, "Please specify allowed tools."),
-  memory: z.string().min(1, "Please specify memory options."),
+  tools: z.string().optional(),
+  memory: z.string().optional(),
 });
 type NewAgentFormValues = z.infer<typeof newAgentSchema>;
 
@@ -164,14 +171,13 @@ const getSymbolicVisual = (category: Agent['category']) => {
 
     switch (category) {
         case 'Coding':
-            const codeLines = [
-              "const fetchData = async () => {",
-              "  const response = await fetch(API_URL);",
-              "  const data = await response.json();",
-              "  return data;",
-              "};",
-              "fetchData().then(console.log);",
-            ];
+             const codeLines = [
+                "const fetchData = async () => {",
+                "  const response = await fetch(API_URL);",
+                "  const data = await response.json();",
+                "  return data;",
+                "};",
+             ];
              return (
                 <div {...commonProps} className="font-mono text-xs p-2 overflow-hidden">
                     {codeLines.map((line, i) => (
@@ -183,10 +189,10 @@ const getSymbolicVisual = (category: Agent['category']) => {
                                 duration: 0.5,
                                 repeat: Infinity,
                                 repeatType: 'mirror',
-                                delay: i * 0.3 + Math.random() * 1,
+                                delay: i * 0.4 + Math.random() * 1.2,
                             }}
                         >
-                           <span className="text-purple-400">const</span> <span className="text-yellow-400">fetchData</span> = ...
+                           {line}
                         </motion.div>
                     ))}
                 </div>
@@ -279,7 +285,7 @@ const getSymbolicVisual = (category: Agent['category']) => {
 const TypingEffect = ({ text }: { text: string }) => {
   const [displayedText, setDisplayedText] = React.useState('');
   const ref = React.useRef(null);
-  const isInView = useInView(ref, { once: true }); // `once: true` makes it fire only once when it enters view
+  const isInView = useInView(ref, { once: true }); 
 
   React.useEffect(() => {
     if (isInView) {
@@ -291,12 +297,11 @@ const TypingEffect = ({ text }: { text: string }) => {
         } else {
           clearInterval(interval);
         }
-      }, 50); // Adjust speed here
+      }, 50); 
       return () => clearInterval(interval);
     }
   }, [isInView, text]);
 
-  // Reset when it goes out of view, to replay when it comes back
   React.useEffect(() => {
     if (!isInView) {
       setDisplayedText('');
@@ -419,52 +424,45 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                     </div>
                 </motion.div>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl">
+            <DialogContent className="max-w-md">
                 <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
                     <X className="h-4 w-4" />
                     <span className="sr-only">Close</span>
                 </DialogClose>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4">
-                    <div className="md:col-span-2 flex flex-col gap-4">
-                        <div className="p-4 border rounded-lg">
-                             <DialogTitle className="text-3xl font-bold">{agent.name}</DialogTitle>
-                             <div className="text-sm text-black/60">by {agent.creator.name}</div>
+                <div className="flex flex-col gap-4 py-4">
+                     <div className="flex items-center gap-4">
+                        <Image src={agent.creator.imageUrl} alt={agent.creator.name} width={80} height={80} className="rounded-full border-2 border-black" />
+                        <div>
+                            <DialogTitle className="text-2xl font-bold">{agent.name}</DialogTitle>
+                            <div className="text-sm text-black/60">by {agent.creator.name}</div>
                              <div className="flex gap-3 mt-2">
                                 {agent.creator.social.twitter && <a href={agent.creator.social.twitter} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Twitter size={16} /></a>}
                                 {agent.creator.social.github && <a href={agent.creator.social.github} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Github size={16} /></a>}
                                 {agent.creator.social.linkedin && <a href={agent.creator.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Linkedin size={16} /></a>}
                             </div>
                         </div>
-
-                        <div className="p-4 border rounded-lg">
-                            <h4 className="font-semibold mb-2">How it works</h4>
-                            <p className="text-sm text-black/80">{agent.description}</p>
-                        </div>
-                        <div className="p-4 border rounded-lg">
-                            <h4 className="font-semibold mb-2">Purpose / Task</h4>
-                            <p className="text-sm text-black/80">{agent.purpose}</p>
-                        </div>
-                         <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div className="p-3 border rounded-lg"><span className="font-semibold">Model:</span> {agent.model}</div>
-                            <div className="p-3 border rounded-lg"><span className="font-semibold">Category:</span> {agent.category}</div>
-                            <div className="p-3 border rounded-lg"><span className="font-semibold">Tools:</span> {agent.tools}</div>
-                            <div className="p-3 border rounded-lg"><span className="font-semibold">Memory:</span> {agent.memory}</div>
-                        </div>
-                         <div className="p-4 border rounded-lg flex justify-around text-center mt-auto">
-                            <div>
-                                <div className="font-bold text-lg">{(agent.peopleUsed/1000).toFixed(1)}k</div>
-                                <div className="text-xs text-black/60">Users</div>
-                            </div>
-                             <div>
-                                <div className="font-bold text-lg">{(agent.likes/1000).toFixed(1)
-                                }k</div>
-                                <div className="text-xs text-black/60">Likes</div>
-                            </div>
-                        </div>
                     </div>
-                     <div className="flex flex-col gap-4">
+
+                    <div className="p-4 border rounded-lg bg-gray-50">
+                        <h4 className="font-semibold mb-2 text-sm uppercase">Description</h4>
+                        <p className="text-sm text-black/80">{agent.description}</p>
+                    </div>
+
+                    <div className="p-4 border rounded-lg bg-gray-50">
+                        <h4 className="font-semibold mb-2 text-sm uppercase">Purpose / Task</h4>
+                        <p className="text-sm text-black/80">{agent.purpose}</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="p-3 border rounded-lg bg-gray-50"><span className="font-semibold">Model:</span> {agent.model}</div>
+                        <div className="p-3 border rounded-lg bg-gray-50"><span className="font-semibold">Category:</span> {agent.category}</div>
+                        <div className="p-3 border rounded-lg bg-gray-50"><span className="font-semibold">Tools:</span> {agent.tools}</div>
+                        <div className="p-3 border rounded-lg bg-gray-50"><span className="font-semibold">Memory:</span> {agent.memory}</div>
+                    </div>
+
+                    <div className="flex flex-col gap-4">
                         <div className="p-4 border rounded-lg">
-                            <h3 className="font-bold text-sm uppercase text-black/60 mb-4">Support the Creator</h3>
+                            <h3 className="font-bold text-sm uppercase text-black/60 mb-4 text-center">Support the Creator</h3>
                              <Form {...donationForm}>
                                 <form onSubmit={donationForm.handleSubmit(onDonationSubmit)} className="space-y-4">
                                      <Tabs value={currency} onValueChange={setCurrency} className="w-full">
@@ -594,7 +592,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                             <Form {...newAgentForm}>
                                 <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                                        {/* Column 1: Agent Info */}
+                                        
                                         <div className="space-y-4 p-4 border rounded-lg">
                                             <h3 className="font-bold text-sm uppercase text-black/60">Agent Information</h3>
                                             <FormField name="name" control={newAgentForm.control} render={({ field }) => (
@@ -612,6 +610,9 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                             <FormField name="category" control={newAgentForm.control} render={({ field }) => (
                                                 <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Coding">Coding</SelectItem><SelectItem value="Analysis">Analysis</SelectItem><SelectItem value="Creative">Creative</SelectItem><SelectItem value="Productivity">Productivity</SelectItem><SelectItem value="Research">Research</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                                             )} />
+                                            <FormField name="command" control={newAgentForm.control} render={({ field }) => (
+                                                <FormItem><FormLabel>Command (Optional)</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. /analyze" /></FormControl><FormMessage /></FormItem>
+                                            )} />
                                             <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
                                                 <FormItem><FormLabel>Allowed Tools / Access</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
                                             )} />
@@ -621,7 +622,6 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                         </div>
 
                                         <div className="space-y-6">
-                                            {/* Column 2: Creator & Socials */}
                                             <div className="space-y-4 p-4 border rounded-lg">
                                                 <h3 className="font-bold text-sm uppercase text-black/60">Creator Information</h3>
                                                 <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
@@ -637,7 +637,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                                     <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                                                 )} />
                                             </div>
-                                            {/* Column 4: Donations */}
+                                            
                                              <div className="space-y-4 p-4 border rounded-lg">
                                                  <h3 className="font-bold text-sm uppercase text-black/60">Support the Creator (Optional)</h3>
                                                  <FormField name="paypal" control={newAgentForm.control} render={({ field }) => (
@@ -706,6 +706,183 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
 };
 
 
+const AgentSelector = ({
+    agents,
+    selectedAgents,
+    setSelectedAgents,
+  }: {
+    agents: Agent[];
+    selectedAgents: Agent[];
+    setSelectedAgents: (agents: Agent[]) => void;
+  }) => {
+    const [isOpen, setIsOpen] = React.useState(false);
+    const [tempSelected, setTempSelected] = React.useState<Agent[]>(selectedAgents);
+    const [searchTerm, setSearchTerm] = React.useState('');
+    const { toast } = useToast();
+  
+    const enabledAgents = agents.filter((agent) => agent.active);
+  
+    const filteredEnabledAgents = enabledAgents.filter(
+      (agent) =>
+        agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        agent.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        agent.model.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  
+    const handleSelectAgent = (agent: Agent) => {
+      setTempSelected((prev) => {
+        const isSelected = prev.some((a) => a.id === agent.id);
+        if (isSelected) {
+          return prev.filter((a) => a.id !== agent.id);
+        } else {
+          if (prev.length >= 5) {
+            toast({
+              title: 'Agent limit reached',
+              description: 'You can select a maximum of 5 agents.',
+              variant: 'destructive',
+            });
+            return prev;
+          }
+          return [...prev, agent];
+        }
+      });
+    };
+  
+    const handleApply = () => {
+      setSelectedAgents(tempSelected);
+      setIsOpen(false);
+    };
+  
+    const handleCancel = () => {
+      setTempSelected(selectedAgents);
+      setIsOpen(false);
+    };
+
+    const handleRemoveAgent = (agentId: string) => {
+        const newSelected = selectedAgents.filter(a => a.id !== agentId);
+        setSelectedAgents(newSelected);
+        setTempSelected(newSelected);
+    }
+  
+    return (
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <div className="mx-auto w-full max-w-4xl rounded-lg border border-black/10 bg-white/50 p-3 shadow-sm backdrop-blur-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+                <BrainCircuit className="h-5 w-5 text-black/60" />
+                <span className="font-bold text-sm">Agents</span>
+                <DialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-xs" onClick={() => setTempSelected(selectedAgents)}>+ Select Agents</Button>
+                </DialogTrigger>
+            </div>
+            <div className="text-xs text-black/60">{selectedAgents.length}/5 Active</div>
+          </div>
+          {selectedAgents.length > 0 && (
+            <div className="mt-2">
+                <AnimatePresence>
+                    <motion.div layout className="flex flex-wrap gap-2">
+                        {selectedAgents.map(agent => (
+                            <motion.div
+                                key={agent.id}
+                                layout
+                                initial={{ opacity: 0, y: -10, scale: 0.8 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, x: -10, scale: 0.8 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                className="flex items-center gap-2 rounded-full border border-black bg-white py-1 pl-2 pr-1 text-xs font-medium"
+                            >
+                               <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className='truncate max-w-[100px]'>{agent.name}</span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p className='font-bold'>{agent.name}</p>
+                                        <p>{agent.description}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                               </TooltipProvider>
+
+                                <button
+                                    onClick={() => handleRemoveAgent(agent.id)}
+                                    className="rounded-full bg-black text-white p-0.5 transition-colors hover:bg-red-500"
+                                >
+                                    <X className="h-3 w-3" />
+                                </button>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                </AnimatePresence>
+            </div>
+          )}
+        </div>
+        <DialogContent className="max-w-2xl bg-white/80 p-0 backdrop-blur-lg">
+            <DialogHeader className="p-6 pb-0">
+                <DialogTitle className="text-2xl font-bold">Select Agents</DialogTitle>
+                <DialogDescription>
+                    Choose up to 5 active agents to assist with your query.
+                </DialogDescription>
+                <div className="relative pt-2">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/40" />
+                    <Input 
+                        placeholder="Search enabled agents..."
+                        className="pl-10 border-black"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+            </DialogHeader>
+            <ScrollArea className="h-96">
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredEnabledAgents.map((agent) => {
+                    const isSelected = tempSelected.some((a) => a.id === agent.id);
+                    return (
+                    <motion.div
+                        key={agent.id}
+                        onClick={() => handleSelectAgent(agent)}
+                        className={cn(
+                        'flex cursor-pointer items-start gap-4 rounded-lg border p-4 transition-all',
+                        isSelected
+                            ? 'border-black bg-black text-white shadow-md'
+                            : 'border-black/20 bg-white hover:border-black'
+                        )}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <div className="mt-1 flex h-5 w-5 items-center justify-center rounded-full border">
+                            {isSelected && <Check className="h-3 w-3" />}
+                        </div>
+
+                        <div>
+                        <p className="font-bold">{agent.name}</p>
+                        <p className="text-xs opacity-70">
+                            {agent.model} &middot; {agent.category}
+                        </p>
+                        </div>
+                    </motion.div>
+                    );
+                })}
+                </div>
+            </ScrollArea>
+            <DialogFooter className="border-t p-6 bg-white/50">
+                <div className="flex w-full items-center justify-between">
+                <div className="text-sm font-medium">
+                    {tempSelected.length}/5 Selected
+                </div>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={handleCancel} className="border-black">
+                    Cancel
+                    </Button>
+                    <Button onClick={handleApply} className="bg-black text-white">Apply</Button>
+                </div>
+                </div>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+};
+
+
+
 export default function ChatUI({
   messages,
   input,
@@ -713,12 +890,15 @@ export default function ChatUI({
   handleSendMessage,
   setInput,
   setMessages,
+  agents,
+  setAgents,
+  selectedAgents,
+  setSelectedAgents,
 }: ChatUIProps) {
   const isMobile = useIsMobile();
   const [isSidebarOpen, setSidebarOpen] = React.useState(false);
   const { toast } = useToast();
   const [activeView, setActiveView] = React.useState('chat');
-  const [agents, setAgents] = React.useState<Agent[]>(allAgents);
 
   const bugReportForm = useForm<BugReportFormValues>({
     resolver: zodResolver(bugReportSchema),
@@ -764,14 +944,14 @@ export default function ChatUI({
         <Button
           variant={activeView === 'chat' ? 'default' : 'ghost'}
           onClick={() => setActiveView('chat')}
-          className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[variant=default]:bg-black data-[variant=default]:text-white"
+          className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[state=active]:bg-black data-[state=active]:text-white"
         >
           <MessageCircle className="mr-3" /> Chat
         </Button>
         <Button
           variant={activeView === 'agents' ? 'default' : 'ghost'}
           onClick={() => setActiveView('agents')}
-          className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[variant=default]:bg-black data-[variant=default]:text-white"
+          className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[state=active]:bg-black data-[state=active]:text-white"
         >
           <Sparkles className="mr-3" /> Agents
         </Button>
@@ -946,7 +1126,12 @@ export default function ChatUI({
 
       <footer className="p-4 md:p-6 bg-white">
         <div className="max-w-4xl mx-auto">
-          <form onSubmit={handleSendMessage} className="relative">
+            <AgentSelector
+                agents={agents}
+                selectedAgents={selectedAgents}
+                setSelectedAgents={setSelectedAgents}
+            />
+          <form onSubmit={handleSendMessage} className="relative mt-4">
             <div className="relative flex items-center p-2 border border-black rounded-lg bg-white shadow-sm focus-within:ring-2 focus-within:ring-black">
               <Button type="button" variant="ghost" className="p-2 h-auto rounded-md border-black hover:bg-black hover:text-white">
                 <Plus className="w-5 h-5" />

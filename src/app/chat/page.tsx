@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -6,6 +7,8 @@ import { continueChat } from '@/app/actions';
 import type { ChatMessage } from '@/app/actions';
 import ChatUI from '@/components/chat/chat-ui';
 import { useToast } from '@/hooks/use-toast';
+import type { Agent } from '@/lib/agents-data';
+import { agents as allAgents } from '@/lib/agents-data';
 
 export default function ChatPage() {
   const searchParams = useSearchParams();
@@ -15,6 +18,8 @@ export default function ChatPage() {
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [input, setInput] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
+  const [agents, setAgents] = React.useState<Agent[]>(allAgents);
+  const [selectedAgents, setSelectedAgents] = React.useState<Agent[]>([]);
 
   const processStream = async (stream: ReadableStream<string>) => {
     let fullResponse = '';
@@ -44,7 +49,7 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const stream = await continueChat(newMessages);
+      const stream = await continueChat(newMessages, selectedAgents);
       await processStream(stream);
     } catch (error) {
       toast({
@@ -57,7 +62,7 @@ export default function ChatPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, selectedAgents]);
 
 
   React.useEffect(() => {
@@ -77,7 +82,7 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const stream = await continueChat(newMessages);
+      const stream = await continueChat(newMessages, selectedAgents);
       await processStream(stream);
     } catch (error) {
        toast({
@@ -86,8 +91,8 @@ export default function ChatPage() {
         variant: "destructive",
       });
       console.error(error);
-      // Remove the user message and the empty assistant message
-      setMessages(prev => prev.slice(0, prev.length - 2));
+      // Remove the user message if an error occurred during streaming
+      setMessages(prev => prev.slice(0, prev.length -1));
     } finally {
       setIsLoading(false);
     }
@@ -101,6 +106,10 @@ export default function ChatPage() {
       handleSendMessage={handleSendMessage}
       setInput={setInput}
       setMessages={setMessages}
+      agents={agents}
+      setAgents={setAgents}
+      selectedAgents={selectedAgents}
+      setSelectedAgents={setSelectedAgents}
     />
   );
 }
