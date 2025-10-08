@@ -6,11 +6,11 @@
  *
  * - aiChat - A function that initiates and manages the AI chat process.
  * - AIChatInput - The input type for the aiChat function.
- * - AIChatOutput - The return type for the aiChat function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { Stream } from 'genkit/streaming';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
@@ -22,18 +22,20 @@ const AIChatInputSchema = z.object({
 });
 export type AIChatInput = z.infer<typeof AIChatInputSchema>;
 
-const AIChatOutputSchema = z.object({
-  response: z.string().describe('The AI response to the user query.'),
-});
-export type AIChatOutput = z.infer<typeof AIChatOutputSchema>;
 
-export async function aiChat(input: AIChatInput): Promise<AIChatOutput> {
-  const llmResponse = await ai.generate({
+export async function aiChat(input: AIChatInput): Promise<Stream<string>> {
+  const {stream} = await ai.generateStream({
       model: 'googleai/gemini-2.5-flash',
       prompt: `You are a helpful AI assistant from TECHismust. Answer the user's question.`,
       history: input.history.map(m => ({...m, content: [{text: m.content}]})),
     });
+    
+    const textStream = new Stream<string>(async (writer) => {
+        for await (const chunk of stream) {
+            writer.write(chunk.text);
+        }
+        writer.end();
+    });
 
-  const response = llmResponse.text;
-  return { response };
+  return textStream;
 }

@@ -3,17 +3,14 @@
 
 import {aiChat} from '@/ai/ai-chat-interface';
 import type {AIChatInput} from '@/ai/ai-chat-interface';
+import { Stream } from 'genkit/streaming';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
 }
 
-export async function continueChat(history: ChatMessage[]): Promise<ChatMessage> {
-    const result = await aiChat({ history });
-
-    return {
-        role: 'assistant',
-        content: result.response
-    }
+export async function continueChat(history: ChatMessage[]): Promise<Stream<string>> {
+    const stream = await aiChat({ history });
+    return stream;
 }
