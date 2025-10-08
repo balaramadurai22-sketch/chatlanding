@@ -36,6 +36,8 @@ import {
   Code,
   LineChart,
   Palette,
+  Bitcoin,
+  DollarSign,
 } from 'lucide-react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -133,6 +135,15 @@ const newAgentSchema = z.object({
   model: z.string().min(1, "Please select a model."),
   category: z.enum(['Coding', 'Analysis', 'Creative', 'Productivity', 'Research']),
   purpose: z.string().min(10, "Purpose must be at least 10 characters."),
+  creatorName: z.string().min(2, "Creator name is required."),
+  linkedin: z.string().url().optional().or(z.literal('')),
+  github: z.string().url().optional().or(z.literal('')),
+  twitter: z.string().url().optional().or(z.literal('')),
+  paypal: z.string().email("Invalid PayPal email").optional().or(z.literal('')),
+  upi: z.string().optional(),
+  btc: z.string().optional(),
+  tools: z.string().optional(),
+  memory: z.string().optional(),
 });
 type NewAgentFormValues = z.infer<typeof newAgentSchema>;
 
@@ -174,18 +185,9 @@ const getSymbolicVisual = (category: Agent['category']) => {
             );
         case 'Analysis':
             return (
-                <div {...commonProps} className="flex items-end justify-between p-2 absolute inset-0 w-full h-full opacity-20">
-                     {Array.from({ length: 8 }).map((_, i) => (
-                        <motion.div
-                            key={i}
-                            className="w-1 bg-black"
-                            style={{ originY: 1 }}
-                            initial={{ scaleY: 0.1 }}
-                            animate={{ scaleY: Math.random() * 0.8 + 0.2 }}
-                            transition={{ duration: 1.5, repeat: Infinity, repeatType: 'mirror', delay: i * 0.2 }}
-                        />
-                    ))}
-                </div>
+                <motion.div {...commonProps} className="flex items-end justify-between p-2 absolute inset-0 w-full h-full opacity-20">
+                     <LineChart className="w-full h-full" strokeWidth={0.5} />
+                </motion.div>
             );
         case 'Creative':
             return (
@@ -217,7 +219,8 @@ const getSymbolicVisual = (category: Agent['category']) => {
         default:
              return (
                 <motion.svg {...commonProps} viewBox="0 0 100 100">
-                    {Array.from({ length: 10 }).map((_, i) => (
+                    <Bot size={120} className="text-black/5 absolute" strokeWidth={0.5} />
+                     {Array.from({ length: 10 }).map((_, i) => (
                         <motion.circle
                             key={i}
                             cx={`${Math.random() * 100}%`}
@@ -300,7 +303,7 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                     </div>
 
                     <div className="relative z-10">
-                        <p className="text-xs text-black/80 mb-2">{agent.description}</p>
+                        <p className="text-xs text-black/80 mb-2 line-clamp-2">{agent.description}</p>
                         <div className="flex justify-between items-center text-xs text-black/60">
                             <div className="flex items-center gap-1">
                                 <Users className="w-3 h-3" />
@@ -327,9 +330,9 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                             <DialogTitle className="text-2xl font-bold">{agent.name}</DialogTitle>
                              <div className="text-sm text-black/60">by {agent.creator.name}</div>
                              <div className="flex gap-3 mt-2">
-                                <a href={agent.creator.social.x} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Twitter size={16} /></a>
-                                <a href={agent.creator.social.github} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Github size={16} /></a>
-                                <a href={agent.creator.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Linkedin size={16} /></a>
+                                {agent.creator.social.twitter && <a href={agent.creator.social.twitter} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Twitter size={16} /></a>}
+                                {agent.creator.social.github && <a href={agent.creator.social.github} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Github size={16} /></a>}
+                                {agent.creator.social.linkedin && <a href={agent.creator.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Linkedin size={16} /></a>}
                              </div>
                         </div>
                     </div>
@@ -390,6 +393,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
     const [searchTerm, setSearchTerm] = React.useState('');
     const newAgentForm = useForm<NewAgentFormValues>({ resolver: zodResolver(newAgentSchema) });
     const { toast } = useToast();
+    const [isAddAgentOpen, setIsAddAgentOpen] = React.useState(false);
 
     const filteredAgents = useMemo(() => {
         return agents.filter(agent => {
@@ -414,16 +418,26 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
             pinned: false,
             peopleUsed: 0,
             likes: 0,
-            creator: { // Replace with actual creator data
-                name: 'You',
-                imageUrl: 'https://picsum.photos/seed/new/100/100',
-                social: { x: '#', github: '#', linkedin: '#' },
+            creator: {
+                name: data.creatorName,
+                imageUrl: `https://picsum.photos/seed/${data.creatorName}/100/100`,
+                social: {
+                    twitter: data.twitter || undefined,
+                    github: data.github || undefined,
+                    linkedin: data.linkedin || undefined,
+                    paypal: data.paypal || undefined,
+                    upi: data.upi || undefined,
+                    btc: data.btc || undefined,
+                },
             },
+            tools: data.tools?.split(',').map(t => t.trim()),
+            memory: data.memory,
             ...data
         };
         setAgents([newAgent, ...agents]);
         toast({ title: "Agent Created!", description: `${data.name} is now available.` });
         newAgentForm.reset();
+        setIsAddAgentOpen(false);
     };
 
     const handleAgentUpdate = (updatedAgent: Agent) => {
@@ -457,11 +471,11 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                             </Button>
                         ))}
                     </div>
-                     <Dialog>
+                     <Dialog open={isAddAgentOpen} onOpenChange={setIsAddAgentOpen}>
                         <DialogTrigger asChild>
                              <Button className="bg-black text-white hover:bg-white hover:text-black border border-black"><Plus className="mr-2 h-4 w-4" /> Add New</Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="max-h-[90vh] overflow-y-auto">
                             <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
                               <X className="h-4 w-4" />
                               <span className="sr-only">Close</span>
@@ -469,6 +483,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                             <DialogHeader><DialogTitle>Create New Agent</DialogTitle></DialogHeader>
                             <Form {...newAgentForm}>
                                 <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="space-y-4">
+                                     <h3 className="font-bold text-sm uppercase text-black/60">Agent Information</h3>
                                      <FormField name="name" control={newAgentForm.control} render={({ field }) => (
                                         <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                                     )} />
@@ -476,7 +491,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                         <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                                     )} />
                                      <FormField name="purpose" control={newAgentForm.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Purpose</FormLabel><FormControl><Textarea {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Task / Role</FormLabel><FormControl><Textarea {...field} className="border-black" placeholder="What is the primary task of this agent?" /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField name="model" control={newAgentForm.control} render={({ field }) => (
                                       <FormItem><FormLabel>Model</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a model" /></SelectTrigger></FormControl><SelectContent><SelectItem value="GPT-4">GPT-4</SelectItem><SelectItem value="Gemini 1.5">Gemini 1.5</SelectItem><SelectItem value="Claude 3">Claude 3</SelectItem></SelectContent></Select><FormMessage /></FormItem>
@@ -484,6 +499,38 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                     <FormField name="category" control={newAgentForm.control} render={({ field }) => (
                                       <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Coding">Coding</SelectItem><SelectItem value="Analysis">Analysis</SelectItem><SelectItem value="Creative">Creative</SelectItem><SelectItem value="Productivity">Productivity</SelectItem><SelectItem value="Research">Research</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                                     )} />
+                                     <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
+                                        <FormItem><FormLabel>Allowed Tools (Optional)</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField name="memory" control={newAgentForm.control} render={({ field }) => (
+                                        <FormItem><FormLabel>Memory Options (Optional)</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormItem>
+                                    )} />
+
+                                     <h3 className="font-bold text-sm uppercase text-black/60 pt-4">Creator Information</h3>
+                                     <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
+                                        <FormItem><FormLabel>Creator Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField name="linkedin" control={newAgentForm.control} render={({ field }) => (
+                                        <FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                     <FormField name="github" control={newAgentForm.control} render={({ field }) => (
+                                        <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField name="twitter" control={newAgentForm.control} render={({ field }) => (
+                                        <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    
+                                     <h3 className="font-bold text-sm uppercase text-black/60 pt-4">Support the Creator (Optional)</h3>
+                                     <FormField name="paypal" control={newAgentForm.control} render={({ field }) => (
+                                        <FormItem><FormLabel>PayPal Email</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                     <FormField name="upi" control={newAgentForm.control} render={({ field }) => (
+                                        <FormItem><FormLabel>UPI ID (for India)</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                     <FormField name="btc" control={newAgentForm.control} render={({ field }) => (
+                                        <FormItem><FormLabel>BTC Wallet Address</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                    )} />
+
                                     <DialogFooter><Button type="submit" className="bg-black text-white">Create Agent</Button></DialogFooter>
                                 </form>
                             </Form>
@@ -736,7 +783,10 @@ export default function ChatUI({
         return <a key={index} href={linkMatch[2]} target="_blank" rel="noopener noreferrer" className="text-black underline">{linkMatch[1]}</a>;
       }
       return part.split('\n').map((line, lineIndex) => (
-        <React.Fragment key={`${index}-${lineIndex}`}>{line}{lineIndex < part.split('\n').length - 1 && <br />}</React.Fragment>
+        <React.Fragment key={`${index}-${lineIndex}`}>
+            {line}
+            {lineIndex < part.split('\n').length - 1 && <br />}
+        </React.Fragment>
       ));
     });
   };
@@ -843,7 +893,7 @@ export default function ChatUI({
 
         <div className="flex flex-1 flex-col">
             <AnimatePresence mode="wait">
-              {activeView === 'chat' && (
+              {activeView === 'chat' ? (
                 <motion.div
                     key="chat"
                     initial={{ opacity: 0, y: 20 }}
@@ -854,8 +904,7 @@ export default function ChatUI({
                 >
                     <ChatView />
                 </motion.div>
-              )}
-               {activeView === 'agents' && (
+              ) : (
                 <motion.div
                     key="agents"
                     initial={{ opacity: 0, y: 20 }}

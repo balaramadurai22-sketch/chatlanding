@@ -6,6 +6,8 @@ export interface Agent {
   model: string;
   category: 'Coding' | 'Analysis' | 'Creative' | 'Productivity' | 'Research';
   purpose: string;
+  tools?: string[];
+  memory?: string;
   active: boolean;
   pinned: boolean;
   peopleUsed: number;
@@ -14,9 +16,12 @@ export interface Agent {
     name: string;
     imageUrl: string;
     social: {
-      x: string;
-      github: string;
-      linkedin: string;
+      twitter?: string;
+      github?: string;
+      linkedin?: string;
+      paypal?: string;
+      upi?: string;
+      btc?: string;
     };
   };
 }
@@ -37,7 +42,7 @@ export const agents: Agent[] = [
       name: 'Bala Ramadurai',
       imageUrl: 'https://picsum.photos/seed/bala/100/100',
       social: {
-        x: 'https://x.com/techismust',
+        twitter: 'https://x.com/techismust',
         github: 'https://github.com/techismust',
         linkedin: 'https://linkedin.com/in/balaramadurai',
       },
@@ -58,7 +63,7 @@ export const agents: Agent[] = [
       name: 'Vijay K',
       imageUrl: 'https://picsum.photos/seed/vijay/100/100',
       social: {
-        x: '#',
+        twitter: '#',
         github: '#',
         linkedin: '#',
       },
@@ -79,7 +84,7 @@ export const agents: Agent[] = [
       name: 'Parthiban',
       imageUrl: 'https://picsum.photos/seed/parthiban/100/100',
       social: {
-        x: '#',
+        twitter: '#',
         github: '#',
         linkedin: '#',
       },
@@ -100,7 +105,7 @@ export const agents: Agent[] = [
       name: 'Sathyanarayanan',
       imageUrl: 'https://picsum.photos/seed/sathya/100/100',
       social: {
-        x: '#',
+        twitter: '#',
         github: '#',
         linkedin: '#',
       },
@@ -121,7 +126,7 @@ export const agents: Agent[] = [
       name: 'Manoj Kumar',
       imageUrl: 'https://picsum.photos/seed/manoj/100/100',
       social: {
-        x: '#',
+        twitter: '#',
         github: '#',
         linkedin: '#',
       },
@@ -146,7 +151,7 @@ export const agents: Agent[] = [
       creator: {
         name: `Creator ${i + 6}`,
         imageUrl: `https://picsum.photos/seed/creator${i + 6}/100/100`,
-        social: { x: '#', github: '#', linkedin: '#' },
+        social: { twitter: '#', github: '#', linkedin: '#' },
       },
     };
   }),
