@@ -29,6 +29,9 @@ import {
   Copy,
   Edit,
   Heart,
+  Twitter,
+  Github,
+  Linkedin,
 } from 'lucide-react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -76,6 +79,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import Image from 'next/image';
 
 interface ChatUIProps {
   messages: ChatMessage[];
@@ -164,7 +168,16 @@ const AgentsView = ({
       peopleUsed: 0,
       likes: 0,
       pinned: false,
-      creator: { name: 'You', profileUrl: '#' },
+      creator: { 
+        name: 'You', 
+        profileUrl: '#',
+        imageUrl: 'https://picsum.photos/seed/user/100/100',
+        social: {
+            x: '#',
+            github: '#',
+            linkedin: '#',
+        }
+      },
     };
     setAgents(prev => [newAgent, ...prev]);
     toast({ title: 'Agent Created!', description: `${data.name} has been added.` });
@@ -292,35 +305,56 @@ const AgentsView = ({
        {/* Agent Detail Modal */}
       {agentForDetail && (
         <Dialog open={!!agentForDetail} onOpenChange={() => setAgentForDetail(null)}>
-            <DialogContent>
+            <DialogContent className="sm:max-w-lg">
                  <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
                     <X className="h-4 w-4" />
                     <span className="sr-only">Close</span>
                 </DialogClose>
                 <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold">{agentForDetail.name}</DialogTitle>
-                     <div className="flex items-center gap-2 text-sm text-black/60 pt-2">
-                        <span>by {agentForDetail.creator.name}</span>
-                        <span>&middot;</span>
-                        <a href={agentForDetail.creator.profileUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-black">View Profile</a>
+                    <div className="flex items-center gap-4 mb-4">
+                        <Image src={agentForDetail.creator.imageUrl} alt={agentForDetail.creator.name} width={64} height={64} className="rounded-full border-2 border-black" />
+                        <div>
+                            <DialogTitle className="text-2xl font-bold">{agentForDetail.name}</DialogTitle>
+                            <div className="flex items-center gap-2 text-sm text-black/60">
+                                <span>by <a href={agentForDetail.creator.profileUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-black">{agentForDetail.creator.name}</a></span>
+                            </div>
+                        </div>
                     </div>
                 </DialogHeader>
                 <div className="space-y-4">
                     <p className="text-base">{agentForDetail.howItWorks}</p>
+
+                    <div className="flex gap-2">
+                        <Badge variant="outline" className="border-black">{agentForDetail.model}</Badge>
+                        <Badge variant="outline" className="border-black">{agentForDetail.category}</Badge>
+                    </div>
+
                     <div className="flex justify-between items-center bg-white border border-black rounded-lg p-3">
                        <div className="flex items-center gap-4">
                            <div className="text-center">
-                                <p className="font-bold text-lg">{agentForDetail.likes}</p>
+                                <p className="font-bold text-lg">{agentForDetail.likes.toLocaleString()}</p>
                                 <p className="text-xs text-black/60">Likes</p>
                            </div>
                            <div className="text-center">
-                               <p className="font-bold text-lg">{agentForDetail.peopleUsed}</p>
+                               <p className="font-bold text-lg">{agentForDetail.peopleUsed.toLocaleString()}</p>
                                 <p className="text-xs text-black/60">Users</p>
                            </div>
                        </div>
-                        <Button variant="outline" className="border-black">
-                            <Heart className="mr-2 h-4 w-4" /> Donate to Creator
-                        </Button>
+                       <div className="flex items-center gap-2">
+                            <a href={agentForDetail.creator.social.x} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full border border-black hover:bg-black hover:text-white transition-colors"><Twitter size={14} /></a>
+                            <a href={agentForDetail.creator.social.github} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full border border-black hover:bg-black hover:text-white transition-colors"><Github size={14} /></a>
+                            <a href={agentForDetail.creator.social.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full border border-black hover:bg-black hover:text-white transition-colors"><Linkedin size={14} /></a>
+                       </div>
+                    </div>
+
+                    <div>
+                        <h4 className="font-semibold mb-2">Donate to Creator</h4>
+                        <div className="flex gap-2">
+                            <Input type="number" placeholder="5" className="border-black w-24" />
+                            <Button variant="outline" className="border-black hover:bg-black hover:text-white flex-1">
+                                <Heart className="mr-2 h-4 w-4" /> Donate
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </DialogContent>
@@ -331,17 +365,35 @@ const AgentsView = ({
   );
 };
 
-
 const AgentCard = ({ agent, onToggle, onPin, onCardClick }: { agent: Agent; onToggle: (id: string) => void; onPin: (id: string) => void; onCardClick: () => void; }) => {
+    
+    const getSymbolicVisual = (category: string) => {
+        const baseClass = "absolute inset-0 z-0 opacity-5";
+        switch (category) {
+            case 'Coding':
+                return <div className={cn(baseClass, "bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%220%200%2040%2040%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%23000000%22%20fill-opacity%3D%221%22%20fill-rule%3D%22evenodd%22%3E%3Cpath%20d%3D%22M0%200h20v20H0zM20%2020h20v20H20z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')]")}></div>;
+            case 'Analysis':
+                return <div className={cn(baseClass, "bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M10%200v20M0%2010h20%22%20stroke%3D%22%23000000%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')]")}></div>;
+            case 'Creative':
+                 return <div className={cn(baseClass, "bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20cx%3D%2210%22%20cy%3D%2210%22%20r%3D%2210%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_10px]")}></div>;
+            default:
+                return <div className={cn(baseClass, "bg-[url('data:image/svg+xml,%3Csvg%20width%3D%226%22%20height%3D%226%22%20viewBox%3D%220%200%206%206%22%20xmlns%3D%22http%3A%2F%2Fwww.w.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%23000000%22%20fill-opacity%3D%221%22%20fill-rule%3D%22evenodd%22%3E%3Cpath%20d%3D%22M5%200h1L0%206V5zM6%205v1H5z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')]")}></div>;
+        }
+    };
+    
     return (
         <motion.div 
-            className="border border-black rounded-lg p-4 flex flex-col justify-between aspect-square cursor-pointer hover:shadow-lg transition-shadow"
+            className="border border-black rounded-lg p-4 flex flex-col justify-between aspect-square cursor-pointer hover:shadow-lg transition-shadow relative overflow-hidden group"
             onClick={onCardClick}
             layout
         >
-            <div>
+            {getSymbolicVisual(agent.category)}
+            <div className="relative z-10">
                 <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-lg pr-2">{agent.name}</h3>
+                     <h3 className="font-bold text-lg pr-2 flex items-center">
+                        <span className={cn("w-2 h-2 rounded-full mr-2", agent.status === 'Active' ? 'bg-green-500' : 'bg-red-500')}></span>
+                        {agent.name}
+                    </h3>
                     <div className="flex items-center gap-2">
                         <button onClick={(e) => { e.stopPropagation(); onPin(agent.id); }} className="p-1 hover:bg-black/10 rounded-full">
                            <Pin className={cn("h-4 w-4", agent.pinned ? "fill-current" : "")} />
@@ -353,26 +405,24 @@ const AgentCard = ({ agent, onToggle, onPin, onCardClick }: { agent: Agent; onTo
                     <Badge variant="outline" className="border-black text-xs">{agent.model}</Badge>
                     <Badge variant="outline" className="border-black text-xs">{agent.category}</Badge>
                 </div>
-                 <p className="text-xs text-black/70 mb-2">
-                    <span className="font-semibold">Purpose:</span> {agent.purpose}
-                </p>
-                 <p className="text-xs text-black/70">
+                 <p className="text-xs text-black/70 mb-2 line-clamp-2">
                     <span className="font-semibold">How it works:</span> {agent.howItWorks}
                 </p>
             </div>
-             <div className="flex items-center gap-4 text-xs text-black/60 mt-auto">
+             <div className="relative z-10 flex items-center gap-4 text-xs text-black/60 mt-auto">
                 <div className="flex items-center gap-1">
                     <Users className="h-3 w-3" />
-                    <span>{agent.peopleUsed}</span>
+                    <span>{agent.peopleUsed.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center gap-1">
                     <Star className="h-3 w-3" />
-                    <span>{agent.likes}</span>
+                    <span>{agent.likes.toLocaleString()}</span>
                 </div>
             </div>
         </motion.div>
     );
 };
+
 
 export default function ChatUI({
   messages,
@@ -700,3 +750,5 @@ export default function ChatUI({
     </>
   );
 }
+
+    

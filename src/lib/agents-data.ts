@@ -14,6 +14,12 @@ export interface Agent {
   creator: {
     name: string;
     profileUrl: string;
+    imageUrl: string;
+    social: {
+        x: string;
+        github: string;
+        linkedin: string;
+    }
   };
 }
 
@@ -40,6 +46,14 @@ export const agents: Agent[] = Array.from({ length: 50 }, (_, i) => {
         creator: {
             name: `Creator ${i + 1}`,
             profileUrl: '#',
+            imageUrl: `https://picsum.photos/seed/creator${i+1}/100/100`,
+            social: {
+                x: '#',
+                github: '#',
+                linkedin: '#',
+            }
         },
     };
 });
+
+    
