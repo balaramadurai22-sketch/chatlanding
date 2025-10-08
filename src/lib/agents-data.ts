@@ -20,9 +20,6 @@ export interface Agent {
       twitter?: string;
       github?: string;
       linkedin?: string;
-      paypal?: string;
-      upi?: string;
-      btc?: string;
     };
   };
 }
@@ -49,7 +46,6 @@ export const agents: Agent[] = [
         twitter: 'https://x.com/techismust',
         github: 'https://github.com/techismust',
         linkedin: 'https://linkedin.com/in/balaramadurai',
-        paypal: 'paypal@example.com',
       },
     },
   },
@@ -74,7 +70,6 @@ export const agents: Agent[] = [
         twitter: '#',
         github: '#',
         linkedin: '#',
-        upi: 'vijay@okhdfcbank',
       },
     },
   },
@@ -97,7 +92,6 @@ export const agents: Agent[] = [
         twitter: '#',
         github: '#',
         linkedin: '#',
-        btc: 'bc1q...',
       },
     },
   },
@@ -172,3 +166,4 @@ export const agents: Agent[] = [
     };
   }),
 ];
+

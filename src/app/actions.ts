@@ -11,6 +11,17 @@ export interface ChatMessage {
 }
 
 export async function continueChat(history: ChatMessage[], selectedAgents: Agent[]): Promise<ReadableStream<string>> {
-    const stream = await aiChat({ history, selectedAgents });
+    const stream = await aiChat({ 
+        history, 
+        selectedAgents: selectedAgents.map(a => ({
+            id: a.id,
+            name: a.name,
+            model: a.model,
+            category: a.category,
+            command: a.command,
+            description: a.description,
+        })) 
+    });
     return stream;
 }
+

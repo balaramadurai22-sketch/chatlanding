@@ -150,13 +150,15 @@ const newAgentSchema = z.object({
   linkedin: z.string().url("Please enter a valid LinkedIn URL.").optional().or(z.literal('')),
   github: z.string().url("Please enter a valid GitHub URL.").optional().or(z.literal('')),
   twitter: z.string().url("Please enter a valid Twitter/X URL.").optional().or(z.literal('')),
-  paypal: z.string().email("Invalid PayPal email").optional().or(z.literal('')),
-  upi: z.string().optional(),
-  btc: z.string().optional(),
   tools: z.string().optional(),
   memory: z.string().optional(),
 });
 type NewAgentFormValues = z.infer<typeof newAgentSchema>;
+
+const donationSchema = z.object({
+    amount: z.number().positive("Amount must be positive."),
+});
+type DonationFormValues = z.infer<typeof donationSchema>;
 
 const getCategoryIcon = (category: Agent['category']) => {
     switch (category) {
@@ -326,6 +328,9 @@ const TypingEffect = ({ text }: { text: string }) => {
 const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent) => void }) => {
     const [isPinned, setIsPinned] = React.useState(agent.pinned);
     const [isActive, setIsActive] = React.useState(agent.active);
+    const [currency, setCurrency] = React.useState('USD');
+
+    const donationForm = useForm<DonationFormValues>({ resolver: zodResolver(donationSchema) });
 
     const handlePinToggle = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -339,6 +344,42 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
       const newActive = !isActive;
       setIsActive(newActive);
       onUpdate({ ...agent, active: newActive });
+    }
+
+    const onDonationSubmit: SubmitHandler<DonationFormValues> = (data) => {
+        console.log(`Donating ${data.amount} ${currency} to ${agent.creator.name}`);
+        // Implement actual donation logic here
+    };
+
+    const renderPaymentOptions = () => {
+        switch (currency) {
+            case 'USD':
+                return (
+                    <>
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white"><Bitcoin className="mr-2 h-4 w-4" /> PayPal</Button>
+                        <Button className="w-full bg-black hover:bg-gray-800 text-white"><Apple className="mr-2 h-4 w-4" /> Apple Pay</Button>
+                        <Button className="w-full bg-gray-200 hover:bg-gray-300 text-black"><CreditCard className="mr-2 h-4 w-4" /> Cards</Button>
+                    </>
+                );
+            case 'INR':
+                 return (
+                    <>
+                        <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white">GPay</Button>
+                        <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">PhonePe</Button>
+                        <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">UPI</Button>
+                    </>
+                );
+            case 'Crypto':
+                 return (
+                    <>
+                        <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black">Binance</Button>
+                        <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white">Trust Wallet</Button>
+                        <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white">Phantom</Button>
+                    </>
+                );
+            default:
+                return null;
+        }
     }
 
     return (
@@ -390,17 +431,18 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                     </div>
                 </motion.div>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8 p-8">
                 <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
                     <X className="h-4 w-4" />
                     <span className="sr-only">Close</span>
                 </DialogClose>
-                <div className="flex flex-col gap-4 py-4">
-                     <div className="flex items-center gap-4">
+
+                <div className="md:col-span-2 space-y-6">
+                    <div className="flex items-center gap-4">
                         <Image src={agent.creator.imageUrl} alt={agent.creator.name} width={80} height={80} className="rounded-full border-2 border-black" />
                         <div>
-                            <DialogTitle className="text-2xl font-bold">{agent.name}</DialogTitle>
-                            <div className="text-sm text-black/60">by {agent.creator.name}</div>
+                            <DialogTitle className="text-3xl font-bold">{agent.name}</DialogTitle>
+                            <div className="text-md text-black/60">by {agent.creator.name}</div>
                              <div className="flex gap-3 mt-2">
                                 {agent.creator.social.twitter && <a href={agent.creator.social.twitter} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Twitter size={16} /></a>}
                                 {agent.creator.social.github && <a href={agent.creator.social.github} target="_blank" rel="noopener noreferrer" className="text-black/60 hover:text-black"><Github size={16} /></a>}
@@ -408,14 +450,14 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                             </div>
                         </div>
                     </div>
-
+                    
                     <div className="p-4 border rounded-lg bg-gray-50">
-                        <h4 className="font-semibold mb-2 text-sm uppercase">Description</h4>
+                        <h4 className="font-semibold mb-2 text-sm uppercase text-gray-500">Description</h4>
                         <p className="text-sm text-black/80">{agent.description}</p>
                     </div>
 
                     <div className="p-4 border rounded-lg bg-gray-50">
-                        <h4 className="font-semibold mb-2 text-sm uppercase">Purpose / Task</h4>
+                        <h4 className="font-semibold mb-2 text-sm uppercase text-gray-500">Purpose / Task</h4>
                         <p className="text-sm text-black/80">{agent.purpose}</p>
                     </div>
                     
@@ -425,6 +467,38 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                         <div className="p-3 border rounded-lg bg-gray-50"><span className="font-semibold">Tools:</span> {agent.tools}</div>
                         <div className="p-3 border rounded-lg bg-gray-50"><span className="font-semibold">Memory:</span> {agent.memory}</div>
                     </div>
+                </div>
+
+                <div className="space-y-6 p-6 border rounded-lg bg-gray-50">
+                    <h3 className="font-bold text-lg text-center">Support the Creator</h3>
+                     <Form {...donationForm}>
+                        <form onSubmit={donationForm.handleSubmit(onDonationSubmit)} className="space-y-4">
+                            <Tabs value={currency} onValueChange={setCurrency} className="w-full">
+                                <TabsList className="grid w-full grid-cols-3">
+                                    <TabsTrigger value="USD">USD</TabsTrigger>
+                                    <TabsTrigger value="INR">INR</TabsTrigger>
+                                    <TabsTrigger value="Crypto">Crypto</TabsTrigger>
+                                </TabsList>
+                            </Tabs>
+                            
+                            <FormField name="amount" control={donationForm.control} render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Amount</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">{currency}</span>
+                                            <Input {...field} type="number" placeholder="10" className="pl-12 border-black" onChange={e => field.onChange(parseFloat(e.target.value))} />
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                             )} />
+                             
+                             <div className="space-y-2">
+                                {renderPaymentOptions()}
+                             </div>
+                        </form>
+                    </Form>
                 </div>
             </DialogContent>
         </Dialog>
@@ -468,9 +542,6 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                     twitter: data.twitter || undefined,
                     github: data.github || undefined,
                     linkedin: data.linkedin || undefined,
-                    paypal: data.paypal || undefined,
-                    upi: data.upi || undefined,
-                    btc: data.btc || undefined,
                 },
             },
             ...data
@@ -568,19 +639,6 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                                 )} />
                                                 <FormField name="twitter" control={newAgentForm.control} render={({ field }) => (
                                                     <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                                )} />
-                                            </div>
-                                            
-                                             <div className="space-y-4 p-4 border rounded-lg">
-                                                 <h3 className="font-bold text-sm uppercase text-black/60">Support the Creator (Optional)</h3>
-                                                 <FormField name="paypal" control={newAgentForm.control} render={({ field }) => (
-                                                    <FormItem><FormLabel>PayPal Email</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                                )} />
-                                                 <FormField name="upi" control={newAgentForm.control} render={({ field }) => (
-                                                    <FormItem><FormLabel>UPI ID (for India)</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                                )} />
-                                                 <FormField name="btc" control={newAgentForm.control} render={({ field }) => (
-                                                    <FormItem><FormLabel>BTC Wallet Address</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                                                 )} />
                                             </div>
                                         </div>
@@ -1196,4 +1254,3 @@ export default function ChatUI({
   );
 }
 
-    

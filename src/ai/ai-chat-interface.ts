@@ -18,9 +18,9 @@ const MessageSchema = z.object({
 });
 
 const AgentSchema = z.object({
-    agent_id: z.string(),
-    agent_name: z.string(),
-    model_used: z.string(),
+    id: z.string(),
+    name: z.string(),
+    model: z.string(),
     category: z.string(),
     command: z.string().optional(),
     description: z.string(),
@@ -39,7 +39,7 @@ export async function aiChat(input: AIChatInput): Promise<ReadableStream<string>
 
   if (input.selectedAgents && input.selectedAgents.length > 0) {
     const agentDetails = input.selectedAgents.map(agent => 
-      `Agent: ${agent.agent_name} (ID: ${agent.agent_id})\nModel: ${agent.model_used}\nCategory: ${agent.category}\nCommand: ${agent.command || 'N/A'}\nDescription: ${agent.description}`
+      `Agent: ${agent.name} (ID: ${agent.id})\nModel: ${agent.model}\nCategory: ${agent.category}\nCommand: ${agent.command || 'N/A'}\nDescription: ${agent.description}`
     ).join('\n\n');
 
     prompt += `\n\nThe user has provided the following agents to assist with their query. Use their capabilities to formulate the best possible response. Do not explicitly mention the agents in your response. Just use the context they provide.\n\n--- AGENT CONTEXT ---\n${agentDetails}\n----------------------`;
@@ -77,3 +77,4 @@ export async function aiChat(input: AIChatInput): Promise<ReadableStream<string>
     
     return transformStream.readable;
 }
+
