@@ -428,32 +428,6 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4">
                     <div className="flex flex-col gap-4">
                         <Image src={agent.creator.imageUrl} alt={agent.creator.name} width={128} height={128} className="rounded-lg border-2 border-black w-full aspect-square object-cover" />
-                        <div className="p-4 border rounded-lg flex flex-col gap-4">
-                            <h4 className="font-semibold text-center">Support the Creator</h4>
-                            <Tabs value={currency} onValueChange={setCurrency} className="w-full">
-                                <TabsList className="grid w-full grid-cols-3">
-                                    <TabsTrigger value="usd">USD</TabsTrigger>
-                                    <TabsTrigger value="inr">INR</TabsTrigger>
-                                    <TabsTrigger value="crypto">Crypto</TabsTrigger>
-                                </TabsList>
-                            </Tabs>
-                            <Form {...donationForm}>
-                                <form onSubmit={donationForm.handleSubmit(onDonationSubmit)} className="space-y-4">
-                                    <FormField name="amount" control={donationForm.control} render={({ field }) => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-black/60">{currency === 'usd' ? '$' : currency === 'inr' ? '₹' : ''}</span>
-                                                    <Input type="number" placeholder="10" {...field} className="pl-6 border-black" />
-                                                </div>
-                                            </FormControl>
-                                        </FormItem>
-                                    )} />
-                                    {renderPaymentOptions()}
-                                    <Button type="submit" className="w-full bg-black text-white hover:bg-white hover:text-black border border-black">Donate</Button>
-                                </form>
-                            </Form>
-                        </div>
                     </div>
                      <div className="md:col-span-2 flex flex-col gap-6">
                         <div>
@@ -1040,4 +1014,3 @@ export default function ChatUI({
     </>
   );
 }
-
