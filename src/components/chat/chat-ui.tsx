@@ -877,7 +877,7 @@ export default function ChatUI({
   );
 
   const renderMessageContent = (content: string) => {
-    const parts = content.split(/(\`{3}[\s\S]*?\`{3}|\`.*?\`|\*\*.*?\*\*|\*.*?\*|\[.*?\]\(.*?\))/g);
+    const parts = content.split(/(`{3}[\s\S]*?`{3}|`.*?`|\*\*.*?\*\*|\*.*?\*|\[.*?\]\(.*?\))/g);
     return parts.map((part, index) => {
       if (part.startsWith('```')) {
         const code = part.substring(3, part.length - 3);
@@ -1040,3 +1040,4 @@ export default function ChatUI({
     </>
   );
 }
+
