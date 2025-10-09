@@ -2,93 +2,25 @@
 'use client';
 
 import * as React from 'react';
-import { motion, AnimatePresence, useInView } from 'framer-motion';
-import {
-  MessageCircle,
-  Bot,
-  Sparkles,
-  Search,
-  Plus,
-  Settings2,
-  Send,
-  User,
-  PanelLeft,
-  ChevronsRight,
-  Bug,
-  Lightbulb,
-  X,
-  Star,
-  Users,
-  BrainCircuit,
-  Tag,
-  Rocket,
-  Pin,
-  PinOff,
-  MoreVertical,
-  Trash2,
-  Copy,
-  Edit,
-  Heart,
-  Twitter,
-  Github,
-  Linkedin,
-  Filter,
-  Code,
-  LineChart,
-  Palette,
-  Bitcoin,
-  DollarSign,
-  Apple,
-  CreditCard,
-  Check,
-  Building,
-} from 'lucide-react';
-import { useForm, SubmitHandler } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MessageCircle, Send, Plus, X, ChevronsRight, PanelLeft, Bot, Sparkles, Search, Settings2, Bug, Lightbulb, User } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import type { ChatMessage } from '@/app/actions';
 import { cn } from '@/lib/utils';
-import { Badge } from '../ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogTrigger,
-  DialogClose,
-} from '@/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '../ui/switch';
-import { agents as allAgents, type Agent } from '@/lib/agents-data';
-import { useMemo } from 'react';
-import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
-import { ScrollArea } from '../ui/scroll-area';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import { Label } from '../ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import type { Agent } from '@/lib/agents-data';
+
 
 interface ChatUIProps {
   messages: ChatMessage[];
@@ -104,25 +36,11 @@ interface ChatUIProps {
 }
 
 const TypingIndicator = () => (
-  <div className="flex items-center space-x-1 p-3">
-    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-black delay-0"></span>
-    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-black delay-200"></span>
-    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-black delay-400"></span>
+  <div className="flex items-center space-x-2 p-4">
+    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground delay-0"></span>
+    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground delay-200"></span>
+    <span className="h-2 w-2 animate-pulse rounded-full bg-foreground delay-400"></span>
   </div>
-);
-
-const PixelLogo = () => (
-    <Link href="/" className="flex items-center gap-2">
-      <div className="w-8 h-8 flex items-center justify-center">
-        <div className="w-6 h-6 relative">
-          <div className="w-2 h-2 bg-black absolute bottom-0 left-0"></div>
-          <div className="w-2 h-2 bg-black absolute bottom-0 left-2"></div>
-          <div className="w-2 h-2 bg-black absolute bottom-0 left-4"></div>
-          <div className="w-2 h-2 bg-black absolute bottom-2 left-2"></div>
-        </div>
-      </div>
-      <span className="font-bold text-lg">Le Chat</span>
-    </Link>
 );
 
 
@@ -141,721 +59,6 @@ const featureRequestSchema = z.object({
 });
 type FeatureRequestFormValues = z.infer<typeof featureRequestSchema>;
 
-const newAgentSchema = z.object({
-  name: z.string().min(3, "Agent name must be at least 3 characters."),
-  description: z.string().min(10, "Description must be at least 10 characters."),
-  model: z.string().min(1, "Please select a model."),
-  category: z.enum(['Coding', 'Analysis', 'Creative', 'Productivity', 'Research']),
-  purpose: z.string().min(10, "Task/Role must be at least 10 characters."),
-  command: z.string().optional(),
-  creatorName: z.string().min(2, "Creator name is required."),
-  linkedin: z.string().url("Please enter a valid LinkedIn URL.").optional().or(z.literal('')),
-  github: z.string().url("Please enter a valid GitHub URL.").optional().or(z.literal('')),
-  twitter: z.string().url("Please enter a valid Twitter/X URL.").optional().or(z.literal('')),
-  tools: z.string().optional(),
-  memory: z.string().optional(),
-});
-type NewAgentFormValues = z.infer<typeof newAgentSchema>;
-
-const getCategoryIcon = (category: Agent['category']) => {
-    switch (category) {
-        case 'Coding': return <Code className="w-4 h-4" />;
-        case 'Analysis': return <LineChart className="w-4 h-4" />;
-        case 'Creative': return <Palette className="w-4 h-4" />;
-        case 'Research': return <Lightbulb className="w-4 h-4" />;
-        default: return <Sparkles className="w-4 h-4" />;
-    }
-}
-
-
-const getSymbolicVisual = (category: Agent['category']) => {
-    const commonProps = {
-        className: "absolute inset-0 w-full h-full opacity-10 group-hover:opacity-20 transition-opacity",
-    };
-
-    switch (category) {
-        case 'Coding':
-             const codeLines = [
-                "const fetchData = async () => {",
-                "  const response = await fetch(API_URL);",
-                "  const data = await response.json();",
-                "  return data;",
-                "};",
-             ];
-             return (
-                <div {...commonProps} className="font-mono text-xs p-2 overflow-hidden">
-                    {codeLines.map((line, i) => (
-                        <motion.div
-                            key={i}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{
-                                duration: 0.5,
-                                repeat: Infinity,
-                                repeatType: 'mirror',
-                                delay: i * 0.4 + Math.random() * 1.2,
-                            }}
-                        >
-                           {line}
-                        </motion.div>
-                    ))}
-                </div>
-            );
-        case 'Analysis':
-             const points = Array.from({ length: 7 }, (_, i) => `${i * 15},${30 + Math.random() * 40 - 20}`).join(' ');
-            return (
-                <motion.svg {...commonProps} viewBox="0 0 100 60">
-                    <motion.polyline
-                        points={points}
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse', ease: "easeInOut" }}
-                    />
-                </motion.svg>
-            );
-        case 'Creative':
-            return (
-                <motion.svg {...commonProps} viewBox="0 0 100 100">
-                    <motion.path
-                        d="M20,50 C20,80 80,80 80,50 C80,20 20,20 20,50 Z"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1"
-                        animate={{
-                            d: [
-                                "M20,50 C20,80 80,80 80,50 C80,20 20,20 20,50 Z",
-                                "M30,50 C10,70 90,70 70,50 C90,30 10,30 30,50 Z",
-                                "M20,50 C20,80 80,80 80,50 C80,20 20,20 20,50 Z",
-                            ]
-                        }}
-                        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-                    />
-                </motion.svg>
-            );
-        case 'Research':
-             return (
-                <motion.svg {...commonProps} viewBox="0 0 100 100">
-                     {/* Nodes */}
-                     {[...Array(5)].map((_, i) => (
-                         <motion.circle
-                             key={`node-${i}`}
-                             cx={20 + (i * 15)}
-                             cy={50 + Math.sin(i) * 20}
-                             r="3"
-                             fill="currentColor"
-                             animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-                             transition={{ duration: 3, repeat: Infinity, delay: i * 0.2 }}
-                         />
-                     ))}
-                     {/* Connections */}
-                     <motion.path d="M20 50 L35 70 L50 50 L65 30 L80 50" stroke="currentColor" strokeWidth="0.5" fill="none" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 4, repeat: Infinity, repeatType: "reverse" }}/>
-                </motion.svg>
-             )
-        default: // Productivity & others
-             return (
-                <motion.svg {...commonProps} viewBox="0 0 100 100">
-                     {Array.from({ length: 5 }).map((_, i) => (
-                        <motion.circle
-                            key={i}
-                            r="2"
-                            fill="currentColor"
-                            initial={{
-                                cx: 50,
-                                cy: 50,
-                                opacity: 0
-                            }}
-                            animate={{
-                                cx: 50 + 40 * Math.cos( (i/5) * 2 * Math.PI),
-                                cy: 50 + 40 * Math.sin( (i/5) * 2 * Math.PI),
-                                opacity: [0, 1, 0],
-                                rotate: 360
-                            }}
-                            transition={{
-                                duration: 10,
-                                repeat: Infinity,
-                                delay: i * 1,
-                                ease: 'linear'
-                            }}
-                        />
-                    ))}
-                </motion.svg>
-            );
-    }
-};
-
-const TypingEffect = ({ text }: { text: string }) => {
-  const [displayedText, setDisplayedText] = React.useState('');
-  const ref = React.useRef(null);
-  const isInView = useInView(ref, { once: true }); 
-
-  React.useEffect(() => {
-    if (isInView) {
-      let i = 0;
-      const interval = setInterval(() => {
-        if (i < text.length) {
-          setDisplayedText(text.substring(0, i + 1));
-          i++;
-        } else {
-          clearInterval(interval);
-        }
-      }, 50); 
-      return () => clearInterval(interval);
-    }
-  }, [isInView, text]);
-
-  React.useEffect(() => {
-    if (!isInView) {
-      setDisplayedText('');
-    }
-  }, [isInView]);
-
-
-  return (
-    <p ref={ref} className="text-xs text-black/80 h-8">
-      {displayedText}
-      <span className="animate-pulse">|</span>
-    </p>
-  );
-};
-
-
-const AgentCard = ({ agent, onUpdate }: { agent: Agent; onUpdate: (agent: Agent) => void }) => {
-    
-    const handleActiveToggle = (newActiveState: boolean) => {
-        onUpdate({ ...agent, active: newActiveState });
-    };
-
-    return (
-        <motion.div
-            layout
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.3 }}
-            className="relative group p-4 border border-black/10 rounded-xl bg-white shadow-sm hover:shadow-lg transition-shadow duration-300"
-        >
-            {/* Top Controls */}
-            <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center gap-2">
-                    <Switch
-                        checked={agent.active}
-                        onCheckedChange={handleActiveToggle}
-                        className="h-4 w-7 [&>span]:h-3 [&>span]:w-3 [&>span]:data-[state=checked]:translate-x-3"
-                    />
-                    <div className={cn("w-2 h-2 rounded-full", agent.active ? 'bg-green-500' : 'bg-red-500')} />
-                </div>
-                <div className="flex items-center gap-3 text-black/40">
-                    <Heart className="w-4 h-4 hover:text-red-500 transition-colors cursor-pointer" />
-                    <Star className="w-4 h-4 hover:text-yellow-500 transition-colors cursor-pointer" />
-                </div>
-            </div>
-
-            <div className="relative w-full aspect-square flex flex-col justify-end">
-                 {/* Animated Background */}
-                <div className="absolute inset-0 rounded-lg overflow-hidden">
-                    {getSymbolicVisual(agent.category)}
-                </div>
-
-                <div className="relative z-10 space-y-1">
-                    <h3 className="font-bold text-lg leading-tight">{agent.name}</h3>
-                    <p className="text-xs text-black/60">Model: {agent.model}</p>
-                     <div className="flex items-center gap-4 text-xs text-black/60">
-                        <span><Users className="w-3 h-3 inline mr-1" />{(agent.peopleUsed / 1000).toFixed(1)}k</span>
-                        <span><Heart className="w-3 h-3 inline mr-1" />{(agent.likes / 1000).toFixed(1)}k</span>
-                    </div>
-                </div>
-
-                {/* Nested Description Card */}
-                <div className="relative z-10 mt-2 p-2 border border-black/10 rounded-md bg-white/50 backdrop-blur-sm">
-                   <TypingEffect text={agent.description} />
-                </div>
-            </div>
-        </motion.div>
-    );
-};
-
-
-const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: Agent[]) => void}) => {
-    const [filter, setFilter] = React.useState('All');
-    const [searchTerm, setSearchTerm] = React.useState('');
-    const newAgentForm = useForm<NewAgentFormValues>({ resolver: zodResolver(newAgentSchema) });
-    const { toast } = useToast();
-    const [isAddAgentOpen, setIsAddAgentOpen] = React.useState(false);
-
-    const filteredAgents = useMemo(() => {
-        return agents.filter(agent => {
-            const categoryMatch = filter === 'All' || agent.category === filter;
-            const searchMatch = searchTerm === '' || 
-                agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                agent.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                agent.model.toLowerCase().includes(searchTerm.toLowerCase());
-            return categoryMatch && searchMatch;
-        });
-    }, [agents, filter, searchTerm]);
-
-    const categories = ['All', 'Coding', 'Analysis', 'Creative', 'Productivity', 'Research'];
-
-    const onNewAgentSubmit: SubmitHandler<NewAgentFormValues> = (data) => {
-        const newAgent: Agent = {
-            id: `agent-${Date.now()}`,
-            active: true,
-            pinned: false,
-            peopleUsed: 0,
-            likes: 0,
-            creator: {
-                name: data.creatorName,
-                imageUrl: `https://picsum.photos/seed/${data.creatorName}/100/100`,
-                social: {
-                    twitter: data.twitter || undefined,
-                    github: data.github || undefined,
-                    linkedin: data.linkedin || undefined,
-                },
-            },
-            ...data
-        };
-        setAgents([newAgent, ...agents]);
-        toast({ title: "Agent Created!", description: `${data.name} is now available.` });
-        newAgentForm.reset();
-        setIsAddAgentOpen(false);
-    };
-
-    const handleAgentUpdate = (updatedAgent: Agent) => {
-        setAgents(agents.map(a => a.id === updatedAgent.id ? updatedAgent : a));
-    };
-
-    return (
-        <div className="flex flex-col h-full p-4 md:p-6 bg-white">
-            <header className="mb-6">
-                <h1 className="text-2xl font-bold">Agents</h1>
-                <p className="text-black/60">Browse, manage, and create powerful AI agents.</p>
-                <div className="mt-4 flex flex-col md:flex-row gap-4 justify-between">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/40" />
-                        <Input 
-                            placeholder="Search by name, model..."
-                            className="pl-10 border-black w-full md:w-64"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                        {categories.map(cat => (
-                            <Button 
-                                key={cat}
-                                variant={filter === cat ? 'default' : 'outline'}
-                                onClick={() => setFilter(cat)}
-                                className={cn("border-black", filter === cat ? "bg-black text-white hover:bg-black" : "hover:bg-gray-100")}
-                            >
-                                {cat}
-                            </Button>
-                        ))}
-                    </div>
-                     <Dialog open={isAddAgentOpen} onOpenChange={setIsAddAgentOpen}>
-                        <DialogTrigger asChild>
-                             <Button className="bg-black text-white hover:bg-white hover:text-black border border-black w-full md:w-auto shadow-sm hover:shadow-md transition-shadow"><Plus className="mr-2 h-4 w-4" /> Add New Agent</Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
-                            <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
-                              <X className="h-4 w-4" />
-                              <span className="sr-only">Close</span>
-                            </DialogClose>
-                            <DialogHeader>
-                                <DialogTitle className="text-2xl font-bold">Create a New Agent</DialogTitle>
-                                <DialogDescription>Fill out the details to create a new AI agent.</DialogDescription>
-                            </DialogHeader>
-                            <Form {...newAgentForm}>
-                                <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                                    
-                                    <div className="space-y-4 p-4 border rounded-lg">
-                                        <h3 className="font-bold text-sm uppercase text-black/60">Agent Information</h3>
-                                        <FormField name="name" control={newAgentForm.control} render={({ field }) => (
-                                            <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                        )} />
-                                        <FormField name="description" control={newAgentForm.control} render={({ field }) => (
-                                            <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                        )} />
-                                        <FormField name="purpose" control={newAgentForm.control} render={({ field }) => (
-                                            <FormItem><FormLabel>Task / Role</FormLabel><FormControl><Textarea {...field} className="border-black" placeholder="What is the primary task of this agent?" /></FormControl><FormMessage /></FormItem>
-                                        )} />
-                                         <FormField name="model" control={newAgentForm.control} render={({ field }) => (
-                                            <FormItem><FormLabel>Model</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a model" /></SelectTrigger></FormControl><SelectContent><SelectItem value="GPT-4">GPT-4</SelectItem><SelectItem value="Gemini 1.5">Gemini 1.5</SelectItem><SelectItem value="Claude 3">Claude 3</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                                        )} />
-                                        <FormField name="category" control={newAgentForm.control} render={({ field }) => (
-                                            <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Coding">Coding</SelectItem><SelectItem value="Analysis">Analysis</SelectItem><SelectItem value="Creative">Creative</SelectItem><SelectItem value="Productivity">Productivity</SelectItem><SelectItem value="Research">Research</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                                        )} />
-                                    </div>
-
-                                    <div className="space-y-6">
-                                        <div className="space-y-4 p-4 border rounded-lg">
-                                            <h3 className="font-bold text-sm uppercase text-black/60">Advanced Options</h3>
-                                            <FormField name="command" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Command (Optional)</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. /analyze" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Allowed Tools / Access</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="memory" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Memory / Context Options</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                        </div>
-                                        <div className="space-y-4 p-4 border rounded-lg">
-                                            <h3 className="font-bold text-sm uppercase text-black/60">Creator Information</h3>
-                                            <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Creator Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="linkedin" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="github" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="twitter" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                        </div>
-                                    </div>
-
-                                    <div className="md:col-span-2"><Button type="submit" className="bg-black text-white w-full">Create Agent</Button></div>
-                                </form>
-                            </Form>
-                        </DialogContent>
-                    </Dialog>
-                </div>
-            </header>
-            
-            <ScrollArea className="flex-1 -m-4">
-              <div className="p-4">
-                <AnimatePresence>
-                    {filteredAgents.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {filteredAgents.map(agent => (
-                                <AgentCard key={agent.id} agent={agent} onUpdate={handleAgentUpdate} />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-16 text-black/60">
-                            <p>No agents found.</p>
-                            <p className="text-sm">Try adjusting your search or filter.</p>
-                        </div>
-                    )}
-                </AnimatePresence>
-              </div>
-            </ScrollArea>
-        </div>
-    );
-};
-
-
-const AgentSelector = ({
-  agents,
-  selectedAgents,
-  setSelectedAgents,
-}: {
-  agents: Agent[];
-  selectedAgents: Agent[];
-  setSelectedAgents: (agents: Agent[]) => void;
-}) => {
-  const { toast } = useToast();
-  
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = React.useState(false);
-
-  const [tempSelected, setTempSelected] = React.useState<Agent[]>(selectedAgents);
-  const [searchTerm, setSearchTerm] = React.useState('');
-  
-  const [subscriptionTier, setSubscriptionTier] = React.useState<'free' | 'standard' | 'pro'>('free');
-  const agentLimit = { free: 2, standard: 5, pro: 12 }[subscriptionTier];
-  
-  const [paymentCurrency, setPaymentCurrency] = React.useState('USD');
-
-  const paymentForm = useForm();
-  
-  const enabledAgents = agents.filter((agent) => agent.active);
-
-  const filteredEnabledAgents = enabledAgents.filter(
-    (agent) =>
-      agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agent.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agent.model.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleSelectAgent = (agent: Agent) => {
-    setTempSelected((prev) => {
-      const isSelected = prev.some((a) => a.id === agent.id);
-      if (isSelected) {
-        return prev.filter((a) => a.id !== agent.id);
-      } else {
-        if (prev.length >= agentLimit) {
-          setIsUpgradeModalOpen(true);
-          return prev;
-        }
-        return [...prev, agent];
-      }
-    });
-  };
-
-  const handleApply = () => {
-    setSelectedAgents(tempSelected);
-    setIsModalOpen(false);
-  };
-
-  const handleCancel = () => {
-    setTempSelected(selectedAgents);
-    setIsModalOpen(false);
-  };
-
-  const handleRemoveAgent = (agentId: string) => {
-    const newSelected = selectedAgents.filter((a) => a.id !== agentId);
-    setSelectedAgents(newSelected);
-    setTempSelected(newSelected);
-  };
-
-  const handleSubscriptionSelect = (tier: 'standard' | 'pro') => {
-    setIsUpgradeModalOpen(false);
-    setIsPaymentModalOpen(true);
-    // In a real app, you'd pass the tier to the payment modal
-  };
-
-  const onPaymentSubmit = async (data: any) => {
-    console.log("Payment submitted", data);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    toast({ title: "Subscription successful!", description: "Your subscription code has been emailed to you." });
-    setIsPaymentModalOpen(false);
-    setSubscriptionTier('standard'); // Simulate upgrade
-  };
-
-  const AgentCapsule = ({ agent }: { agent: Agent }) => {
-    const isSelected = tempSelected.some((a) => a.id === agent.id);
-    return (
-      <motion.div
-        layout
-        onClick={() => handleSelectAgent(agent)}
-        className={cn(
-          'relative aspect-square cursor-pointer rounded-2xl border p-4 text-center transition-all duration-300',
-          isSelected
-            ? 'border-cyan-400/50 bg-white shadow-[0_0_15px_rgba(56,189,248,0.3)]'
-            : 'border-black/10 bg-white/50 hover:border-black/30 hover:scale-105'
-        )}
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.98 }}
-      >
-        {isSelected && (
-          <motion.div
-            layoutId='selection-glow'
-            className="absolute -inset-px rounded-2xl border-2 border-cyan-400"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          />
-        )}
-        <div className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full border border-black/10 bg-white/50">
-          <AnimatePresence>
-            {isSelected && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-              >
-                <Check className="h-3 w-3 text-cyan-500" />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-        <div className="flex h-full flex-col items-center justify-center gap-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black/5 text-black/50">
-            {getCategoryIcon(agent.category)}
-          </div>
-          <p className="font-bold text-sm">{agent.name}</p>
-          <p className="text-xs text-black/60">{agent.model}</p>
-        </div>
-      </motion.div>
-    );
-  };
-  
-  const PaymentOptions = ({ currency }: { currency: string }) => {
-    const options = {
-        USD: [{ name: 'PayPal', icon: <DollarSign /> }, { name: 'Apple Pay', icon: <Apple /> }, { name: 'Cards', icon: <CreditCard /> }],
-        INR: [{ name: 'GPay', icon: <Building /> }, { name: 'PhonePe', icon: <Building /> }, { name: 'UPI', icon: <Building /> }],
-        Crypto: [{ name: 'Binance', icon: <Bitcoin /> }, { name: 'Trust Wallet', icon: <Bitcoin /> }, { name: 'Phantom', icon: <Bitcoin /> }],
-    };
-    const currentOptions = options[currency as keyof typeof options];
-
-    return (
-        <div className="space-y-2 mt-4">
-            <h4 className="font-semibold">{currency}</h4>
-            {currentOptions.map(opt => (
-                 <Button key={opt.name} variant="outline" className="w-full justify-start gap-2">
-                    {React.cloneElement(opt.icon, {className: "w-4 h-4"})}
-                    {opt.name}
-                 </Button>
-            ))}
-        </div>
-    );
-  };
-
-  return (
-    <>
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogTrigger asChild>
-          <div className="mx-auto w-full max-w-4xl rounded-xl border border-black/10 bg-white/50 p-3 shadow-sm backdrop-blur-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <BrainCircuit className="h-5 w-5 text-black/60" />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-auto px-2 py-1 text-sm font-bold"
-                  onClick={() => setTempSelected(selectedAgents)}
-                >
-                  Agents
-                </Button>
-              </div>
-              <div className="text-xs font-medium text-black/60">{selectedAgents.length}/{agentLimit} Active</div>
-            </div>
-            {selectedAgents.length > 0 && (
-              <AnimatePresence>
-                <motion.div layout className="mt-2 flex flex-wrap gap-2">
-                  {selectedAgents.map((agent) => (
-                    <motion.div
-                      key={agent.id}
-                      layout
-                      initial={{ opacity: 0, y: -10, scale: 0.8 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, x: -10, scale: 0.8 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                      className="flex items-center gap-2 rounded-full border border-black bg-white py-1 pl-2 pr-1 text-xs font-medium"
-                    >
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="max-w-[100px] truncate">{agent.name}</span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="font-bold">{agent.name}</p>
-                            <p>{agent.description}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <button
-                        onClick={() => handleRemoveAgent(agent.id)}
-                        className="rounded-full bg-black p-0.5 text-white transition-colors hover:bg-red-500"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </motion.div>
-                  ))}
-                </motion.div>
-              </AnimatePresence>
-            )}
-          </div>
-        </DialogTrigger>
-        <DialogContent className="w-[80vw] max-w-4xl bg-white/80 backdrop-blur-xl border border-black/10 text-black shadow-2xl rounded-3xl p-0">
-            <DialogHeader className="p-6 text-center border-b border-black/10">
-              <DialogTitle className="text-2xl font-bold">🤖 Agent Selection Panel</DialogTitle>
-              <DialogDescription className="text-black/60">
-                Choose up to {agentLimit} enabled agents to assist your chat.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="px-6 py-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/40" />
-                <Input
-                  placeholder="Search agents..."
-                  className="w-full border-black/20 bg-white/50 pl-10 text-black placeholder:text-black/40 focus:ring-black"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-            <ScrollArea className="h-96">
-              <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredEnabledAgents.map((agent) => (
-                  <AgentCapsule key={agent.id} agent={agent} />
-                ))}
-              </div>
-            </ScrollArea>
-            <DialogFooter className="border-t border-black/10 p-6 bg-white/50 rounded-b-3xl">
-              <div className="flex w-full items-center justify-between">
-                <div className="text-sm font-medium text-black/70">{tempSelected.length}/{agentLimit} Selected</div>
-                <div className="flex gap-2">
-                  <Button variant="ghost" onClick={handleCancel} className="text-black/70 hover:bg-black/10 hover:text-black">
-                    Cancel
-                  </Button>
-                  <Button onClick={handleApply} className="bg-black text-white hover:bg-black/80">
-                    Apply
-                  </Button>
-                </div>
-              </div>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Upgrade Modal */}
-      <Dialog open={isUpgradeModalOpen} onOpenChange={setIsUpgradeModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>🚀 Upgrade to Unlock More Agents</DialogTitle>
-            <DialogDescription>
-              You've reached the free limit of {agentLimit} agents. Upgrade your plan to enable more powerful workflows.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-              <div className="p-4 border rounded-lg hover:border-black transition-all">
-                  <h3 className="font-bold">Standard Plan</h3>
-                  <p className="text-xl font-bold">₹49<span className="text-sm font-normal">/month</span></p>
-                  <p className="text-sm text-black/60">Unlock up to 5 agents.</p>
-                  <Button className="w-full mt-4 bg-black text-white" onClick={() => handleSubscriptionSelect('standard')}>Subscribe Now</Button>
-              </div>
-              <div className="p-4 border rounded-lg hover:border-black transition-all">
-                  <h3 className="font-bold">Pro Plan</h3>
-                  <p className="text-xl font-bold">₹99<span className="text-sm font-normal">/month</span></p>
-                  <p className="text-sm text-black/60">Unlock all {agents.length} agents.</p>
-                  <Button className="w-full mt-4 bg-black text-white" onClick={() => handleSubscriptionSelect('pro')}>Subscribe Now</Button>
-              </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Payment Modal */}
-      <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
-          <DialogContent>
-              <DialogHeader>
-                  <DialogTitle>Complete Your Subscription</DialogTitle>
-              </DialogHeader>
-              <Form {...paymentForm}>
-                  <form onSubmit={paymentForm.handleSubmit(onPaymentSubmit)} className="space-y-4">
-                      <FormField name="name" control={paymentForm.control} render={({ field }) => (
-                          <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} placeholder="Your Name" /></FormControl></FormItem>
-                      )} />
-                      <FormField name="email" control={paymentForm.control} render={({ field }) => (
-                          <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} type="email" placeholder="your@email.com" /></FormControl></FormItem>
-                      )} />
-                      <FormField name="country" control={paymentForm.control} render={({ field }) => (
-                          <FormItem><FormLabel>Country</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger><SelectValue placeholder="Select Country" /></SelectTrigger></FormControl><SelectContent><SelectItem value="USA">USA</SelectItem><SelectItem value="India">India</SelectItem></SelectContent></Select></FormItem>
-                      )} />
-                      <div>
-                        <Label>Payment Method</Label>
-                        <Tabs value={paymentCurrency} onValueChange={setPaymentCurrency} className="mt-2">
-                            <TabsList><TabsTrigger value="USD">USD</TabsTrigger><TabsTrigger value="INR">INR</TabsTrigger><TabsTrigger value="Crypto">Crypto</TabsTrigger></TabsList>
-                        </Tabs>
-                        <PaymentOptions currency={paymentCurrency} />
-                      </div>
-                      <DialogFooter>
-                          <Button type="submit" className="w-full bg-black text-white">Subscribe</Button>
-                      </DialogFooter>
-                  </form>
-              </Form>
-          </DialogContent>
-      </Dialog>
-    </>
-  );
-};
-
-
 export default function ChatUI({
   messages,
   input,
@@ -869,9 +72,8 @@ export default function ChatUI({
   setSelectedAgents,
 }: ChatUIProps) {
   const isMobile = useIsMobile();
-  const [isSidebarOpen, setSidebarOpen] = React.useState(false);
+  const [isSidebarOpen, setSidebarOpen] = React.useState(!isMobile);
   const { toast } = useToast();
-  const [activeView, setActiveView] = React.useState('chat');
 
   const bugReportForm = useForm<BugReportFormValues>({
     resolver: zodResolver(bugReportSchema),
@@ -895,19 +97,33 @@ export default function ChatUI({
   };
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-white text-black p-4 border-r border-black">
-      <div className="flex items-center gap-3 p-2 border border-black rounded-md">
-        <div className="w-10 h-10 rounded-md bg-black flex items-center justify-center text-white font-bold text-xl">
-          B
+    <div className="flex flex-col h-full bg-muted/50 text-foreground p-4 border-r">
+      <div className="flex items-center justify-between mb-6">
+        <Link href="/" className="font-headline text-xl font-bold animated-gradient-text">
+          TECHismust AI
+        </Link>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <ChevronsRight className="w-5 h-5" />
+        </Button>
+      </div>
+
+      <div className="flex items-center gap-3 p-3 border rounded-lg bg-background">
+        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+          <User className="w-6 h-6" />
         </div>
         <div>
-          <p className="font-bold">bala</p>
-          <p className="text-sm">Le Chat Free</p>
+          <p className="font-semibold">User</p>
+          <p className="text-sm text-muted-foreground">Free Plan</p>
         </div>
         <Button
           variant="ghost"
           size="icon"
-          className="ml-auto hover:bg-black hover:text-white border border-transparent hover:border-black"
+          className="ml-auto"
         >
           <Settings2 className="w-5 h-5" />
         </Button>
@@ -915,37 +131,35 @@ export default function ChatUI({
 
       <nav className="mt-6 flex flex-col gap-2">
         <Button
-          variant={activeView === 'chat' ? 'default' : 'ghost'}
-          onClick={() => setActiveView('chat')}
-          className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[state=active]:bg-black data-[state=active]:text-white"
+          variant="secondary"
+          className="w-full justify-start text-base"
         >
           <MessageCircle className="mr-3" /> Chat
         </Button>
         <Button
-          variant={activeView === 'agents' ? 'default' : 'ghost'}
-          onClick={() => setActiveView('agents')}
-          className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[state=active]:bg-black data-[state=active]:text-white"
+          variant="ghost"
+          className="w-full justify-start text-base"
         >
           <Sparkles className="mr-3" /> Agents
         </Button>
         <Button
           variant="ghost"
-          className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white"
+          className="w-full justify-start text-base"
         >
           <Search className="mr-3" /> Search
-          <span className="ml-auto text-xs opacity-60">Ctrl+K</span>
+          <span className="ml-auto text-xs opacity-60">⌘K</span>
         </Button>
       </nav>
 
-      <div className="mt-auto flex flex-col gap-2 pt-4 border-t border-black">
+      <div className="mt-auto flex flex-col gap-2 pt-4 border-t">
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="ghost" className="w-full justify-start text-sm font-bold border border-black hover:bg-black hover:text-white">
+            <Button variant="ghost" className="w-full justify-start text-sm">
               <Bug className="mr-3 h-4 w-4" /> Bug Report
             </Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
+            <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
               <X className="h-4 w-4" />
               <span className="sr-only">Close</span>
             </DialogClose>
@@ -955,22 +169,22 @@ export default function ChatUI({
             <Form {...bugReportForm}>
               <form onSubmit={bugReportForm.handleSubmit(onBugReportSubmit)} className="space-y-4">
                 <FormField name="title" control={bugReportForm.control} render={({ field }) => (
-                  <FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField name="description" control={bugReportForm.control} render={({ field }) => (
-                  <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField name="steps" control={bugReportForm.control} render={({ field }) => (
-                  <FormItem><FormLabel>Steps to Reproduce</FormLabel><FormControl><Textarea {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Steps to Reproduce</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField name="severity" control={bugReportForm.control} render={({ field }) => (
                   <FormItem><FormLabel>Severity</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger className="border-black"><SelectValue /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                     <SelectContent><SelectItem value="Low">Low</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="High">High</SelectItem></SelectContent>
                   </Select><FormMessage /></FormItem>
                 )} />
                 <DialogFooter>
-                  <Button type="submit" className="bg-black text-white">Submit</Button>
+                  <Button type="submit">Submit</Button>
                 </DialogFooter>
               </form>
             </Form>
@@ -979,12 +193,12 @@ export default function ChatUI({
 
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="ghost" className="w-full justify-start text-sm font-bold border border-black hover:bg-black hover:text-white">
+            <Button variant="ghost" className="w-full justify-start text-sm">
               <Lightbulb className="mr-3 h-4 w-4" /> Feature Request
             </Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogClose className="absolute right-4 top-4 rounded-full p-1 border border-black bg-white text-black transition-opacity hover:bg-black hover:text-white">
+            <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
               <X className="h-4 w-4" />
               <span className="sr-only">Close</span>
             </DialogClose>
@@ -994,40 +208,24 @@ export default function ChatUI({
             <Form {...featureRequestForm}>
               <form onSubmit={featureRequestForm.handleSubmit(onFeatureRequestSubmit)} className="space-y-4">
                 <FormField name="title" control={featureRequestForm.control} render={({ field }) => (
-                  <FormItem><FormLabel>Feature Title</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Feature Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField name="description" control={featureRequestForm.control} render={({ field }) => (
-                  <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField name="priority" control={featureRequestForm.control} render={({ field }) => (
                   <FormItem><FormLabel>Priority</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger className="border-black"><SelectValue /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                     <SelectContent><SelectItem value="Low">Low</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="High">High</SelectItem></SelectContent>
                   </Select><FormMessage /></FormItem>
                 )} />
                 <DialogFooter>
-                  <Button type="submit" className="bg-black text-white">Submit</Button>
+                  <Button type="submit">Submit</Button>
                 </DialogFooter>
               </form>
             </Form>
           </DialogContent>
         </Dialog>
-        
-        <div className="bg-white p-3 rounded-lg shadow-md border border-gray-200 mt-2">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                    <Sparkles className="text-orange-500" />
-                </div>
-                <div>
-                    <p className="text-sm font-medium text-gray-700">
-                    Upgrade to <span className="font-bold text-red-600">Pro</span>
-                    </p>
-                </div>
-                </div>
-                <div className="w-10 h-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"></div>
-            </div>
-        </div>
       </div>
     </div>
   );
@@ -1038,13 +236,13 @@ export default function ChatUI({
       if (part.startsWith('```')) {
         const code = part.substring(3, part.length - 3);
         return (
-          <pre key={index} className="bg-black text-white p-4 rounded-md my-2 text-sm overflow-x-auto">
+          <pre key={index} className="bg-muted p-4 rounded-md my-2 text-sm overflow-x-auto">
             <code>{code}</code>
           </pre>
         );
       }
       if (part.startsWith('`')) {
-        return <code key={index} className="bg-black text-white px-1 py-0.5 rounded-sm">{part.substring(1, part.length - 1)}</code>;
+        return <code key={index} className="bg-muted px-1 py-0.5 rounded-sm">{part.substring(1, part.length - 1)}</code>;
       }
       if (part.startsWith('**')) {
         return <strong key={index}>{part.substring(2, part.length - 2)}</strong>;
@@ -1054,7 +252,7 @@ export default function ChatUI({
       }
       const linkMatch = part.match(/\[(.*?)\]\((.*?)\)/);
       if (linkMatch) {
-        return <a key={index} href={linkMatch[2]} target="_blank" rel="noopener noreferrer" className="text-black underline">{linkMatch[1]}</a>;
+        return <a key={index} href={linkMatch[2]} target="_blank" rel="noopener noreferrer" className="text-primary underline">{linkMatch[1]}</a>;
       }
       return part.split('\n').map((line, lineIndex) => (
         <React.Fragment key={`${index}-${lineIndex}`}>
@@ -1065,77 +263,16 @@ export default function ChatUI({
     });
   };
 
-  const ChatView = () => (
-    <>
-      <main className="flex-1 overflow-y-auto p-4 md:p-6">
-        <div className="max-w-4xl mx-auto h-full">
-          {messages.length === 0 && !isLoading ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <PixelLogo />
-              <h1 className="text-2xl font-bold mt-6">Ask Le Chat anything</h1>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {messages.map((m, i) => (
-                <div key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
-                  <div className={cn('max-w-xl p-4 border border-black rounded-lg', m.role === 'user' ? 'bg-white' : 'bg-white')}>
-                    {m.role !== 'user' && <div className="font-bold mb-2">Assistant</div>}
-                    <div className="text-base break-words">{renderMessageContent(m.content)}</div>
-                  </div>
-                </div>
-              ))}
-              {isLoading && messages[messages.length - 1]?.role === 'user' && (
-                <div className="flex justify-start">
-                  <div className="max-w-xl p-4 border border-black rounded-lg bg-white">
-                    <div className="font-bold mb-2">Assistant</div>
-                    <TypingIndicator />
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </main>
-
-      <footer className="p-4 md:p-6 bg-white">
-        <div className="max-w-4xl mx-auto">
-            <AgentSelector
-                agents={agents}
-                selectedAgents={selectedAgents}
-                setSelectedAgents={setSelectedAgents}
-            />
-          <form onSubmit={handleSendMessage} className="relative mt-4">
-            <div className="relative flex items-center p-2 border border-black rounded-lg bg-white shadow-sm focus-within:ring-2 focus-within:ring-black">
-              <Button type="button" variant="ghost" className="p-2 h-auto rounded-md border-black hover:bg-black hover:text-white">
-                <Plus className="w-5 h-5" />
-              </Button>
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(e as any); }}}
-                placeholder="Ask Le Chat anything..."
-                className="flex-1 resize-none border-0 bg-transparent px-4 py-2 text-base focus-visible:ring-0 shadow-none"
-              />
-              <Button type="submit" variant="outline" className="p-2 h-auto rounded-md border-black bg-black text-white hover:bg-white hover:text-black" disabled={isLoading || !input.trim()}>
-                <Send className="w-5 h-5" />
-              </Button>
-            </div>
-          </form>
-        </div>
-      </footer>
-    </>
-  );
-
   return (
     <>
-      <div className="flex h-screen w-full bg-white text-black font-sans">
+      <div className="flex h-screen w-full bg-background font-sans">
         {isMobile && (
           <>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(true)}
-              className="fixed top-4 left-4 z-20 bg-white border border-black hover:bg-black hover:text-white"
+              className="fixed top-4 left-4 z-20"
             >
               <PanelLeft />
             </Button>
@@ -1150,14 +287,6 @@ export default function ChatUI({
                   style={{ width: '80%' }}
                 >
                   <SidebarContent />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setSidebarOpen(false)}
-                    className="absolute top-4 right-4 z-50 bg-white border border-black hover:bg-black hover:text-white"
-                  >
-                    <ChevronsRight />
-                  </Button>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1171,31 +300,59 @@ export default function ChatUI({
         )}
 
         <div className="flex flex-1 flex-col">
-            <AnimatePresence mode="wait">
-              {activeView === 'chat' ? (
-                <motion.div
-                    key="chat"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.2 }}
-                    className="h-full flex flex-col"
-                >
-                    <ChatView />
-                </motion.div>
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            <div className="max-w-4xl mx-auto h-full">
+              {messages.length === 0 && !isLoading ? (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <div className="p-4 bg-muted rounded-full">
+                    <Bot className="w-12 h-12" />
+                  </div>
+                  <h1 className="text-2xl font-semibold mt-6">Ask me anything</h1>
+                </div>
               ) : (
-                <motion.div
-                    key="agents"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.2 }}
-                    className="h-full flex flex-col"
-                >
-                    <AgentsView agents={agents} setAgents={setAgents} />
-                </motion.div>
+                <div className="space-y-6">
+                  {messages.map((m, i) => (
+                    <div key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
+                      <div className={cn('max-w-xl p-4 rounded-lg shadow-sm', m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted')}>
+                        {m.role !== 'user' && <div className="font-bold mb-2">Assistant</div>}
+                        <div className="text-base break-words">{renderMessageContent(m.content)}</div>
+                      </div>
+                    </div>
+                  ))}
+                  {isLoading && messages[messages.length - 1]?.role === 'user' && (
+                    <div className="flex justify-start">
+                      <div className="max-w-xl p-4 rounded-lg bg-muted shadow-sm">
+                        <div className="font-bold mb-2">Assistant</div>
+                        <TypingIndicator />
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
-            </AnimatePresence>
+            </div>
+          </main>
+
+          <footer className="p-4 md:p-6 bg-background border-t">
+            <div className="max-w-4xl mx-auto">
+              <form onSubmit={handleSendMessage} className="relative">
+                <div className="relative flex items-center p-2 border rounded-lg bg-muted/50 focus-within:ring-2 focus-within:ring-ring">
+                  <Button type="button" variant="ghost" className="p-2 h-auto rounded-md">
+                    <Plus className="w-5 h-5" />
+                  </Button>
+                  <Textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(e as any); }}}
+                    placeholder="Ask me anything..."
+                    className="flex-1 resize-none border-0 bg-transparent px-4 py-2 text-base focus-visible:ring-0 shadow-none"
+                  />
+                  <Button type="submit" variant="ghost" className="p-2 h-auto rounded-md" disabled={isLoading || !input.trim()}>
+                    <Send className="w-5 h-5" />
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </footer>
         </div>
       </div>
     </>
