@@ -10,7 +10,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import type { Agent } from '@/lib/agents-data';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant']),

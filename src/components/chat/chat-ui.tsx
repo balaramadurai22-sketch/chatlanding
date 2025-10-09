@@ -87,6 +87,7 @@ import { useMemo } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { ScrollArea } from '../ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { Label } from '../ui/label';
 
 interface ChatUIProps {
   messages: ChatMessage[];
@@ -386,30 +387,62 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                     </div>
                 </motion.div>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                 <DialogTitle>{agent.name}</DialogTitle>
                 <DialogDescription>
                     {agent.description}
                 </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="name" className="text-right">
-                        Model
-                        </Label>
-                        <Input id="name" value={agent.model} className="col-span-3" readOnly />
+                <div className="grid grid-cols-2 gap-8 py-4">
+                    {/* Left Column: Creator and Agent Info */}
+                    <div className="space-y-6">
+                        <div className="p-4 border rounded-lg">
+                             <h3 className="font-bold text-sm uppercase text-black/60 mb-2">Creator</h3>
+                             <div className="flex items-center gap-3">
+                                 <Image src={agent.creator.imageUrl} alt={agent.creator.name} width={40} height={40} className="rounded-full" />
+                                 <div>
+                                     <p className="font-semibold">{agent.creator.name}</p>
+                                     <div className="flex gap-2 text-black/60 mt-1">
+                                         {agent.creator.social.linkedin && <a href={agent.creator.social.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-black"><Linkedin size={16} /></a>}
+                                         {agent.creator.social.github && <a href={agent.creator.social.github} target="_blank" rel="noopener noreferrer" className="hover:text-black"><Github size={16} /></a>}
+                                         {agent.creator.social.twitter && <a href={agent.creator.social.twitter} target="_blank" rel="noopener noreferrer" className="hover:text-black"><Twitter size={16} /></a>}
+                                     </div>
+                                 </div>
+                             </div>
+                        </div>
+                        <div className="p-4 border rounded-lg space-y-2">
+                             <h3 className="font-bold text-sm uppercase text-black/60 mb-2">Agent Details</h3>
+                             <div className="text-sm"><span className="font-semibold">Model:</span> {agent.model}</div>
+                             <div className="text-sm"><span className="font-semibold">Category:</span> {agent.category}</div>
+                             <div className="text-sm"><span className="font-semibold">Purpose:</span> {agent.purpose}</div>
+                             {agent.command && <div className="text-sm font-mono bg-gray-100 p-1 rounded"><span className="font-semibold">Command:</span> {agent.command}</div>}
+                        </div>
+                         <div className="p-4 border rounded-lg">
+                            <h3 className="font-bold text-sm uppercase text-black/60 mb-2">Usage Stats</h3>
+                            <div className="flex justify-around text-center">
+                                <div>
+                                    <p className="font-bold text-lg">{(agent.peopleUsed / 1000).toFixed(1)}k</p>
+                                    <p className="text-xs text-black/60">Users</p>
+                                </div>
+                                 <div>
+                                    <p className="font-bold text-lg">{(agent.likes / 1000).toFixed(1)}k</p>
+                                    <p className="text-xs text-black/60">Likes</p>
+                                </div>
+                                 <div>
+                                    <p className="font-bold text-lg">4.8</p>
+                                    <p className="text-xs text-black/60">Rating</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="username" className="text-right">
-                        Category
-                        </Label>
-                        <Input id="username" value={agent.category} className="col-span-3" readOnly />
+                     {/* Right Column: Image and Donation */}
+                    <div className="flex flex-col gap-6">
+                        <div className="relative w-full aspect-square rounded-lg overflow-hidden border">
+                           <Image src={agent.creator.imageUrl} alt={agent.creator.name} fill className="object-cover" />
+                        </div>
                     </div>
                 </div>
-                <DialogFooter>
-                <Button type="submit">Close</Button>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
@@ -679,7 +712,7 @@ const AgentSelector = ({
         className={cn(
           'relative aspect-square cursor-pointer rounded-2xl border p-4 text-center transition-all duration-300',
           isSelected
-            ? 'border-cyan-400/50 bg-cyan-500/10 shadow-[0_0_15px_rgba(56,189,248,0.3)]'
+            ? 'border-cyan-400/50 bg-white shadow-[0_0_15px_rgba(56,189,248,0.3)]'
             : 'border-black/10 bg-white/50 hover:border-black/30 hover:scale-105'
         )}
         whileHover={{ scale: 1.03 }}
@@ -773,50 +806,44 @@ const AgentSelector = ({
           )}
         </div>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl border-white/10 bg-black/20 p-0 text-white shadow-[0_0_25px_rgba(0,0,0,0.2)] backdrop-blur-md sm:rounded-2xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-        >
-          <DialogHeader className="p-6 text-center">
-            <DialogTitle className="text-2xl font-bold">Select Agents</DialogTitle>
-            <DialogDescription className="text-white/60">
-              Choose up to 5 enabled AI agents to assist with your query.
+      <DialogContent className="w-[80vw] max-w-4xl bg-white/80 backdrop-blur-xl border border-black/10 text-black shadow-2xl rounded-3xl p-0">
+          <DialogHeader className="p-6 text-center border-b border-black/10">
+            <DialogTitle className="text-2xl font-bold">🤖 Agent Selection Panel</DialogTitle>
+            <DialogDescription className="text-black/60">
+              Choose up to 5 enabled agents to assist your chat.
             </DialogDescription>
           </DialogHeader>
-          <div className="px-6">
+          <div className="px-6 py-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/40" />
               <Input
                 placeholder="Search agents..."
-                className="w-full border-white/20 bg-white/5 pl-10 text-white placeholder:text-white/40 focus:ring-cyan-500"
+                className="w-full border-black/20 bg-white/50 pl-10 text-black placeholder:text-black/40 focus:ring-black"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
           <ScrollArea className="h-96">
-            <div className="p-6 grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredEnabledAgents.map((agent) => (
                 <AgentCapsule key={agent.id} agent={agent} />
               ))}
             </div>
           </ScrollArea>
-          <DialogFooter className="border-t border-white/10 p-6 bg-black/20">
+          <DialogFooter className="border-t border-black/10 p-6 bg-white/50 rounded-b-3xl">
             <div className="flex w-full items-center justify-between">
-              <div className="text-sm font-medium text-white/70">{tempSelected.length}/5 Selected</div>
+              <div className="text-sm font-medium text-black/70">{tempSelected.length}/5 Selected</div>
               <div className="flex gap-2">
-                <Button variant="ghost" onClick={handleCancel} className="text-white/70 hover:bg-white/10 hover:text-white">
+                <Button variant="ghost" onClick={handleCancel} className="text-black/70 hover:bg-black/10 hover:text-black">
                   Cancel
                 </Button>
-                <Button onClick={handleApply} className="bg-cyan-500 text-black hover:bg-cyan-400">
+                <Button onClick={handleApply} className="bg-black text-white hover:bg-black/80">
                   Apply
                 </Button>
               </div>
             </div>
           </DialogFooter>
-        </motion.div>
       </DialogContent>
     </Dialog>
   );
