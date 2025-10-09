@@ -41,6 +41,7 @@ import {
   Apple,
   CreditCard,
   Check,
+  Building,
 } from 'lucide-react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -320,133 +321,62 @@ const TypingEffect = ({ text }: { text: string }) => {
   );
 };
 
-const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent) => void }) => {
-    const [isPinned, setIsPinned] = React.useState(agent.pinned);
-    const [isActive, setIsActive] = React.useState(agent.active);
+
+const AgentCard = ({ agent, onUpdate }: { agent: Agent; onUpdate: (agent: Agent) => void }) => {
     
-    const handlePinToggle = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        const newPinned = !isPinned;
-        setIsPinned(newPinned);
-        onUpdate({ ...agent, pinned: newPinned });
+    const handleActiveToggle = (newActiveState: boolean) => {
+        onUpdate({ ...agent, active: newActiveState });
     };
 
-    const handleActiveToggle = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      const newActive = !isActive;
-      setIsActive(newActive);
-      onUpdate({ ...agent, active: newActive });
-    }
-
     return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <motion.div
-                    layout
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.3 }}
-                    className="relative aspect-square flex flex-col justify-between p-4 border border-black rounded-lg bg-white shadow-sm cursor-pointer group hover:shadow-md transition-shadow hover:-translate-y-1"
-                >
-                    <div className="absolute inset-0 overflow-hidden rounded-lg">
-                        {getSymbolicVisual(agent.category)}
-                    </div>
-                    <div className="relative z-10">
-                        <div className="flex justify-between items-start">
-                             <div className="flex items-center gap-2">
-                                <span className={cn("w-2 h-2 rounded-full", isActive ? 'bg-green-500' : 'bg-red-500')} />
-                                <h3 className="font-bold text-lg leading-tight">{agent.name}</h3>
-                            </div>
-                             <button onClick={handlePinToggle} className="p-1 text-black/40 hover:text-black">
-                                {isPinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
-                            </button>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs mt-1 text-black/60">
-                           <span>{agent.model}</span>
-                           <span>&middot;</span>
-                           <span>{agent.category}</span>
-                        </div>
-                    </div>
+        <motion.div
+            layout
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.3 }}
+            className="relative group p-4 border border-black/10 rounded-xl bg-white shadow-sm hover:shadow-lg transition-shadow duration-300"
+        >
+            {/* Top Controls */}
+            <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-2">
+                    <Switch
+                        checked={agent.active}
+                        onCheckedChange={handleActiveToggle}
+                        className="h-4 w-7 [&>span]:h-3 [&>span]:w-3 [&>span]:data-[state=checked]:translate-x-3"
+                    />
+                    <div className={cn("w-2 h-2 rounded-full", agent.active ? 'bg-green-500' : 'bg-red-500')} />
+                </div>
+                <div className="flex items-center gap-3 text-black/40">
+                    <Heart className="w-4 h-4 hover:text-red-500 transition-colors cursor-pointer" />
+                    <Star className="w-4 h-4 hover:text-yellow-500 transition-colors cursor-pointer" />
+                </div>
+            </div>
 
-                    <div className="relative z-10 mt-auto">
-                        <div className="p-2 border border-black/10 rounded-md bg-white/50 backdrop-blur-sm">
-                           <TypingEffect text={agent.description} />
-                        </div>
-                        <div className="flex justify-between items-center text-xs text-black/60 mt-2">
-                            <div className="flex items-center gap-1">
-                                <Users className="w-3 h-3" />
-                                <span>{(agent.peopleUsed / 1000).toFixed(1)}k</span>
-                            </div>
-                             <div className="flex items-center gap-1">
-                                <Heart className="w-3 h-3" />
-                                <span>{(agent.likes / 1000).toFixed(1)}k</span>
-                            </div>
-                            <Switch checked={isActive} onClick={handleActiveToggle} className="h-4 w-7 [&>span]:h-3 [&>span]:w-3 [&>span]:data-[state=checked]:translate-x-3" />
-                        </div>
-                    </div>
-                </motion.div>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
-                <DialogHeader>
-                <DialogTitle>{agent.name}</DialogTitle>
-                <DialogDescription>
-                    {agent.description}
-                </DialogDescription>
-                </DialogHeader>
-                <div className="grid grid-cols-2 gap-8 py-4">
-                    {/* Left Column: Creator and Agent Info */}
-                    <div className="space-y-6">
-                        <div className="p-4 border rounded-lg">
-                             <h3 className="font-bold text-sm uppercase text-black/60 mb-2">Creator</h3>
-                             <div className="flex items-center gap-3">
-                                 <Image src={agent.creator.imageUrl} alt={agent.creator.name} width={40} height={40} className="rounded-full" />
-                                 <div>
-                                     <p className="font-semibold">{agent.creator.name}</p>
-                                     <div className="flex gap-2 text-black/60 mt-1">
-                                         {agent.creator.social.linkedin && <a href={agent.creator.social.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-black"><Linkedin size={16} /></a>}
-                                         {agent.creator.social.github && <a href={agent.creator.social.github} target="_blank" rel="noopener noreferrer" className="hover:text-black"><Github size={16} /></a>}
-                                         {agent.creator.social.twitter && <a href={agent.creator.social.twitter} target="_blank" rel="noopener noreferrer" className="hover:text-black"><Twitter size={16} /></a>}
-                                     </div>
-                                 </div>
-                             </div>
-                        </div>
-                        <div className="p-4 border rounded-lg space-y-2">
-                             <h3 className="font-bold text-sm uppercase text-black/60 mb-2">Agent Details</h3>
-                             <div className="text-sm"><span className="font-semibold">Model:</span> {agent.model}</div>
-                             <div className="text-sm"><span className="font-semibold">Category:</span> {agent.category}</div>
-                             <div className="text-sm"><span className="font-semibold">Purpose:</span> {agent.purpose}</div>
-                             {agent.command && <div className="text-sm font-mono bg-gray-100 p-1 rounded"><span className="font-semibold">Command:</span> {agent.command}</div>}
-                        </div>
-                         <div className="p-4 border rounded-lg">
-                            <h3 className="font-bold text-sm uppercase text-black/60 mb-2">Usage Stats</h3>
-                            <div className="flex justify-around text-center">
-                                <div>
-                                    <p className="font-bold text-lg">{(agent.peopleUsed / 1000).toFixed(1)}k</p>
-                                    <p className="text-xs text-black/60">Users</p>
-                                </div>
-                                 <div>
-                                    <p className="font-bold text-lg">{(agent.likes / 1000).toFixed(1)}k</p>
-                                    <p className="text-xs text-black/60">Likes</p>
-                                </div>
-                                 <div>
-                                    <p className="font-bold text-lg">4.8</p>
-                                    <p className="text-xs text-black/60">Rating</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                     {/* Right Column: Image and Donation */}
-                    <div className="flex flex-col gap-6">
-                        <div className="relative w-full aspect-square rounded-lg overflow-hidden border">
-                           <Image src={agent.creator.imageUrl} alt={agent.creator.name} fill className="object-cover" />
-                        </div>
+            <div className="relative w-full aspect-square flex flex-col justify-end">
+                 {/* Animated Background */}
+                <div className="absolute inset-0 rounded-lg overflow-hidden">
+                    {getSymbolicVisual(agent.category)}
+                </div>
+
+                <div className="relative z-10 space-y-1">
+                    <h3 className="font-bold text-lg leading-tight">{agent.name}</h3>
+                    <p className="text-xs text-black/60">Model: {agent.model}</p>
+                     <div className="flex items-center gap-4 text-xs text-black/60">
+                        <span><Users className="w-3 h-3 inline mr-1" />{(agent.peopleUsed / 1000).toFixed(1)}k</span>
+                        <span><Heart className="w-3 h-3 inline mr-1" />{(agent.likes / 1000).toFixed(1)}k</span>
                     </div>
                 </div>
-            </DialogContent>
-        </Dialog>
+
+                {/* Nested Description Card */}
+                <div className="relative z-10 mt-2 p-2 border border-black/10 rounded-md bg-white/50 backdrop-blur-sm">
+                   <TypingEffect text={agent.description} />
+                </div>
+            </div>
+        </motion.div>
     );
 };
+
 
 const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: Agent[]) => void}) => {
     const [filter, setFilter] = React.useState('All');
@@ -465,9 +395,6 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
             return categoryMatch && searchMatch;
         });
     }, [agents, filter, searchTerm]);
-
-    const pinnedAgents = useMemo(() => filteredAgents.filter(a => a.pinned), [filteredAgents]);
-    const unpinnedAgents = useMemo(() => filteredAgents.filter(a => !a.pinned), [filteredAgents]);
 
     const categories = ['All', 'Coding', 'Analysis', 'Creative', 'Productivity', 'Research'];
 
@@ -599,47 +526,24 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                 </div>
             </header>
             
-            <div className="flex-1 overflow-y-auto">
+            <ScrollArea className="flex-1 -m-4">
+              <div className="p-4">
                 <AnimatePresence>
-                    {pinnedAgents.length > 0 && (
-                        <motion.div
-                            key="pinned-section"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="mb-8"
-                        >
-                            <h2 className="font-bold text-sm uppercase text-black/60 mb-2">Pinned</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {pinnedAgents.map(agent => (
-                                    <AgentCard key={agent.id} agent={agent} onUpdate={handleAgentUpdate} />
-                                ))}
-                            </div>
-                        </motion.div>
-                    )}
-                    {unpinnedAgents.length > 0 && (
-                         <motion.div
-                            key="all-agents-section"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                         >
-                            <h2 className="font-bold text-sm uppercase text-black/60 mb-2">All Agents</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                               {unpinnedAgents.map(agent => (
-                                    <AgentCard key={agent.id} agent={agent} onUpdate={handleAgentUpdate} />
-                                ))}
-                            </div>
-                        </motion.div>
+                    {filteredAgents.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {filteredAgents.map(agent => (
+                                <AgentCard key={agent.id} agent={agent} onUpdate={handleAgentUpdate} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-16 text-black/60">
+                            <p>No agents found.</p>
+                            <p className="text-sm">Try adjusting your search or filter.</p>
+                        </div>
                     )}
                 </AnimatePresence>
-                 {filteredAgents.length === 0 && (
-                    <div className="text-center py-16 text-black/60">
-                        <p>No agents found.</p>
-                        <p className="text-sm">Try adjusting your search or filter.</p>
-                    </div>
-                )}
-            </div>
+              </div>
+            </ScrollArea>
         </div>
     );
 };
@@ -654,11 +558,22 @@ const AgentSelector = ({
   selectedAgents: Agent[];
   setSelectedAgents: (agents: Agent[]) => void;
 }) => {
-  const [isOpen, setIsOpen] = React.useState(false);
+  const { toast } = useToast();
+  
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = React.useState(false);
+
   const [tempSelected, setTempSelected] = React.useState<Agent[]>(selectedAgents);
   const [searchTerm, setSearchTerm] = React.useState('');
-  const { toast } = useToast();
+  
+  const [subscriptionTier, setSubscriptionTier] = React.useState<'free' | 'standard' | 'pro'>('free');
+  const agentLimit = { free: 2, standard: 5, pro: 12 }[subscriptionTier];
+  
+  const [paymentCurrency, setPaymentCurrency] = React.useState('USD');
 
+  const paymentForm = useForm();
+  
   const enabledAgents = agents.filter((agent) => agent.active);
 
   const filteredEnabledAgents = enabledAgents.filter(
@@ -674,12 +589,8 @@ const AgentSelector = ({
       if (isSelected) {
         return prev.filter((a) => a.id !== agent.id);
       } else {
-        if (prev.length >= 5) {
-          toast({
-            title: 'Agent limit reached',
-            description: 'You can select a maximum of 5 agents.',
-            variant: 'destructive',
-          });
+        if (prev.length >= agentLimit) {
+          setIsUpgradeModalOpen(true);
           return prev;
         }
         return [...prev, agent];
@@ -689,18 +600,32 @@ const AgentSelector = ({
 
   const handleApply = () => {
     setSelectedAgents(tempSelected);
-    setIsOpen(false);
+    setIsModalOpen(false);
   };
 
   const handleCancel = () => {
     setTempSelected(selectedAgents);
-    setIsOpen(false);
+    setIsModalOpen(false);
   };
 
   const handleRemoveAgent = (agentId: string) => {
     const newSelected = selectedAgents.filter((a) => a.id !== agentId);
     setSelectedAgents(newSelected);
     setTempSelected(newSelected);
+  };
+
+  const handleSubscriptionSelect = (tier: 'standard' | 'pro') => {
+    setIsUpgradeModalOpen(false);
+    setIsPaymentModalOpen(true);
+    // In a real app, you'd pass the tier to the payment modal
+  };
+
+  const onPaymentSubmit = async (data: any) => {
+    console.log("Payment submitted", data);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    toast({ title: "Subscription successful!", description: "Your subscription code has been emailed to you." });
+    setIsPaymentModalOpen(false);
+    setSubscriptionTier('standard'); // Simulate upgrade
   };
 
   const AgentCapsule = ({ agent }: { agent: Agent }) => {
@@ -750,102 +675,183 @@ const AgentSelector = ({
       </motion.div>
     );
   };
+  
+  const PaymentOptions = ({ currency }: { currency: string }) => {
+    const options = {
+        USD: [{ name: 'PayPal', icon: <DollarSign /> }, { name: 'Apple Pay', icon: <Apple /> }, { name: 'Cards', icon: <CreditCard /> }],
+        INR: [{ name: 'GPay', icon: <Building /> }, { name: 'PhonePe', icon: <Building /> }, { name: 'UPI', icon: <Building /> }],
+        Crypto: [{ name: 'Binance', icon: <Bitcoin /> }, { name: 'Trust Wallet', icon: <Bitcoin /> }, { name: 'Phantom', icon: <Bitcoin /> }],
+    };
+    const currentOptions = options[currency as keyof typeof options];
+
+    return (
+        <div className="space-y-2 mt-4">
+            <h4 className="font-semibold">{currency}</h4>
+            {currentOptions.map(opt => (
+                 <Button key={opt.name} variant="outline" className="w-full justify-start gap-2">
+                    {React.cloneElement(opt.icon, {className: "w-4 h-4"})}
+                    {opt.name}
+                 </Button>
+            ))}
+        </div>
+    );
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <div className="mx-auto w-full max-w-4xl rounded-xl border border-black/10 bg-white/50 p-3 shadow-sm backdrop-blur-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <BrainCircuit className="h-5 w-5 text-black/60" />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-auto px-2 py-1 text-sm font-bold"
-                onClick={() => setTempSelected(selectedAgents)}
-              >
-                Select Agents
-              </Button>
-            </div>
-            <div className="text-xs font-medium text-black/60">{selectedAgents.length}/5 Active</div>
-          </div>
-          {selectedAgents.length > 0 && (
-            <AnimatePresence>
-              <motion.div layout className="mt-2 flex flex-wrap gap-2">
-                {selectedAgents.map((agent) => (
-                  <motion.div
-                    key={agent.id}
-                    layout
-                    initial={{ opacity: 0, y: -10, scale: 0.8 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, x: -10, scale: 0.8 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    className="flex items-center gap-2 rounded-full border border-black bg-white py-1 pl-2 pr-1 text-xs font-medium"
-                  >
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="max-w-[100px] truncate">{agent.name}</span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="font-bold">{agent.name}</p>
-                          <p>{agent.description}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    <button
-                      onClick={() => handleRemoveAgent(agent.id)}
-                      className="rounded-full bg-black p-0.5 text-white transition-colors hover:bg-red-500"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </AnimatePresence>
-          )}
-        </div>
-      </DialogTrigger>
-      <DialogContent className="w-[80vw] max-w-4xl bg-white/80 backdrop-blur-xl border border-black/10 text-black shadow-2xl rounded-3xl p-0">
-          <DialogHeader className="p-6 text-center border-b border-black/10">
-            <DialogTitle className="text-2xl font-bold">🤖 Agent Selection Panel</DialogTitle>
-            <DialogDescription className="text-black/60">
-              Choose up to 5 enabled agents to assist your chat.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="px-6 py-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/40" />
-              <Input
-                placeholder="Search agents..."
-                className="w-full border-black/20 bg-white/50 pl-10 text-black placeholder:text-black/40 focus:ring-black"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-          <ScrollArea className="h-96">
-            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredEnabledAgents.map((agent) => (
-                <AgentCapsule key={agent.id} agent={agent} />
-              ))}
-            </div>
-          </ScrollArea>
-          <DialogFooter className="border-t border-black/10 p-6 bg-white/50 rounded-b-3xl">
-            <div className="flex w-full items-center justify-between">
-              <div className="text-sm font-medium text-black/70">{tempSelected.length}/5 Selected</div>
-              <div className="flex gap-2">
-                <Button variant="ghost" onClick={handleCancel} className="text-black/70 hover:bg-black/10 hover:text-black">
-                  Cancel
-                </Button>
-                <Button onClick={handleApply} className="bg-black text-white hover:bg-black/80">
-                  Apply
+    <>
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogTrigger asChild>
+          <div className="mx-auto w-full max-w-4xl rounded-xl border border-black/10 bg-white/50 p-3 shadow-sm backdrop-blur-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BrainCircuit className="h-5 w-5 text-black/60" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto px-2 py-1 text-sm font-bold"
+                  onClick={() => setTempSelected(selectedAgents)}
+                >
+                  Agents
                 </Button>
               </div>
+              <div className="text-xs font-medium text-black/60">{selectedAgents.length}/{agentLimit} Active</div>
             </div>
-          </DialogFooter>
-      </DialogContent>
-    </Dialog>
+            {selectedAgents.length > 0 && (
+              <AnimatePresence>
+                <motion.div layout className="mt-2 flex flex-wrap gap-2">
+                  {selectedAgents.map((agent) => (
+                    <motion.div
+                      key={agent.id}
+                      layout
+                      initial={{ opacity: 0, y: -10, scale: 0.8 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, x: -10, scale: 0.8 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                      className="flex items-center gap-2 rounded-full border border-black bg-white py-1 pl-2 pr-1 text-xs font-medium"
+                    >
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="max-w-[100px] truncate">{agent.name}</span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="font-bold">{agent.name}</p>
+                            <p>{agent.description}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <button
+                        onClick={() => handleRemoveAgent(agent.id)}
+                        className="rounded-full bg-black p-0.5 text-white transition-colors hover:bg-red-500"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            )}
+          </div>
+        </DialogTrigger>
+        <DialogContent className="w-[80vw] max-w-4xl bg-white/80 backdrop-blur-xl border border-black/10 text-black shadow-2xl rounded-3xl p-0">
+            <DialogHeader className="p-6 text-center border-b border-black/10">
+              <DialogTitle className="text-2xl font-bold">🤖 Agent Selection Panel</DialogTitle>
+              <DialogDescription className="text-black/60">
+                Choose up to {agentLimit} enabled agents to assist your chat.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="px-6 py-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/40" />
+                <Input
+                  placeholder="Search agents..."
+                  className="w-full border-black/20 bg-white/50 pl-10 text-black placeholder:text-black/40 focus:ring-black"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+            <ScrollArea className="h-96">
+              <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredEnabledAgents.map((agent) => (
+                  <AgentCapsule key={agent.id} agent={agent} />
+                ))}
+              </div>
+            </ScrollArea>
+            <DialogFooter className="border-t border-black/10 p-6 bg-white/50 rounded-b-3xl">
+              <div className="flex w-full items-center justify-between">
+                <div className="text-sm font-medium text-black/70">{tempSelected.length}/{agentLimit} Selected</div>
+                <div className="flex gap-2">
+                  <Button variant="ghost" onClick={handleCancel} className="text-black/70 hover:bg-black/10 hover:text-black">
+                    Cancel
+                  </Button>
+                  <Button onClick={handleApply} className="bg-black text-white hover:bg-black/80">
+                    Apply
+                  </Button>
+                </div>
+              </div>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Upgrade Modal */}
+      <Dialog open={isUpgradeModalOpen} onOpenChange={setIsUpgradeModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>🚀 Upgrade to Unlock More Agents</DialogTitle>
+            <DialogDescription>
+              You've reached the free limit of {agentLimit} agents. Upgrade your plan to enable more powerful workflows.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+              <div className="p-4 border rounded-lg hover:border-black transition-all">
+                  <h3 className="font-bold">Standard Plan</h3>
+                  <p className="text-xl font-bold">₹49<span className="text-sm font-normal">/month</span></p>
+                  <p className="text-sm text-black/60">Unlock up to 5 agents.</p>
+                  <Button className="w-full mt-4 bg-black text-white" onClick={() => handleSubscriptionSelect('standard')}>Subscribe Now</Button>
+              </div>
+              <div className="p-4 border rounded-lg hover:border-black transition-all">
+                  <h3 className="font-bold">Pro Plan</h3>
+                  <p className="text-xl font-bold">₹99<span className="text-sm font-normal">/month</span></p>
+                  <p className="text-sm text-black/60">Unlock all {agents.length} agents.</p>
+                  <Button className="w-full mt-4 bg-black text-white" onClick={() => handleSubscriptionSelect('pro')}>Subscribe Now</Button>
+              </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Modal */}
+      <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
+          <DialogContent>
+              <DialogHeader>
+                  <DialogTitle>Complete Your Subscription</DialogTitle>
+              </DialogHeader>
+              <Form {...paymentForm}>
+                  <form onSubmit={paymentForm.handleSubmit(onPaymentSubmit)} className="space-y-4">
+                      <FormField name="name" control={paymentForm.control} render={({ field }) => (
+                          <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} placeholder="Your Name" /></FormControl></FormItem>
+                      )} />
+                      <FormField name="email" control={paymentForm.control} render={({ field }) => (
+                          <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} type="email" placeholder="your@email.com" /></FormControl></FormItem>
+                      )} />
+                      <FormField name="country" control={paymentForm.control} render={({ field }) => (
+                          <FormItem><FormLabel>Country</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger><SelectValue placeholder="Select Country" /></SelectTrigger></FormControl><SelectContent><SelectItem value="USA">USA</SelectItem><SelectItem value="India">India</SelectItem></SelectContent></Select></FormItem>
+                      )} />
+                      <div>
+                        <Label>Payment Method</Label>
+                        <Tabs value={paymentCurrency} onValueChange={setPaymentCurrency} className="mt-2">
+                            <TabsList><TabsTrigger value="USD">USD</TabsTrigger><TabsTrigger value="INR">INR</TabsTrigger><TabsTrigger value="Crypto">Crypto</TabsTrigger></TabsList>
+                        </Tabs>
+                        <PaymentOptions currency={paymentCurrency} />
+                      </div>
+                      <DialogFooter>
+                          <Button type="submit" className="w-full bg-black text-white">Subscribe</Button>
+                      </DialogFooter>
+                  </form>
+              </Form>
+          </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
