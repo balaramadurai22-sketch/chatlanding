@@ -153,7 +153,7 @@ export const agents: Agent[] = [
       purpose: `Automates and assists in ${category.toLowerCase()} workflows.`,
       tools: 'web_search',
       memory: 'short-term',
-      active: Math.random() > 0.5,
+      active: i % 2 === 0, // Deterministic active state
       pinned: false,
       peopleUsed: Math.floor(Math.random() * 5000),
       likes: Math.floor(Math.random() * 2500),
