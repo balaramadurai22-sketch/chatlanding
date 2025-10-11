@@ -93,6 +93,8 @@ interface ChatUIProps {
   handleSendMessage: (e: React.FormEvent) => void;
   setInput: (input: string) => void;
   setMessages: (messages: ChatMessage[]) => void;
+  selectedAgents: Agent[];
+  setSelectedAgents: (agents: Agent[]) => void;
 }
 
 const TypingIndicator = () => (
@@ -713,9 +715,11 @@ export default function ChatUI({
   handleSendMessage,
   setInput,
   setMessages,
+  selectedAgents,
+  setSelectedAgents,
 }: ChatUIProps) {
   const isMobile = useIsMobile();
-  const [isSidebarOpen, setSidebarOpen] = React.useState(false);
+  const [isSidebarOpen, setSidebarOpen] = React.useState(!isMobile);
   const { toast } = useToast();
   const [activeView, setActiveView] = React.useState('chat');
   const [agents, setAgents] = React.useState<Agent[]>(allAgents);
@@ -946,6 +950,11 @@ export default function ChatUI({
 
       <footer className="p-4 md:p-6 bg-white">
         <div className="max-w-4xl mx-auto">
+            <AgentSelectionPanel 
+                allAgents={agents}
+                selectedAgents={selectedAgents}
+                setSelectedAgents={setSelectedAgents}
+            />
           <form onSubmit={handleSendMessage} className="relative">
             <div className="relative flex items-center p-2 border border-black rounded-lg bg-white shadow-sm focus-within:ring-2 focus-within:ring-black">
               <Button type="button" variant="ghost" className="p-2 h-auto rounded-md border-black hover:bg-black hover:text-white">
@@ -1006,13 +1015,26 @@ export default function ChatUI({
           </>
         )}
 
-        {!isMobile && (
+        {!isMobile && isSidebarOpen && (
           <div className="w-[300px] flex-shrink-0">
             <SidebarContent />
           </div>
         )}
 
         <div className="flex flex-1 flex-col">
+            <div className="flex items-center p-4 border-b border-black">
+                {!isMobile && (
+                     <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setSidebarOpen(!isSidebarOpen)}
+                        className="mr-4 bg-white border border-black hover:bg-black hover:text-white"
+                    >
+                        <PanelLeft />
+                    </Button>
+                )}
+                <h1 className="text-xl font-bold">{activeView === 'chat' ? 'Conversation' : 'Agents'}</h1>
+            </div>
             <AnimatePresence mode="wait">
               {activeView === 'chat' ? (
                 <motion.div
@@ -1042,4 +1064,228 @@ export default function ChatUI({
       </div>
     </>
   );
+}
+
+
+// --- Agent Selection Panel ---
+
+const subscriptionSchema = z.object({
+    fullName: z.string().min(2, "Full name is required."),
+    email: z.string().email("Invalid email address."),
+    plan: z.enum(['pro', 'elite']),
+});
+type SubscriptionFormValues = z.infer<typeof subscriptionSchema>;
+
+
+const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: { allAgents: Agent[], selectedAgents: Agent[], setSelectedAgents: (agents: Agent[]) => void}) => {
+    const { toast } = useToast();
+    const [isSubscriptionModalOpen, setSubscriptionModalOpen] = React.useState(false);
+    const [isPaymentModalOpen, setPaymentModalOpen] = React.useState(false);
+
+    const subscriptionForm = useForm<SubscriptionFormValues>({
+        resolver: zodResolver(subscriptionSchema),
+        defaultValues: { plan: 'pro' },
+    });
+    
+    const onSubscriptionSubmit: SubmitHandler<SubscriptionFormValues> = (data) => {
+        console.log("Subscription data:", data);
+        setSubscriptionModalOpen(false);
+        setPaymentModalOpen(true);
+    };
+    
+    const onPaymentSubmit = () => {
+        setPaymentModalOpen(false);
+        toast({ title: "Subscription successful!", description: "Your subscription code has been sent to your email." });
+        subscriptionForm.reset();
+    };
+
+
+    const handleAgentSelect = (agent: Agent) => {
+        const isSelected = selectedAgents.some(a => a.id === agent.id);
+        let newSelectedAgents;
+
+        if (isSelected) {
+            newSelectedAgents = selectedAgents.filter(a => a.id !== agent.id);
+        } else {
+            if (selectedAgents.length >= 2) {
+                setSubscriptionModalOpen(true);
+                return;
+            }
+            newSelectedAgents = [...selectedAgents, agent];
+        }
+        setSelectedAgents(newSelectedAgents);
+    };
+
+    const enabledAgents = allAgents.filter(a => a.active);
+
+    return (
+        <>
+            <div className="mb-4">
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full border-black justify-start text-left h-auto py-2">
+                             <div className="flex justify-between w-full items-center">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <Sparkles className="w-4 h-4" />
+                                        <span className="font-bold">Agents ({selectedAgents.length}/{enabledAgents.length} Active)</span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                        {selectedAgents.length > 0 ? selectedAgents.map(a => (
+                                            <Badge key={a.id} variant="secondary" className="bg-gray-200 text-black">
+                                                {a.name}
+                                                <button onClick={(e) => { e.stopPropagation(); handleAgentSelect(a); }} className="ml-1.5 rounded-full hover:bg-gray-300 p-0.5">
+                                                    <X className="w-3 h-3"/>
+                                                </button>
+                                            </Badge>
+                                        )) : <p className="text-xs text-gray-500">Click to select agents</p>}
+                                    </div>
+                                </div>
+                                <Plus className="w-5 h-5" />
+                            </div>
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0">
+                         <DialogHeader className="p-6 pb-0">
+                            <DialogTitle className="text-2xl font-bold">Select Your Agents</DialogTitle>
+                            <DialogDescription>Choose up to 2 free agents to assist your conversation.</DialogDescription>
+                         </DialogHeader>
+                         <div className="flex-1 overflow-y-auto p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {enabledAgents.map(agent => {
+                                    const isSelected = selectedAgents.some(a => a.id === agent.id);
+                                    return (
+                                        <motion.div 
+                                            key={agent.id}
+                                            onClick={() => handleAgentSelect(agent)}
+                                            className={cn(
+                                                "relative p-4 border rounded-xl cursor-pointer transition-all duration-300",
+                                                isSelected ? "border-black ring-2 ring-black shadow-lg" : "border-gray-300 hover:border-black hover:shadow-md"
+                                            )}
+                                            whileHover={{ y: -5, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
+                                        >
+                                            {isSelected && (
+                                                <div className="absolute -top-2 -right-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center">
+                                                    <Check className="w-4 h-4" />
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between items-center mb-2">
+                                                <h3 className="font-bold uppercase">{agent.name}</h3>
+                                                <Badge variant="outline" className={cn(agent.active ? "border-green-500 text-green-500" : "border-red-500 text-red-500")}>
+                                                    {agent.active ? "Active" : "Inactive"}
+                                                </Badge>
+                                            </div>
+                                            <p className="text-xs text-gray-500 italic mb-2">{agent.purpose}</p>
+                                            <div className="p-2 border rounded-md bg-gray-50 h-16">
+                                                <TypingEffect text={agent.description} />
+                                            </div>
+                                            <div className="text-xs text-gray-500 mt-2 flex justify-between">
+                                                <span>Model: {agent.model}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span><Users className="w-3 h-3 inline mr-1"/>{(agent.peopleUsed / 1000).toFixed(1)}k</span>
+                                                    <span><Heart className="w-3 h-3 inline mr-1"/>{(agent.likes / 1000).toFixed(1)}k</span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )
+                                })}
+                            </div>
+                         </div>
+                    </DialogContent>
+                </Dialog>
+            </div>
+
+            <Dialog open={isSubscriptionModalOpen} onOpenChange={setSubscriptionModalOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold">Unlock More Agents 🚀</DialogTitle>
+                        <DialogDescription>You've reached your free limit of 2 agents. Upgrade your plan to use more simultaneously.</DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-2 gap-4 py-4">
+                        <div onClick={() => subscriptionForm.setValue('plan', 'pro')} className={cn("p-4 border rounded-lg cursor-pointer", subscriptionForm.watch('plan') === 'pro' && 'ring-2 ring-black')}>
+                            <h4 className="font-bold">Pro Plan</h4>
+                            <p className="text-lg font-bold">₹49<span className="text-sm font-normal">/month</span></p>
+                            <p className="text-sm text-gray-500">Up to 5 agents</p>
+                        </div>
+                        <div onClick={() => subscriptionForm.setValue('plan', 'elite')} className={cn("p-4 border rounded-lg cursor-pointer", subscriptionForm.watch('plan') === 'elite' && 'ring-2 ring-black')}>
+                            <h4 className="font-bold">Elite Plan</h4>
+                            <p className="text-lg font-bold">₹99<span className="text-sm font-normal">/month</span></p>
+                            <p className="text-sm text-gray-500">Up to 12 agents</p>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={() => onSubscriptionSubmit(subscriptionForm.getValues())} className="w-full bg-black text-white">Subscribe Now</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+             <Dialog open={isPaymentModalOpen} onOpenChange={setPaymentModalOpen}>
+                <DialogContent>
+                     <DialogHeader>
+                        <DialogTitle>Complete Your Subscription</DialogTitle>
+                     </DialogHeader>
+                      <Form {...subscriptionForm}>
+                        <form onSubmit={subscriptionForm.handleSubmit(onPaymentSubmit)} className="space-y-4">
+                             <FormField name="fullName" control={subscriptionForm.control} render={({ field }) => (
+                                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                            )} />
+                             <FormField name="email" control={subscriptionForm.control} render={({ field }) => (
+                                <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <PaymentOptions />
+                            <Button type="submit" className="w-full bg-black text-white">Submit Payment</Button>
+                        </form>
+                      </Form>
+                </DialogContent>
+            </Dialog>
+        </>
+    );
+};
+
+const PaymentOptions = () => {
+    const [currency, setCurrency] = React.useState('inr');
+    
+    return (
+        <div className="space-y-4">
+            <Tabs value={currency} onValueChange={setCurrency} className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="usd">USD</TabsTrigger>
+                    <TabsTrigger value="inr">INR</TabsTrigger>
+                    <TabsTrigger value="crypto">Crypto</TabsTrigger>
+                </TabsList>
+            </Tabs>
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={currency}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-2"
+                >
+                    {currency === 'usd' && (
+                        <>
+                            <Button variant="outline" className="w-full justify-start border-black"><DollarSign className="w-4 h-4 mr-2" /> PayPal</Button>
+                            <Button variant="outline" className="w-full justify-start border-black"><Apple className="w-4 h-4 mr-2" /> Apple Pay</Button>
+                            <Button variant="outline" className="w-full justify-start border-black"><CreditCard className="w-4 h-4 mr-2" /> Card</Button>
+                        </>
+                    )}
+                    {currency === 'inr' && (
+                         <>
+                            <Button variant="outline" className="w-full justify-start border-black">GPay</Button>
+                            <Button variant="outline" className="w-full justify-start border-black">PhonePe</Button>
+                            <Button variant="outline" className="w-full justify-start border-black">UPI</Button>
+                        </>
+                    )}
+                     {currency === 'crypto' && (
+                         <>
+                            <Button variant="outline" className="w-full justify-start border-black"><Bitcoin className="w-4 h-4 mr-2" /> Binance</Button>
+                            <Button variant="outline" className="w-full justify-start border-black">Trust Wallet</Button>
+                            <Button variant="outline" className="w-full justify-start border-black">Phantom</Button>
+                        </>
+                    )}
+                </motion.div>
+            </AnimatePresence>
+        </div>
+    )
 }

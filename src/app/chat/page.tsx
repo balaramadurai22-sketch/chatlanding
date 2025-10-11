@@ -6,6 +6,7 @@ import { continueChat } from '@/app/actions';
 import type { ChatMessage } from '@/app/actions';
 import ChatUI from '@/components/chat/chat-ui';
 import { useToast } from '@/hooks/use-toast';
+import type { Agent } from '@/lib/agents-data';
 
 export default function ChatPage() {
   const searchParams = useSearchParams();
@@ -15,6 +16,7 @@ export default function ChatPage() {
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [input, setInput] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
+  const [selectedAgents, setSelectedAgents] = React.useState<Agent[]>([]);
 
   const processStream = async (stream: ReadableStream<string>) => {
     let fullResponse = '';
@@ -44,7 +46,7 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const stream = await continueChat(newMessages);
+      const stream = await continueChat({history: newMessages, selectedAgents});
       await processStream(stream);
     } catch (error) {
       toast({
@@ -53,11 +55,15 @@ export default function ChatPage() {
         variant: "destructive",
       });
       console.error(error);
-      setMessages(prev => prev.slice(0, prev.length - 1));
+      // If there's an error, we might not have added an assistant message yet
+      // So we just remove the user's message if it was the only one.
+      if (messages.length === 1) {
+        setMessages([]);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, selectedAgents, messages.length]);
 
 
   React.useEffect(() => {
@@ -77,7 +83,7 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const stream = await continueChat(newMessages);
+      const stream = await continueChat({history: newMessages, selectedAgents});
       await processStream(stream);
     } catch (error) {
        toast({
@@ -86,8 +92,8 @@ export default function ChatPage() {
         variant: "destructive",
       });
       console.error(error);
-      // Remove the user message and the empty assistant message
-      setMessages(prev => prev.slice(0, prev.length - 2));
+      // This will remove the user's message and the potentially empty/failed assistant message
+      setMessages(prev => prev.slice(0, prev.length - 1));
     } finally {
       setIsLoading(false);
     }
@@ -101,6 +107,8 @@ export default function ChatPage() {
       handleSendMessage={handleSendMessage}
       setInput={setInput}
       setMessages={setMessages}
+      selectedAgents={selectedAgents}
+      setSelectedAgents={setSelectedAgents}
     />
   );
 }

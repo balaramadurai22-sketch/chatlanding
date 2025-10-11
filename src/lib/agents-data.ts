@@ -6,7 +6,7 @@ export interface Agent {
   model: string;
   category: 'Coding' | 'Analysis' | 'Creative' | 'Productivity' | 'Research';
   purpose: string;
-  tools?: string[];
+  tools?: string;
   memory?: string;
   active: boolean;
   pinned: boolean;
@@ -34,7 +34,7 @@ export const agents: Agent[] = [
     model: 'GPT-4',
     category: 'Coding',
     purpose: 'Analyzes pull requests and provides feedback.',
-    tools: ['github_api', 'linter'],
+    tools: 'github_api, linter',
     memory: 'short-term',
     active: true,
     pinned: true,
@@ -58,7 +58,7 @@ export const agents: Agent[] = [
     model: 'Gemini 1.5',
     category: 'Analysis',
     purpose: 'Generates charts and insights from raw data.',
-    tools: ['chart_generator', 'sql_runner'],
+    tools: 'chart_generator, sql_runner',
     memory: 'long-term',
     active: false,
     pinned: true,
@@ -125,7 +125,7 @@ export const agents: Agent[] = [
     model: 'Mistral',
     category: 'Productivity',
     purpose: 'Connects to various APIs to automate processes.',
-    active: false,
+    active: true,
     pinned: false,
     peopleUsed: 3200,
     likes: 1800,
@@ -151,7 +151,7 @@ export const agents: Agent[] = [
       model: models[i % models.length],
       category,
       purpose: `Automates and assists in ${category.toLowerCase()} workflows.`,
-      tools: ['web_search'],
+      tools: 'web_search',
       memory: 'short-term',
       active: Math.random() > 0.5,
       pinned: false,
@@ -165,5 +165,3 @@ export const agents: Agent[] = [
     };
   }),
 ];
-
-    
