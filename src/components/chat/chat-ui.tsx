@@ -41,6 +41,7 @@ import {
   DollarSign,
   Apple,
   CreditCard,
+  Check,
 } from 'lucide-react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
