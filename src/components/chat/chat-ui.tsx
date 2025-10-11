@@ -597,9 +597,9 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                             </DialogHeader>
                             <Form {...newAgentForm}>
                                 <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="space-y-6 p-1">
-                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                        
-                                        <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm md:col-span-2 lg:col-span-1">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {/* Container 1 & 2 */}
+                                        <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
                                             <h3 className="font-bold text-sm uppercase text-black/60">Agent Information</h3>
                                             <FormField name="name" control={newAgentForm.control} render={({ field }) => (
                                                 <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. Code Reviewer" /></FormControl><FormMessage /></FormItem>
@@ -612,7 +612,6 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                             )} />
                                         </div>
 
-                                        
                                         <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
                                             <h3 className="font-bold text-sm uppercase text-black/60">Model & Category</h3>
                                             <FormField name="model" control={newAgentForm.control} render={({ field }) => (
@@ -623,7 +622,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                             )} />
                                         </div>
 
-                                        
+                                        {/* Container 3 & 4 */}
                                         <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
                                             <h3 className="font-bold text-sm uppercase text-black/60">Tools & Memory</h3>
                                             <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
@@ -634,7 +633,6 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                             )} />
                                         </div>
 
-                                        
                                         <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
                                             <h3 className="font-bold text-sm uppercase text-black/60">Creator & Support</h3>
                                             <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
@@ -915,40 +913,23 @@ export default function ChatUI({
   );
 
   const renderMessageContent = (content: string) => {
-    // Basic Markdown for code blocks
     const codeBlockRegex = /```([\s\S]*?)```/g;
-    let lastIndex = 0;
-    const parts = [];
-
-    let match;
-    while ((match = codeBlockRegex.exec(content)) !== null) {
-        // Add text before the code block
-        if (match.index > lastIndex) {
-            parts.push({ type: 'text', content: content.substring(lastIndex, match.index) });
-        }
-        // Add the code block
-        parts.push({ type: 'code', content: match[1].trim() });
-        lastIndex = match.index + match[0].length;
-    }
-
-    // Add any remaining text after the last code block
-    if (lastIndex < content.length) {
-        parts.push({ type: 'text', content: content.substring(lastIndex) });
-    }
+    const parts = content.split(codeBlockRegex);
 
     return parts.map((part, index) => {
-        if (part.type === 'code') {
+        if (index % 2 === 1) {
+            // This is a code block
             return (
                 <div key={index} className="bg-black text-white rounded-md my-2 relative">
                     <pre className="p-4 text-sm overflow-x-auto">
-                        <code>{part.content}</code>
+                        <code>{part}</code>
                     </pre>
                     <Button
                         variant="ghost"
                         size="icon"
                         className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
-                        onClick={() => {
-                            navigator.clipboard.writeText(part.content);
+                        onClick={()={() => {
+                            navigator.clipboard.writeText(part);
                             toast({ title: 'Copied to clipboard!' });
                         }}
                     >
@@ -956,15 +937,15 @@ export default function ChatUI({
                     </Button>
                 </div>
             );
+        } else {
+            // This is plain text
+            let processedPart = part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            processedPart = processedPart.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            
+            return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
         }
-        
-        // Basic Markdown for bold and italic
-        let processedPart = part.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        processedPart = processedPart.replace(/\*(.*?)\*/g, '<em>$1</em>');
-        
-        return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
     });
-  };
+};
 
   const ChatView = () => (
     <>
@@ -1021,8 +1002,10 @@ export default function ChatUI({
               ))}
               {isLoading && (messages.length === 0 || messages[messages.length - 1].role === 'user') && (
                 <div className="flex justify-start">
+                    <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center mr-3 flex-shrink-0">
+                        <Bot className="w-5 h-5" />
+                    </div>
                   <div className="max-w-xl p-4 border border-black rounded-lg bg-white">
-                    <div className="font-bold mb-2">Assistant</div>
                     <TypingIndicator />
                   </div>
                 </div>
@@ -1406,3 +1389,5 @@ const PaymentOptions = () => {
         </div>
     )
 }
+
+    
