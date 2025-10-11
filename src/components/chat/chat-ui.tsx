@@ -1082,6 +1082,18 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
     const { toast } = useToast();
     const [isSubscriptionModalOpen, setSubscriptionModalOpen] = React.useState(false);
     const [isPaymentModalOpen, setPaymentModalOpen] = React.useState(false);
+    const [dialogOpen, setDialogOpen] = React.useState(false);
+    
+    // Temporary state for selections inside the dialog
+    const [tempSelectedAgents, setTempSelectedAgents] = React.useState<Agent[]>(selectedAgents);
+
+    React.useEffect(() => {
+        // When the dialog opens, sync temp state with the main state
+        if (dialogOpen) {
+            setTempSelectedAgents(selectedAgents);
+        }
+    }, [dialogOpen, selectedAgents]);
+
 
     const subscriptionForm = useForm<SubscriptionFormValues>({
         resolver: zodResolver(subscriptionSchema),
@@ -1102,19 +1114,34 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
 
 
     const handleAgentSelect = (agent: Agent) => {
-        const isSelected = selectedAgents.some(a => a.id === agent.id);
+        const isSelected = tempSelectedAgents.some(a => a.id === agent.id);
         let newSelectedAgents;
 
         if (isSelected) {
-            newSelectedAgents = selectedAgents.filter(a => a.id !== agent.id);
+            newSelectedAgents = tempSelectedAgents.filter(a => a.id !== agent.id);
         } else {
-            if (selectedAgents.length >= 2) {
+            if (tempSelectedAgents.length >= 2) {
                 setSubscriptionModalOpen(true);
                 return;
             }
-            newSelectedAgents = [...selectedAgents, agent];
+            newSelectedAgents = [...tempSelectedAgents, agent];
         }
-        setSelectedAgents(newSelectedAgents);
+        setTempSelectedAgents(newSelectedAgents);
+    };
+
+    const handleApply = () => {
+        setSelectedAgents(tempSelectedAgents);
+        setDialogOpen(false);
+    };
+
+    const handleCancel = () => {
+        setTempSelectedAgents(selectedAgents); // Revert to original selections
+        setDialogOpen(false);
+    };
+
+    const handleRemoveAgent = (e: React.MouseEvent, agent: Agent) => {
+        e.stopPropagation();
+        setSelectedAgents(selectedAgents.filter(a => a.id !== agent.id));
     };
 
     const enabledAgents = allAgents.filter(a => a.active);
@@ -1122,7 +1149,7 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
     return (
         <>
             <div className="mb-4">
-                <Dialog>
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                     <DialogTrigger asChild>
                         <Button variant="outline" className="w-full border-black justify-start text-left h-auto py-2">
                              <div className="flex justify-between w-full items-center">
@@ -1135,7 +1162,7 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
                                         {selectedAgents.length > 0 ? selectedAgents.map(a => (
                                             <Badge key={a.id} variant="secondary" className="bg-gray-200 text-black">
                                                 {a.name}
-                                                <button onClick={(e) => { e.stopPropagation(); handleAgentSelect(a); }} className="ml-1.5 rounded-full hover:bg-gray-300 p-0.5">
+                                                <button onClick={(e) => handleRemoveAgent(e, a)} className="ml-1.5 rounded-full hover:bg-gray-300 p-0.5">
                                                     <X className="w-3 h-3"/>
                                                 </button>
                                             </Badge>
@@ -1154,7 +1181,7 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
                          <div className="flex-1 overflow-y-auto p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {enabledAgents.map(agent => {
-                                    const isSelected = selectedAgents.some(a => a.id === agent.id);
+                                    const isSelected = tempSelectedAgents.some(a => a.id === agent.id);
                                     return (
                                         <motion.div 
                                             key={agent.id}
@@ -1192,6 +1219,10 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
                                 })}
                             </div>
                          </div>
+                         <DialogFooter className="p-6 pt-0 border-t">
+                            <Button variant="ghost" onClick={handleCancel}>Cancel</Button>
+                            <Button className="bg-black text-white" onClick={handleApply}>Apply</Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>
