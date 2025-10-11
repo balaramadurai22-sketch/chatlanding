@@ -310,7 +310,7 @@ const TypingEffect = ({ text }: { text: string }) => {
 
 
   return (
-    <p ref={ref} className="text-xs text-black/80 h-8">
+    <p ref={ref} className="text-xs text-black/80">
       {displayedText}
       <span className="animate-pulse">|</span>
     </p>
@@ -590,7 +590,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                         <DialogTrigger asChild>
                              <Button className="bg-black text-white hover:bg-white hover:text-black border border-black w-full md:w-auto shadow-sm hover:shadow-md transition-shadow"><Plus className="mr-2 h-4 w-4" /> Add New Agent</Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-4xl md:max-w-6xl max-h-[90vh] overflow-y-auto">
+                         <DialogContent className="sm:max-w-4xl md:max-w-6xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                               <DialogTitle className="text-2xl font-bold">Create a New Agent</DialogTitle>
                               <DialogDescription>Configure and launch a new AI agent into your library.</DialogDescription>
@@ -605,7 +605,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                             <FormField name="name" control={newAgentForm.control} render={({ field }) => (
                                                 <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. Code Reviewer" /></FormControl><FormMessage /></FormItem>
                                             )} />
-                                            <FormField name="purpose" control={newAgentForm.control} render={({ field }) => (
+                                            <FormField control={newAgentForm.control} name="purpose" render={({ field }) => (
                                                 <FormItem><FormLabel>Task / Role</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. Automates design workflow" /></FormControl><FormMessage /></FormItem>
                                             )} />
                                             <FormField name="description" control={newAgentForm.control} render={({ field }) => (
@@ -1389,3 +1389,5 @@ const PaymentOptions = () => {
         </div>
     )
 }
+
+    
