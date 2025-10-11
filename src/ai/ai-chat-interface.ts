@@ -42,9 +42,13 @@ export async function aiChat(input: AIChatInput): Promise<ReadableStream<string>
     });
     
     const transformStream = new TransformStream<any, string>({
-        transform(chunk, controller) {
+        async transform(chunk, controller) {
             if (chunk.text) {
-                controller.enqueue(chunk.text);
+                // Simulate typing delay
+                for (const char of chunk.text) {
+                    controller.enqueue(char);
+                    await new Promise(resolve => setTimeout(resolve, 5)); // 5ms delay per character
+                }
             }
         },
     });

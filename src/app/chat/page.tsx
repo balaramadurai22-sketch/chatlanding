@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -7,6 +8,8 @@ import type { ChatMessage } from '@/app/actions';
 import ChatUI from '@/components/chat/chat-ui';
 import { useToast } from '@/hooks/use-toast';
 import type { Agent } from '@/lib/agents-data';
+import { v4 as uuidv4 } from 'uuid';
+
 
 export default function ChatPage() {
   const searchParams = useSearchParams();
@@ -22,26 +25,39 @@ export default function ChatPage() {
     let fullResponse = '';
     const reader = stream.getReader();
     const decoder = new TextDecoder();
+    const responseId = uuidv4();
 
     // Add an empty assistant message to start
-    setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+    setMessages(prev => [...prev, { id: responseId, role: 'assistant', content: '' }]);
 
     while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
+        try {
+            const { done, value } = await reader.read();
+            if (done) {
+                break;
+            }
+            fullResponse += decoder.decode(value, { stream: true });
+            setMessages(prev =>
+                prev.map((msg) =>
+                    msg.id === responseId ? { ...msg, content: fullResponse } : msg
+                )
+            );
+        } catch (error) {
+             toast({
+                title: "An error occurred.",
+                description: "Sorry, I encountered a streaming error. Please try again.",
+                variant: "destructive",
+            });
+            console.error("Streaming error:", error);
+            setMessages(prev => prev.filter(msg => msg.id !== responseId));
             break;
         }
-        fullResponse += decoder.decode(value, { stream: true });
-        setMessages(prev =>
-            prev.map((msg, index) =>
-                index === prev.length - 1 ? { ...msg, content: fullResponse } : msg
-            )
-        );
     }
   };
   
   const handleInitialQuery = React.useCallback(async (query: string) => {
-    const newMessages: ChatMessage[] = [{ role: 'user', content: query }];
+    const userMessage: ChatMessage = { id: uuidv4(), role: 'user', content: query };
+    const newMessages: ChatMessage[] = [userMessage];
     setMessages(newMessages);
     setIsLoading(true);
 
@@ -51,19 +67,15 @@ export default function ChatPage() {
     } catch (error) {
       toast({
         title: "An error occurred.",
-        description: "Sorry, I encountered an error. Please try again.",
+        description: "Sorry, I couldn’t reach the server. Please try again.",
         variant: "destructive",
       });
       console.error(error);
-      // If there's an error, we might not have added an assistant message yet
-      // So we just remove the user's message if it was the only one.
-      if (messages.length === 1) {
-        setMessages([]);
-      }
+      setMessages(prev => prev.filter(msg => msg.id !== userMessage.id));
     } finally {
       setIsLoading(false);
     }
-  }, [toast, selectedAgents, messages.length]);
+  }, [toast, selectedAgents]);
 
 
   React.useEffect(() => {
@@ -73,13 +85,17 @@ export default function ChatPage() {
   }, [initialQuery, messages.length, isLoading, handleInitialQuery]);
   
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent, currentInput?: string) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    const messageContent = currentInput || input;
+    if (!messageContent.trim() || isLoading) return;
 
-    const newMessages: ChatMessage[] = [...messages, { role: 'user', content: input }];
+    const userMessage: ChatMessage = { id: uuidv4(), role: 'user', content: messageContent };
+    const newMessages: ChatMessage[] = [...messages, userMessage];
     setMessages(newMessages);
-    setInput('');
+    if (!currentInput) {
+        setInput('');
+    }
     setIsLoading(true);
 
     try {
@@ -88,16 +104,45 @@ export default function ChatPage() {
     } catch (error) {
        toast({
         title: "An error occurred.",
-        description: "Sorry, I encountered an error. Please try again.",
+        description: "Sorry, I couldn’t reach the server. Please try again.",
         variant: "destructive",
       });
       console.error(error);
-      // This will remove the user's message and the potentially empty/failed assistant message
-      setMessages(prev => prev.slice(0, prev.length - 1));
+      setMessages(prev => prev.filter(msg => msg.id !== userMessage.id));
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleRegenerate = async (messageId: string) => {
+      const messageIndex = messages.findIndex(msg => msg.id === messageId);
+      if (messageIndex === -1 || messages[messageIndex].role !== 'assistant') return;
+
+      const userMessageIndex = messageIndex -1;
+      if (userMessageIndex < 0 || messages[userMessageIndex].role !== 'user') return;
+      
+      const historyToResend = messages.slice(0, userMessageIndex + 1);
+      const lastUserMessage = messages[userMessageIndex];
+
+      // Remove the old assistant response
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+
+      setIsLoading(true);
+       try {
+            const stream = await continueChat({ history: historyToResend, selectedAgents });
+            await processStream(stream);
+        } catch (error) {
+            toast({
+                title: "An error occurred.",
+                description: "Sorry, I couldn’t reach the server to regenerate. Please try again.",
+                variant: "destructive",
+            });
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+  }
+
 
   return (
     <ChatUI
@@ -109,6 +154,7 @@ export default function ChatPage() {
       setMessages={setMessages}
       selectedAgents={selectedAgents}
       setSelectedAgents={setSelectedAgents}
+      handleRegenerate={handleRegenerate}
     />
   );
 }
