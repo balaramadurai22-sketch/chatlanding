@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -414,7 +415,7 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                             </div>
                              <div className="flex items-center gap-1">
                                 <Heart className="w-3 h-3" />
-                                <span>Женско{(agent.likes / 1000).toFixed(1)}k</span>
+                                <span>{(agent.likes / 1000).toFixed(1)}k</span>
                             </div>
                             <Switch checked={isActive} onClick={handleActiveToggle} className="h-4 w-7 [&gt;span]:h-3 [&gt;span]:w-3 [&gt;span]:data-[state=checked]:translate-x-3" />
                         </div>
@@ -919,89 +920,89 @@ export default function ChatUI({
       return part.split('\n').map((line, lineIndex) => (
         <React.Fragment key={`${index}-${lineIndex}`}>
             {line}
-            {lineIndex &lt; part.split('\n').length - 1 && &lt;br />}
+            {lineIndex < part.split('\n').length - 1 && <br />}
         </React.Fragment>
       ));
     });
   };
 
   const ChatView = () => (
-    &lt;&gt;
-      &lt;main className="flex-1 overflow-y-auto p-4 md:p-6">
-        &lt;div className="max-w-4xl mx-auto h-full">
+    <>
+      <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <div className="max-w-4xl mx-auto h-full">
           {messages.length === 0 && !isLoading ? (
-            &lt;div className="flex flex-col items-center justify-center h-full text-center">
-              &lt;PixelLogo />
-              &lt;h1 className="text-2xl font-bold mt-6">Ask Le Chat anything&lt;/h1>
-            &lt;/div>
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <PixelLogo />
+              <h1 className="text-2xl font-bold mt-6">Ask Le Chat anything</h1>
+            </div>
           ) : (
-            &lt;div className="space-y-6">
+            <div className="space-y-6">
               {messages.map((m, i) => (
-                &lt;div key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
-                  &lt;div className={cn('max-w-xl p-4 border border-black rounded-lg', m.role === 'user' ? 'bg-white' : 'bg-white')}>
-                    {m.role !== 'user' && &lt;div className="font-bold mb-2">Assistant&lt;/div>}
-                    &lt;div className="text-base break-words">{renderMessageContent(m.content)}&lt;/div>
-                  &lt;/div>
-                &lt;/div>
+                <div key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
+                  <div className={cn('max-w-xl p-4 border border-black rounded-lg', m.role === 'user' ? 'bg-white' : 'bg-white')}>
+                    {m.role !== 'user' && <div className="font-bold mb-2">Assistant</div>}
+                    <div className="text-base break-words">{renderMessageContent(m.content)}</div>
+                  </div>
+                </div>
               ))}
               {isLoading && messages[messages.length - 1]?.role === 'user' && (
-                &lt;div className="flex justify-start">
-                  &lt;div className="max-w-xl p-4 border border-black rounded-lg bg-white">
-                    &lt;div className="font-bold mb-2">Assistant&lt;/div>
-                    &lt;TypingIndicator />
-                  &lt;/div>
-                &lt;/div>
+                <div className="flex justify-start">
+                  <div className="max-w-xl p-4 border border-black rounded-lg bg-white">
+                    <div className="font-bold mb-2">Assistant</div>
+                    <TypingIndicator />
+                  </div>
+                </div>
               )}
-            &lt;/div>
+            </div>
           )}
-        &lt;/div>
-      &lt;/main>
+        </div>
+      </main>
 
-      &lt;footer className="p-4 md:p-6 bg-white">
-        &lt;div className="max-w-4xl mx-auto">
-            &lt;AgentSelectionPanel 
+      <footer className="p-4 md:p-6 bg-white">
+        <div className="max-w-4xl mx-auto">
+            <AgentSelectionPanel 
                 allAgents={agents}
                 selectedAgents={selectedAgents}
                 setSelectedAgents={setSelectedAgents}
             />
-          &lt;form onSubmit={handleSendMessage} className="relative">
-            &lt;div className="relative flex items-center p-2 border border-black rounded-lg bg-white shadow-sm focus-within:ring-2 focus-within:ring-black">
-              &lt;Button type="button" variant="ghost" className="p-2 h-auto rounded-md border-black hover:bg-black hover:text-white">
-                &lt;Plus className="w-5 h-5" />
-              &lt;/Button>
-              &lt;Textarea
+          <form onSubmit={handleSendMessage} className="relative">
+            <div className="relative flex items-center p-2 border border-black rounded-lg bg-white shadow-sm focus-within:ring-2 focus-within:ring-black">
+              <Button type="button" variant="ghost" className="p-2 h-auto rounded-md border-black hover:bg-black hover:text-white">
+                <Plus className="w-5 h-5" />
+              </Button>
+              <Textarea
                 value={input}
-                onChange={(e) =&gt; setInput(e.target.value)}
-                onKeyDown={(e) =&gt; { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(e as any); }}}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(e as any); }}}
                 placeholder="Ask Le Chat anything..."
                 className="flex-1 resize-none border-0 bg-transparent px-4 py-2 text-base focus-visible:ring-0 shadow-none"
               />
-              &lt;Button type="submit" variant="outline" className="p-2 h-auto rounded-md border-black bg-black text-white hover:bg-white hover:text-black" disabled={isLoading || !input.trim()}>
-                &lt;Send className="w-5 h-5" />
-              &lt;/Button>
-            &lt;/div>
-          &lt;/form>
-        &lt;/div>
-      &lt;/footer>
-    &lt;/>
+              <Button type="submit" variant="outline" className="p-2 h-auto rounded-md border-black bg-black text-white hover:bg-white hover:text-black" disabled={isLoading || !input.trim()}>
+                <Send className="w-5 h-5" />
+              </Button>
+            </div>
+          </form>
+        </div>
+      </footer>
+    </>
   );
 
   return (
-    &lt;&gt;
-      &lt;div className="flex h-screen w-full bg-white text-black font-sans">
+    <>
+      <div className="flex h-screen w-full bg-white text-black font-sans">
         {isMobile && (
-          &lt;&gt;
-            &lt;Button
+          <>
+            <Button
               variant="ghost"
               size="icon"
-              onClick={() =&gt; setSidebarOpen(true)}
+              onClick={() => setSidebarOpen(true)}
               className="fixed top-4 left-4 z-20 bg-white border border-black hover:bg-black hover:text-white"
             >
-              &lt;PanelLeft />
-            &lt;/Button>
-            &lt;AnimatePresence>
+              <PanelLeft />
+            </Button>
+            <AnimatePresence>
               {isSidebarOpen && (
-                &lt;motion.div
+                <motion.div
                   initial={{ x: '-100%' }}
                   animate={{ x: 0 }}
                   exit={{ x: '-100%' }}
@@ -1009,44 +1010,44 @@ export default function ChatUI({
                   className="fixed inset-0 z-40"
                   style={{ width: '80%' }}
                 >
-                  &lt;SidebarContent />
-                  &lt;Button
+                  <SidebarContent />
+                  <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() =&gt; setSidebarOpen(false)}
+                    onClick={() => setSidebarOpen(false)}
                     className="absolute top-4 right-4 z-50 bg-white border border-black hover:bg-black hover:text-white"
                   >
-                    &lt;ChevronsRight />
-                  &lt;/Button>
-                &lt;/motion.div>
+                    <ChevronsRight />
+                  </Button>
+                </motion.div>
               )}
-            &lt;/AnimatePresence>
-          &lt;/>
+            </AnimatePresence>
+          </>
         )}
 
         {!isMobile && isSidebarOpen && (
-          &lt;div className="w-[300px] flex-shrink-0">
-            &lt;SidebarContent />
-          &lt;/div>
+          <div className="w-[300px] flex-shrink-0">
+            <SidebarContent />
+          </div>
         )}
 
-        &lt;div className="flex flex-1 flex-col">
-            &lt;div className="flex items-center p-4 border-b border-black">
+        <div className="flex flex-1 flex-col">
+            <div className="flex items-center p-4 border-b border-black">
                 {!isMobile && (
-                     &lt;Button
+                     <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() =&gt; setSidebarOpen(!isSidebarOpen)}
+                        onClick={() => setSidebarOpen(!isSidebarOpen)}
                         className="mr-4 bg-white border border-black hover:bg-black hover:text-white"
                     >
-                        &lt;PanelLeft />
-                    &lt;/Button>
+                        <PanelLeft />
+                    </Button>
                 )}
-                &lt;h1 className="text-xl font-bold">{activeView === 'chat' ? 'Conversation' : 'Agents'}&lt;/h1>
-            &lt;/div>
-            &lt;AnimatePresence mode="wait">
+                <h1 className="text-xl font-bold">{activeView === 'chat' ? 'Conversation' : 'Agents'}</h1>
+            </div>
+            <AnimatePresence mode="wait">
               {activeView === 'chat' ? (
-                &lt;motion.div
+                <motion.div
                     key="chat"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1054,10 +1055,10 @@ export default function ChatUI({
                     transition={{ duration: 0.2 }}
                     className="h-full flex flex-col"
                 >
-                    &lt;ChatView />
-                &lt;/motion.div>
+                    <ChatView />
+                </motion.div>
               ) : (
-                &lt;motion.div
+                <motion.div
                     key="agents"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1065,13 +1066,13 @@ export default function ChatUI({
                     transition={{ duration: 0.2 }}
                     className="h-full flex flex-col"
                 >
-                    &lt;AgentsView agents={agents} setAgents={setAgents} />
-                &lt;/motion.div>
+                    <AgentsView agents={agents} setAgents={setAgents} />
+                </motion.div>
               )}
-            &lt;/AnimatePresence>
-        &lt;/div>
-      &lt;/div>
-    &lt;/>
+            </AnimatePresence>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -1083,10 +1084,10 @@ const subscriptionSchema = z.object({
     email: z.string().email("Invalid email address."),
     plan: z.enum(['pro', 'elite']),
 });
-type SubscriptionFormValues = z.infer&lt;typeof subscriptionSchema>;
+type SubscriptionFormValues = z.infer<typeof subscriptionSchema>;
 
 
-const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: { allAgents: Agent[], selectedAgents: Agent[], setSelectedAgents: (agents: Agent[]) =&gt; void}) =&gt; {
+const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: { allAgents: Agent[], selectedAgents: Agent[], setSelectedAgents: (agents: Agent[]) => void}) => {
     const { toast } = useToast();
     const [isSubscriptionModalOpen, setSubscriptionModalOpen] = React.useState(false);
     const [isPaymentModalOpen, setPaymentModalOpen] = React.useState(false);
@@ -1095,7 +1096,7 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
     // Temporary state for selections inside the dialog
     const [tempSelectedAgents, setTempSelectedAgents] = React.useState(selectedAgents);
 
-    React.useEffect(() =&gt; {
+    React.useEffect(() => {
         // When the dialog opens, sync temp state with the main state
         if (dialogOpen) {
             setTempSelectedAgents(selectedAgents);
@@ -1103,32 +1104,32 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
     }, [dialogOpen, selectedAgents]);
 
 
-    const subscriptionForm = useForm&lt;SubscriptionFormValues>({
+    const subscriptionForm = useForm<SubscriptionFormValues>({
         resolver: zodResolver(subscriptionSchema),
         defaultValues: { plan: 'pro' },
     });
     
-    const onSubscriptionSubmit: SubmitHandler&lt;SubscriptionFormValues> = (data) =&gt; {
+    const onSubscriptionSubmit: SubmitHandler<SubscriptionFormValues> = (data) => {
         console.log("Subscription data:", data);
         setSubscriptionModalOpen(false);
         setPaymentModalOpen(true);
     };
     
-    const onPaymentSubmit = () =&gt; {
+    const onPaymentSubmit = () => {
         setPaymentModalOpen(false);
         toast({ title: "Subscription successful!", description: "Your subscription code has been sent to your email." });
         subscriptionForm.reset();
     };
 
 
-    const handleAgentSelect = (agent: Agent) =&gt; {
-        const isSelected = tempSelectedAgents.some(a =&gt; a.id === agent.id);
+    const handleAgentSelect = (agent: Agent) => {
+        const isSelected = tempSelectedAgents.some(a => a.id === agent.id);
         let newSelectedAgents;
 
         if (isSelected) {
-            newSelectedAgents = tempSelectedAgents.filter(a =&gt; a.id !== agent.id);
+            newSelectedAgents = tempSelectedAgents.filter(a => a.id !== agent.id);
         } else {
-            if (tempSelectedAgents.length &gt;= 2) {
+            if (tempSelectedAgents.length >= 2) {
                 setSubscriptionModalOpen(true);
                 return;
             }
@@ -1137,63 +1138,63 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
         setTempSelectedAgents(newSelectedAgents);
     };
 
-    const handleApply = () =&gt; {
+    const handleApply = () => {
         setSelectedAgents(tempSelectedAgents);
         setDialogOpen(false);
     };
 
-    const handleCancel = () =&gt; {
+    const handleCancel = () => {
         setTempSelectedAgents(selectedAgents); // Revert to original selections
         setDialogOpen(false);
     };
 
-    const handleRemoveAgent = (e: React.MouseEvent, agent: Agent) =&gt; {
+    const handleRemoveAgent = (e: React.MouseEvent, agent: Agent) => {
         e.stopPropagation();
-        setSelectedAgents(selectedAgents.filter(a =&gt; a.id !== agent.id));
+        setSelectedAgents(selectedAgents.filter(a => a.id !== agent.id));
     };
 
-    const enabledAgents = allAgents.filter(a =&gt; a.active);
+    const enabledAgents = allAgents.filter(a => a.active);
 
     return (
-        &lt;&gt;
-            &lt;div className="mb-4">
-                &lt;Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    &lt;DialogTrigger asChild>
-                        &lt;Button variant="outline" className="w-full border-black justify-start text-left h-auto py-2">
-                             &lt;div className="flex justify-between w-full items-center">
-                                &lt;div>
-                                    &lt;div className="flex items-center gap-2">
-                                        &lt;Sparkles className="w-4 h-4" />
-                                        &lt;span className="font-bold">Agents ({selectedAgents.length}/{enabledAgents.length} Active)&lt;/span>
-                                    &lt;/div>
-                                    &lt;div className="flex flex-wrap gap-1 mt-2">
-                                        {selectedAgents.length &gt; 0 ? selectedAgents.map(a =&gt; (
-                                            &lt;Badge key={a.id} variant="secondary" className="bg-gray-200 text-black">
+        <>
+            <div className="mb-4">
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full border-black justify-start text-left h-auto py-2">
+                             <div className="flex justify-between w-full items-center">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <Sparkles className="w-4 h-4" />
+                                        <span className="font-bold">Agents ({selectedAgents.length}/{enabledAgents.length} Active)</span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                        {selectedAgents.length > 0 ? selectedAgents.map(a => (
+                                            <Badge key={a.id} variant="secondary" className="bg-gray-200 text-black">
                                                 {a.name}
-                                                &lt;button onClick={(e) =&gt; handleRemoveAgent(e, a)} className="ml-1.5 rounded-full hover:bg-gray-300 p-0.5">
-                                                    &lt;X className="w-3 h-3"/>
-                                                &lt;/button>
-                                            &lt;/Badge>
-                                        )) : &lt;p className="text-xs text-gray-500">Click to select agents&lt;/p>}
-                                    &lt;/div>
-                                &lt;/div>
-                                &lt;Plus className="w-5 h-5" />
-                            &lt;/div>
-                        &lt;/Button>
-                    &lt;/DialogTrigger>
-                    &lt;DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0">
-                         &lt;DialogHeader className="p-6 pb-0">
-                            &lt;DialogTitle className="text-2xl font-bold">Select Your Agents&lt;/DialogTitle>
-                            &lt;DialogDescription>Choose up to 2 free agents to assist your conversation.&lt;/DialogDescription>
-                         &lt;/DialogHeader>
-                         &lt;div className="flex-1 overflow-y-auto p-6">
-                            &lt;div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {enabledAgents.map(agent =&gt; {
-                                    const isSelected = tempSelectedAgents.some(a =&gt; a.id === agent.id);
+                                                <button onClick={(e) => handleRemoveAgent(e, a)} className="ml-1.5 rounded-full hover:bg-gray-300 p-0.5">
+                                                    <X className="w-3 h-3"/>
+                                                </button>
+                                            </Badge>
+                                        )) : <p className="text-xs text-gray-500">Click to select agents</p>}
+                                    </div>
+                                </div>
+                                <Plus className="w-5 h-5" />
+                            </div>
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0">
+                         <DialogHeader className="p-6 pb-0">
+                            <DialogTitle className="text-2xl font-bold">Select Your Agents</DialogTitle>
+                            <DialogDescription>Choose up to 2 free agents to assist your conversation.</DialogDescription>
+                         </DialogHeader>
+                         <div className="flex-1 overflow-y-auto p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {enabledAgents.map(agent => {
+                                    const isSelected = tempSelectedAgents.some(a => a.id === agent.id);
                                     return (
-                                        &lt;motion.div 
+                                        <motion.div 
                                             key={agent.id}
-                                            onClick={() =&gt; handleAgentSelect(agent)}
+                                            onClick={() => handleAgentSelect(agent)}
                                             className={cn(
                                                 "relative p-4 border rounded-xl cursor-pointer transition-all duration-300",
                                                 isSelected ? "border-black ring-2 ring-black shadow-lg" : "border-gray-300 hover:border-black hover:shadow-md"
@@ -1201,101 +1202,101 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
                                             whileHover={{ y: -5, boxShadow: "0px 10px 20px rgba(0,0,0,0.1)" }}
                                         >
                                             {isSelected && (
-                                                &lt;div className="absolute -top-2 -right-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center">
-                                                    &lt;Check className="w-4 h-4" />
-                                                &lt;/div>
+                                                <div className="absolute -top-2 -right-2 w-6 h-6 bg-black text-white rounded-full flex items-center justify-center">
+                                                    <Check className="w-4 h-4" />
+                                                </div>
                                             )}
-                                            &lt;div className="flex justify-between items-center mb-2">
-                                                &lt;h3 className="font-bold uppercase">{agent.name}&lt;/h3>
-                                                &lt;Badge variant="outline" className={cn(agent.active ? "border-green-500 text-green-500" : "border-red-500 text-red-500")}>
+                                            <div className="flex justify-between items-center mb-2">
+                                                <h3 className="font-bold uppercase">{agent.name}</h3>
+                                                <Badge variant="outline" className={cn(agent.active ? "border-green-500 text-green-500" : "border-red-500 text-red-500")}>
                                                     {agent.active ? "Active" : "Inactive"}
-                                                &lt;/Badge>
-                                            &lt;/div>
-                                            &lt;p className="text-xs text-gray-500 italic mb-2">{agent.purpose}&lt;/p>
-                                            &lt;div className="p-2 border rounded-md bg-gray-50 h-16">
-                                                &lt;TypingEffect text={agent.description} />
-                                            &lt;/div>
-                                            &lt;div className="text-xs text-gray-500 mt-2 flex justify-between">
-                                                &lt;span>Model: {agent.model}&lt;/span>
-                                                &lt;div className="flex items-center gap-2">
-                                                    &lt;span>&lt;Users className="w-3 h-3 inline mr-1"/>{(agent.peopleUsed / 1000).toFixed(1)}k&lt;/span>
-                                                    &lt;span>&lt;Heart className="w-3 h-3 inline mr-1"/>{(agent.likes / 1000).toFixed(1)}k&lt;/span>
-                                                &lt;/div>
-                                            &lt;/div>
-                                        &lt;/motion.div>
+                                                </Badge>
+                                            </div>
+                                            <p className="text-xs text-gray-500 italic mb-2">{agent.purpose}</p>
+                                            <div className="p-2 border rounded-md bg-gray-50 h-16">
+                                                <TypingEffect text={agent.description} />
+                                            </div>
+                                            <div className="text-xs text-gray-500 mt-2 flex justify-between">
+                                                <span>Model: {agent.model}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span><Users className="w-3 h-3 inline mr-1"/>{(agent.peopleUsed / 1000).toFixed(1)}k</span>
+                                                    <span><Heart className="w-3 h-3 inline mr-1"/>{(agent.likes / 1000).toFixed(1)}k</span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
                                     )
                                 })}
-                            &lt;/div>
-                         &lt;/div>
-                         &lt;DialogFooter className="p-6 pt-0 border-t">
-                            &lt;Button variant="ghost" onClick={handleCancel}>Cancel&lt;/Button>
-                            &lt;Button className="bg-black text-white" onClick={handleApply}>Apply&lt;/Button>
-                        &lt;/DialogFooter>
-                    &lt;/DialogContent>
-                &lt;/Dialog>
-            &lt;/div>
+                            </div>
+                         </div>
+                         <DialogFooter className="p-6 pt-0 border-t">
+                            <Button variant="ghost" onClick={handleCancel}>Cancel</Button>
+                            <Button className="bg-black text-white" onClick={handleApply}>Apply</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
 
-            &lt;Dialog open={isSubscriptionModalOpen} onOpenChange={setSubscriptionModalOpen}>
-                &lt;DialogContent>
-                    &lt;DialogHeader>
-                        &lt;DialogTitle className="text-2xl font-bold">Unlock More Agents 🚀&lt;/DialogTitle>
-                        &lt;DialogDescription>You've reached your free limit of 2 agents. Upgrade your plan to use more simultaneously.&lt;/DialogDescription>
-                    &lt;/DialogHeader>
-                    &lt;div className="grid grid-cols-2 gap-4 py-4">
-                        &lt;div onClick={() =&gt; subscriptionForm.setValue('plan', 'pro')} className={cn("p-4 border rounded-lg cursor-pointer", subscriptionForm.watch('plan') === 'pro' && 'ring-2 ring-black')}>
-                            &lt;h4 className="font-bold">Pro Plan&lt;/h4>
-                            &lt;p className="text-lg font-bold">₹49&lt;span className="text-sm font-normal">/month&lt;/span>&lt;/p>
-                            &lt;p className="text-sm text-gray-500">Up to 5 agents&lt;/p>
-                        &lt;/div>
-                        &lt;div onClick={() =&gt; subscriptionForm.setValue('plan', 'elite')} className={cn("p-4 border rounded-lg cursor-pointer", subscriptionForm.watch('plan') === 'elite' && 'ring-2 ring-black')}>
-                            &lt;h4 className="font-bold">Elite Plan&lt;/h4>
-                            &lt;p className="text-lg font-bold">₹99&lt;span className="text-sm font-normal">/month&lt;/span>&lt;/p>
-                            &lt;p className="text-sm text-gray-500">Up to 12 agents&lt;/p>
-                        &lt;/div>
-                    &lt;/div>
-                    &lt;DialogFooter>
-                        &lt;Button onClick={() =&gt; onSubscriptionSubmit(subscriptionForm.getValues())} className="w-full bg-black text-white">Subscribe Now&lt;/Button>
-                    &lt;/DialogFooter>
-                &lt;/DialogContent>
-            &lt;/Dialog>
+            <Dialog open={isSubscriptionModalOpen} onOpenChange={setSubscriptionModalOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold">Unlock More Agents 🚀</DialogTitle>
+                        <DialogDescription>You've reached your free limit of 2 agents. Upgrade your plan to use more simultaneously.</DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-2 gap-4 py-4">
+                        <div onClick={() => subscriptionForm.setValue('plan', 'pro')} className={cn("p-4 border rounded-lg cursor-pointer", subscriptionForm.watch('plan') === 'pro' && 'ring-2 ring-black')}>
+                            <h4 className="font-bold">Pro Plan</h4>
+                            <p className="text-lg font-bold">₹49<span className="text-sm font-normal">/month</span></p>
+                            <p className="text-sm text-gray-500">Up to 5 agents</p>
+                        </div>
+                        <div onClick={() => subscriptionForm.setValue('plan', 'elite')} className={cn("p-4 border rounded-lg cursor-pointer", subscriptionForm.watch('plan') === 'elite' && 'ring-2 ring-black')}>
+                            <h4 className="font-bold">Elite Plan</h4>
+                            <p className="text-lg font-bold">₹99<span className="text-sm font-normal">/month</span></p>
+                            <p className="text-sm text-gray-500">Up to 12 agents</p>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={() => onSubscriptionSubmit(subscriptionForm.getValues())} className="w-full bg-black text-white">Subscribe Now</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
-             &lt;Dialog open={isPaymentModalOpen} onOpenChange={setPaymentModalOpen}>
-                &lt;DialogContent>
-                     &lt;DialogHeader>
-                        &lt;DialogTitle>Complete Your Subscription&lt;/DialogTitle>
-                     &lt;/DialogHeader>
-                      &lt;Form {...subscriptionForm}>
-                        &lt;form onSubmit={subscriptionForm.handleSubmit(onPaymentSubmit)} className="space-y-4">
-                             &lt;FormField name="fullName" control={subscriptionForm.control} render={({ field }) =&gt; (
-                                &lt;FormItem>&lt;FormLabel>Full Name&lt;/FormLabel>&lt;FormControl>&lt;Input {...field} className="border-black" />&lt;/FormControl>&lt;FormMessage />&lt;/FormItem>
+             <Dialog open={isPaymentModalOpen} onOpenChange={setPaymentModalOpen}>
+                <DialogContent>
+                     <DialogHeader>
+                        <DialogTitle>Complete Your Subscription</DialogTitle>
+                     </DialogHeader>
+                      <Form {...subscriptionForm}>
+                        <form onSubmit={subscriptionForm.handleSubmit(onPaymentSubmit)} className="space-y-4">
+                             <FormField name="fullName" control={subscriptionForm.control} render={({ field }) => (
+                                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                             )} />
-                             &lt;FormField name="email" control={subscriptionForm.control} render={({ field }) =&gt; (
-                                &lt;FormItem>&lt;FormLabel>Email&lt;/FormLabel>&lt;FormControl>&lt;Input {...field} className="border-black" />&lt;/FormControl>&lt;FormMessage />&lt;/FormItem>
+                             <FormField name="email" control={subscriptionForm.control} render={({ field }) => (
+                                <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                             )} />
-                            &lt;PaymentOptions />
-                            &lt;Button type="submit" className="w-full bg-black text-white">Submit Payment&lt;/Button>
-                        &lt;/form>
-                      &lt;/Form>
-                &lt;/DialogContent>
-            &lt;/Dialog>
-        &lt;/>
+                            <PaymentOptions />
+                            <Button type="submit" className="w-full bg-black text-white">Submit Payment</Button>
+                        </form>
+                      </Form>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 };
 
-const PaymentOptions = () =&gt; {
+const PaymentOptions = () => {
     const [currency, setCurrency] = React.useState('inr');
     
     return (
-        &lt;div className="space-y-4">
-            &lt;Tabs value={currency} onValueChange={setCurrency} className="w-full">
-                &lt;TabsList className="grid w-full grid-cols-3">
-                    &lt;TabsTrigger value="usd">USD&lt;/TabsTrigger>
-                    &lt;TabsTrigger value="inr">INR&lt;/TabsTrigger>
-                    &lt;TabsTrigger value="crypto">Crypto&lt;/TabsTrigger>
-                &lt;/TabsList>
-            &lt;/Tabs>
-            &lt;AnimatePresence mode="wait">
-                &lt;motion.div
+        <div className="space-y-4">
+            <Tabs value={currency} onValueChange={setCurrency} className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="usd">USD</TabsTrigger>
+                    <TabsTrigger value="inr">INR</TabsTrigger>
+                    <TabsTrigger value="crypto">Crypto</TabsTrigger>
+                </TabsList>
+            </Tabs>
+            <AnimatePresence mode="wait">
+                <motion.div
                     key={currency}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1304,29 +1305,29 @@ const PaymentOptions = () =&gt; {
                     className="space-y-2"
                 >
                     {currency === 'usd' && (
-                        &lt;&gt;
-                            &lt;Button variant="outline" className="w-full justify-start border-black">&lt;DollarSign className="w-4 h-4 mr-2" /> PayPal&lt;/Button>
-                            &lt;Button variant="outline" className="w-full justify-start border-black">&lt;Apple className="w-4 h-4 mr-2" /> Apple Pay&lt;/Button>
-                            &lt;Button variant="outline" className="w-full justify-start border-black">&lt;CreditCard className="w-4 h-4 mr-2" /> Card&lt;/Button>
-                        &lt;/>
+                        <>
+                            <Button variant="outline" className="w-full justify-start border-black"><DollarSign className="w-4 h-4 mr-2" /> PayPal</Button>
+                            <Button variant="outline" className="w-full justify-start border-black"><Apple className="w-4 h-4 mr-2" /> Apple Pay</Button>
+                            <Button variant="outline" className="w-full justify-start border-black"><CreditCard className="w-4 h-4 mr-2" /> Card</Button>
+                        </>
                     )}
                     {currency === 'inr' && (
-                         &lt;&gt;
-                            &lt;Button variant="outline" className="w-full justify-start border-black">GPay&lt;/Button>
-                            &lt;Button variant="outline" className="w-full justify-start border-black">PhonePe&lt;/Button>
-                            &lt;Button variant="outline" className="w-full justify-start border-black">UPI&lt;/Button>
-                        &lt;/>
+                         <>
+                            <Button variant="outline" className="w-full justify-start border-black">GPay</Button>
+                            <Button variant="outline" className="w-full justify-start border-black">PhonePe</Button>
+                            <Button variant="outline" className="w-full justify-start border-black">UPI</Button>
+                        </>
                     )}
                      {currency === 'crypto' && (
-                         &lt;&gt;
-                            &lt;Button variant="outline" className="w-full justify-start border-black">&lt;Bitcoin className="w-4 h-4 mr-2" /> Binance&lt;/Button>
-                            &lt;Button variant="outline" className="w-full justify-start border-black">Trust Wallet&lt;/Button>
-                            &lt;Button variant="outline" className="w-full justify-start border-black">Phantom&lt;/Button>
-                        &lt;/>
+                         <>
+                            <Button variant="outline" className="w-full justify-start border-black"><Bitcoin className="w-4 h-4 mr-2" /> Binance</Button>
+                            <Button variant="outline" className="w-full justify-start border-black">Trust Wallet</Button>
+                            <Button variant="outline" className="w-full justify-start border-black">Phantom</Button>
+                        </>
                     )}
-                &lt;/motion.div>
-            &lt;/AnimatePresence>
-        &lt;/div>
+                </motion.div>
+            </AnimatePresence>
+        </div>
     )
 }
 
