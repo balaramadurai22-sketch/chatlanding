@@ -590,7 +590,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                         <DialogTrigger asChild>
                              <Button className="bg-black text-white hover:bg-white hover:text-black border border-black w-full md:w-auto shadow-sm hover:shadow-md transition-shadow"><Plus className="mr-2 h-4 w-4" /> Add New Agent</Button>
                         </DialogTrigger>
-                         <DialogContent className="sm:max-w-4xl md:max-w-6xl max-h-[90vh] overflow-y-auto">
+                        <DialogContent className="sm:max-w-2xl md:max-w-4xl lg:max-w-6xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                               <DialogTitle className="text-2xl font-bold">Create a New Agent</DialogTitle>
                               <DialogDescription>Configure and launch a new AI agent into your library.</DialogDescription>
@@ -600,7 +600,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                         
                                         {/* Column 1: Agent Information */}
-                                        <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
+                                        <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm md:col-span-2 lg:col-span-1">
                                             <h3 className="font-bold text-sm uppercase text-black/60">Agent Information</h3>
                                             <FormField name="name" control={newAgentForm.control} render={({ field }) => (
                                                 <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. Code Reviewer" /></FormControl><FormMessage /></FormItem>
@@ -942,10 +942,10 @@ export default function ChatUI({
             );
         }
         // Basic Markdown for bold and italic
-        part = part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        part = part.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        let processedPart = part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        processedPart = processedPart.replace(/\*(.*?)\*/g, '<em>$1</em>');
         
-        return <div key={index} dangerouslySetInnerHTML={{ __html: part.replace(/\n/g, '<br />') }} />;
+        return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
     });
   };
 
