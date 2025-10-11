@@ -590,16 +590,16 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                         <DialogTrigger asChild>
                              <Button className="bg-black text-white hover:bg-white hover:text-black border border-black w-full md:w-auto shadow-sm hover:shadow-md transition-shadow"><Plus className="mr-2 h-4 w-4" /> Add New Agent</Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-2xl md:max-w-4xl lg:max-w-6xl max-h-[90vh] overflow-y-auto">
+                        <DialogContent className="max-w-[90vw] md:max-w-4xl lg:max-w-6xl max-h-[90vh] flex flex-col">
                             <DialogHeader>
                               <DialogTitle className="text-2xl font-bold">Create a New Agent</DialogTitle>
                               <DialogDescription>Configure and launch a new AI agent into your library.</DialogDescription>
                             </DialogHeader>
                             <Form {...newAgentForm}>
-                                <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="space-y-6 p-1">
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                        {/* Container 1 & 2 */}
-                                        <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
+                                <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="flex-1 overflow-y-auto pr-2 space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                        {/* Container 1: Agent Information */}
+                                        <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm flex flex-col">
                                             <h3 className="font-bold text-sm uppercase text-black/60">Agent Information</h3>
                                             <FormField name="name" control={newAgentForm.control} render={({ field }) => (
                                                 <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. Code Reviewer" /></FormControl><FormMessage /></FormItem>
@@ -608,10 +608,11 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                                 <FormItem><FormLabel>Task / Role</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. Automates design workflow" /></FormControl><FormMessage /></FormItem>
                                             )} />
                                             <FormField name="description" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} className="border-black min-h-[100px]" placeholder="Briefly describe the agent's purpose and how it works." /></FormControl><FormMessage /></FormItem>
+                                                <FormItem className="flex-1 flex flex-col"><FormLabel>Description</FormLabel><FormControl><Textarea {...field} className="border-black min-h-[100px] flex-1" placeholder="Briefly describe the agent's purpose and how it works." /></FormControl><FormMessage /></FormItem>
                                             )} />
                                         </div>
 
+                                        {/* Container 2: Model & Category */}
                                         <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
                                             <h3 className="font-bold text-sm uppercase text-black/60">Model & Category</h3>
                                             <FormField name="model" control={newAgentForm.control} render={({ field }) => (
@@ -622,7 +623,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                             )} />
                                         </div>
 
-                                        {/* Container 3 & 4 */}
+                                        {/* Container 3: Tools & Memory */}
                                         <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
                                             <h3 className="font-bold text-sm uppercase text-black/60">Tools & Memory</h3>
                                             <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
@@ -633,6 +634,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                             )} />
                                         </div>
 
+                                        {/* Container 4: Creator & Support */}
                                         <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
                                             <h3 className="font-bold text-sm uppercase text-black/60">Creator & Support</h3>
                                             <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
@@ -657,8 +659,8 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                                 <FormItem><FormLabel>BTC Wallet Address (Optional)</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                                             )} />
                                         </div>
-                                     </div>
-                                    <DialogFooter className="pt-6">
+                                    </div>
+                                    <DialogFooter className="pt-6 sticky bottom-0 bg-white pb-2">
                                         <Button type="button" variant="outline" onClick={() => setIsAddAgentOpen(false)}>Cancel</Button>
                                         <Button type="submit" className="bg-black text-white">Create Agent</Button>
                                     </DialogFooter>
@@ -915,37 +917,46 @@ export default function ChatUI({
   const renderMessageContent = (content: string) => {
     const codeBlockRegex = /```([\s\S]*?)```/g;
     const parts = content.split(codeBlockRegex);
-
+  
+    const handleCopy = (text: string) => {
+      navigator.clipboard.writeText(text);
+      toast({ title: 'Copied to clipboard!' });
+    };
+  
     return parts.map((part, index) => {
-        if (index % 2 === 1) {
-            // This is a code block
-            return (
-                <div key={index} className="bg-black text-white rounded-md my-2 relative">
-                    <pre className="p-4 text-sm overflow-x-auto">
-                        <code>{part}</code>
-                    </pre>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
-                        onClick={()={() => {
-                            navigator.clipboard.writeText(part);
-                            toast({ title: 'Copied to clipboard!' });
-                        }}
-                    >
-                        <Clipboard className="w-4 h-4" />
-                    </Button>
-                </div>
-            );
-        } else {
-            // This is plain text
-            let processedPart = part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            processedPart = processedPart.replace(/\*(.*?)\*/g, '<em>$1</em>');
-            
-            return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
-        }
+      if (index % 2 === 1) {
+        // This is a code block
+        return (
+            <div key={index} className="bg-black text-white rounded-md my-2 relative">
+                <pre className="p-4 text-sm overflow-x-auto">
+                    <code>{part}</code>
+                </pre>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
+                    onClick={() => handleCopy(part)}
+                >
+                    <Clipboard className="w-4 h-4" />
+                </Button>
+            </div>
+        );
+      } else {
+        // This is plain text
+        let processedPart = part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        processedPart = processedPart.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        const lines = processedPart.split('\n').map((line, i, arr) => (
+            <React.Fragment key={i}>
+                {line}
+                {i < arr.length - 1 && <br />}
+            </React.Fragment>
+        ));
+
+        return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
+      }
     });
-};
+  };
 
   const ChatView = () => (
     <>
