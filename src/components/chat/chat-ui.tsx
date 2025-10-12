@@ -926,32 +926,32 @@ export default function ChatUI({
   
   const renderMessageContent = (content: string) => {
     const parts = content.split(/(```[\s\S]*?```)/);
-  
+    
     return parts.map((part, index) => {
-      if (part.startsWith('```') && part.endsWith('```')) {
-        const code = part.slice(3, -3).trim();
-        return (
-          <div key={index} className="bg-black text-white rounded-md my-2 relative">
-            <pre className="p-4 text-sm overflow-x-auto">
-              <code>{code}</code>
-            </pre>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
-              onClick={() => handleCopy(code)}
-            >
-              <Clipboard className="w-4 h-4" />
-            </Button>
-          </div>
-        );
-      } else {
-        const processedPart = part
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>');
-        
-        return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
-      }
+        if (part.startsWith('```') && part.endsWith('```')) {
+            const code = part.slice(3, -3).trim();
+            return (
+                <div key={index} className="bg-black text-white rounded-md my-2 relative">
+                    <pre className="p-4 text-sm overflow-x-auto">
+                        <code>{code}</code>
+                    </pre>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
+                        onClick={() => handleCopy(code)}
+                    >
+                        <Clipboard className="w-4 h-4" />
+                    </Button>
+                </div>
+            );
+        } else {
+             const processedPart = part
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>');
+            
+            return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
+        }
     });
   };
 
@@ -1398,3 +1398,4 @@ const PaymentOptions = () => {
         </div>
     )
 }
+
