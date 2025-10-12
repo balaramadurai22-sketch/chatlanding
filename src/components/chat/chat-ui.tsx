@@ -929,8 +929,7 @@ export default function ChatUI({
   
     return parts.map((part, index) => {
       if (part.startsWith('```') && part.endsWith('```')) {
-        // This is a code block
-        const code = part.slice(3, -3);
+        const code = part.slice(3, -3).trim();
         return (
           <div key={index} className="bg-black text-white rounded-md my-2 relative">
             <pre className="p-4 text-sm overflow-x-auto">
@@ -947,8 +946,7 @@ export default function ChatUI({
           </div>
         );
       } else {
-        // This is plain text, process for markdown
-        let processedPart = part
+        const processedPart = part
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>');
         
