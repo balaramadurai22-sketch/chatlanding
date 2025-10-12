@@ -5,7 +5,6 @@
  * @fileOverview AI chat interface flow for handling user interactions and providing assistance related to innovation and technology.
  *
  * - aiChat - A function that initiates and manages the AI chat process.
- * - AIChatInput - The input type for the aiChat function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -23,7 +22,7 @@ const AIChatInputSchema = z.object({
   sessionId: z.string().describe('A unique identifier for the user session.'),
   timestamp: z.string().describe('The ISO timestamp of the request.'),
 });
-export type AIChatInput = z.infer<typeof AIChatInputSchema>;
+type AIChatInput = z.infer<typeof AIChatInputSchema>;
 
 
 export async function aiChat(input: AIChatInput): Promise<ReadableStream<string>> {
@@ -38,7 +37,7 @@ export async function aiChat(input: AIChatInput): Promise<ReadableStream<string>
   }
 
   const {stream, response} = await ai.generateStream({
-      model: 'googleai/gemini-1.5-flash',
+      model: 'googleai/gemini-2.5-flash',
       prompt: promptText,
       history: input.history.map(m => ({role: m.role, content: [{text: m.content}]})),
     });
