@@ -26,7 +26,6 @@ export default function ChatPage() {
   const processStream = async (stream: ReadableStream<string>) => {
     let fullResponse = '';
     const reader = stream.getReader();
-    const decoder = new TextDecoder();
     const responseId = uuidv4();
     const agentName = selectedAgents.length > 0 ? selectedAgents.map(a => a.name).join(', ') : 'TECHismust AI';
     const modelName = selectedAgents.length > 0 ? selectedAgents[0].model : 'Gemini 1.5';
@@ -47,7 +46,7 @@ export default function ChatPage() {
             if (done) {
                 break;
             }
-            fullResponse += decoder.decode(value, { stream: true });
+            fullResponse += value;
             setMessages(prev =>
                 prev.map((msg) =>
                     msg.id === responseId ? { ...msg, content: fullResponse } : msg
