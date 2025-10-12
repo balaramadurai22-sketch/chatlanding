@@ -28,7 +28,7 @@ export default function ChatPage() {
     const reader = stream.getReader();
     const responseId = uuidv4();
     const agentName = selectedAgents.length > 0 ? selectedAgents.map(a => a.name).join(', ') : 'TECHismust AI';
-    const modelName = selectedAgents.length > 0 ? selectedAgents[0].model : 'Gemini 1.5';
+    const modelName = selectedAgents.length > 0 ? selectedAgents[0].model : 'Gemini 2.5';
 
     // Add an empty assistant message to start
     setMessages(prev => [...prev, { 
@@ -100,22 +100,19 @@ export default function ChatPage() {
   }, [initialQuery, messages.length, isLoading, handleInitialQuery]);
   
 
-  const handleSendMessage = async (e: React.FormEvent, currentInput?: string) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    const messageContent = currentInput || input;
-    if (!messageContent.trim() || isLoading) return;
+    if (!input.trim() || isLoading) return;
 
     const userMessage: ChatMessage = { 
         id: uuidv4(), 
         role: 'user', 
-        content: messageContent,
+        content: input,
         timestamp: new Date().toISOString()
     };
     const newMessages: ChatMessage[] = [...messages, userMessage];
     setMessages(newMessages);
-    if (!currentInput) {
-        setInput('');
-    }
+    setInput('');
     setIsLoading(true);
 
     try {

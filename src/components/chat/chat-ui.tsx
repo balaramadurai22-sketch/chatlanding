@@ -92,7 +92,7 @@ interface ChatUIProps {
   messages: ChatMessage[];
   input: string;
   isLoading: boolean;
-  handleSendMessage: (e: React.FormEvent, input?: string) => void;
+  handleSendMessage: (e: React.FormEvent) => void;
   setInput: (input: string) => void;
   setMessages: (messages: ChatMessage[]) => void;
   selectedAgents: Agent[];
@@ -309,7 +309,7 @@ const TypingEffect = ({ text }: { text: string }) => {
 
 
   return (
-    <p ref={ref} className="text-xs text-black/80">
+    <p ref={ref} className="text-xs text-black/80 min-h-[56px]">
       {displayedText}
       <span className="animate-pulse">|</span>
     </p>
@@ -406,7 +406,7 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
                     </div>
 
                     <div className="relative z-10 mt-auto">
-                        <div className="p-2 border border-black/10 rounded-md bg-white/50 backdrop-blur-sm min-h-[56px]">
+                        <div className="p-2 border border-black/10 rounded-md bg-white/50 backdrop-blur-sm">
                            <TypingEffect text={agent.description} />
                         </div>
                         <div className="flex justify-between items-center text-xs text-black/60 mt-2">
@@ -595,14 +595,14 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                               <DialogDescription>Configure and launch a new AI agent into your library.</DialogDescription>
                             </DialogHeader>
                             <Form {...newAgentForm}>
-                                <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 overflow-y-auto pr-2 py-4">
+                                <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="flex-1 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 overflow-y-auto pr-2 py-4">
                                     {/* Container 1: Agent Information */}
-                                    <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm flex flex-col lg:col-span-1">
+                                    <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm flex flex-col">
                                         <h3 className="font-bold text-sm uppercase text-black/60">Agent Information</h3>
                                         <FormField name="name" control={newAgentForm.control} render={({ field }) => (
                                             <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. Code Reviewer" /></FormControl><FormMessage /></FormItem>
                                         )} />
-                                        <FormField control={newAgentForm.control} name="purpose" render={({ field }) => (
+                                        <FormField name="purpose" control={newAgentForm.control} render={({ field }) => (
                                             <FormItem><FormLabel>Task / Role</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. Automates design workflow" /></FormControl><FormMessage /></FormItem>
                                         )} />
                                         <FormField name="description" control={newAgentForm.control} render={({ field }) => (
@@ -611,7 +611,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                     </div>
 
                                     {/* Container 2: Model & Category */}
-                                    <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm lg:col-span-1">
+                                    <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
                                         <h3 className="font-bold text-sm uppercase text-black/60">Model & Category</h3>
                                         <FormField name="model" control={newAgentForm.control} render={({ field }) => (
                                             <FormItem><FormLabel>Model</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a model" /></SelectTrigger></FormControl><SelectContent><SelectItem value="GPT-4">GPT-4</SelectItem><SelectItem value="Gemini 1.5">Gemini 1.5</SelectItem><SelectItem value="Claude 3">Claude 3</SelectItem></SelectContent></Select><FormMessage /></FormItem>
@@ -622,7 +622,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                     </div>
 
                                     {/* Container 3: Tools & Memory */}
-                                    <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm lg:col-span-1">
+                                    <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
                                         <h3 className="font-bold text-sm uppercase text-black/60">Tools & Memory</h3>
                                         <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
                                             <FormItem><FormLabel>Allowed Tools / Access</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
@@ -633,7 +633,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                     </div>
 
                                     {/* Container 4: Creator & Support */}
-                                    <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm lg:col-span-1">
+                                    <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
                                         <h3 className="font-bold text-sm uppercase text-black/60">Creator & Support</h3>
                                         <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
                                             <FormItem><FormLabel>Creator Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
@@ -644,7 +644,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                         <FormField name="github" control={newAgentForm.control} render={({ field }) => (
                                             <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                                         )} />
-                                        <FormField name="twitter" control={newAgentForm.control} render={({ field }) => (
+                                        <FormField name="twitter" control={newAgent_form.control} render={({ field }) => (
                                             <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                                         )} />
                                         <FormField name="paypal" control={newAgentForm.control} render={({ field }) => (
@@ -657,7 +657,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                             <FormItem><FormLabel>BTC Wallet Address (Optional)</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                                         )} />
                                     </div>
-                                    <DialogFooter className="lg:col-span-4 pt-6 sticky bottom-0 bg-white pb-2 flex justify-end">
+                                    <DialogFooter className="xl:col-span-4 pt-6 sticky bottom-0 bg-white pb-2 flex justify-end">
                                         <Button type="button" variant="outline" onClick={() => setIsAddAgentOpen(false)}>Cancel</Button>
                                         <Button type="submit" className="bg-black text-white">Create Agent</Button>
                                     </DialogFooter>
@@ -679,7 +679,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                             className="mb-8"
                         >
                             <h2 className="font-bold text-sm uppercase text-black/60 mb-2">Pinned</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                 {pinnedAgents.map(agent => (
                                     <AgentCard key={agent.id} agent={agent} onUpdate={handleAgentUpdate} />
                                 ))}
@@ -694,7 +694,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                             exit={{ opacity: 0 }}
                          >
                             <h2 className="font-bold text-sm uppercase text-black/60 mb-2">All Agents</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                {unpinnedAgents.map(agent => (
                                     <AgentCard key={agent.id} agent={agent} onUpdate={handleAgentUpdate} />
                                 ))}
@@ -921,30 +921,30 @@ export default function ChatUI({
     const parts = content.split(codeBlockRegex);
 
     return parts.map((part, index) => {
-        if (index % 2 === 1) {
-            // This is a code block
-            return (
-                <div key={index} className="bg-black text-white rounded-md my-2 relative">
-                    <pre className="p-4 text-sm overflow-x-auto">
-                        <code>{part}</code>
-                    </pre>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
-                        onClick={() => handleCopy(part)}
-                    >
-                        <Clipboard className="w-4 h-4" />
-                    </Button>
-                </div>
-            );
-        } else {
-            // This is plain text
-            let processedPart = part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            processedPart = processedPart.replace(/\*(.*?)\*/g, '<em>$1</em>');
-            
-            return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
-        }
+      if (index % 2 === 1) {
+        // This is a code block
+        return (
+          <div key={index} className="bg-black text-white rounded-md my-2 relative">
+            <pre className="p-4 text-sm overflow-x-auto">
+              <code>{part}</code>
+            </pre>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
+              onClick={() => handleCopy(part)}
+            >
+              <Clipboard className="w-4 h-4" />
+            </Button>
+          </div>
+        );
+      } else {
+        // This is plain text
+        let processedPart = part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        processedPart = processedPart.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
+      }
     });
 };
 
@@ -1027,8 +1027,8 @@ export default function ChatUI({
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(e as any); }}}
-                placeholder="Ask Le Chat anything..."
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(e); }}}
+                placeholder={isLoading ? "Waiting for reply..." : "Ask Le Chat anything..."}
                 className="flex-1 resize-none border-0 bg-transparent px-4 py-2 text-base focus-visible:ring-0 shadow-none"
                 disabled={isLoading}
               />
@@ -1268,7 +1268,7 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
                                                 </Badge>
                                             </div>
                                             <p className="text-xs text-gray-500 italic mb-2">{agent.purpose}</p>
-                                            <div className="p-2 border rounded-md bg-gray-50 h-16">
+                                            <div className="p-2 border rounded-md bg-gray-50">
                                                 <TypingEffect text={agent.description} />
                                             </div>
                                             <div className="text-xs text-gray-500 mt-2 flex justify-between">
