@@ -914,37 +914,43 @@ export default function ChatUI({
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({ title: 'Copied to clipboard!' });
+    toast({
+      title: 'Copied to clipboard!',
+      description: (
+        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+          <code className="text-white">{text.slice(0, 100)}...</code>
+        </pre>
+      ),
+    });
   };
-
+  
   const renderMessageContent = (content: string) => {
-    const codeBlockRegex = /```([\s\S]*?)```/g;
-    const parts = content.split(codeBlockRegex);
-
+    const parts = content.split(/(```[\s\S]*?```)/);
+  
     return parts.map((part, index) => {
-      const isCodeBlock = index % 2 === 1;
-
-      if (isCodeBlock) {
+      if (part.startsWith('```') && part.endsWith('```')) {
         // This is a code block
+        const code = part.slice(3, -3);
         return (
-            <div key={index} className="bg-black text-white rounded-md my-2 relative">
-                <pre className="p-4 text-sm overflow-x-auto">
-                    <code>{part}</code>
-                </pre>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
-                  onClick={() => handleCopy(part)}
-                >
-                  <Clipboard className="w-4 h-4" />
-                </Button>
-            </div>
+          <div key={index} className="bg-black text-white rounded-md my-2 relative">
+            <pre className="p-4 text-sm overflow-x-auto">
+              <code>{code}</code>
+            </pre>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
+              onClick={() => handleCopy(code)}
+            >
+              <Clipboard className="w-4 h-4" />
+            </Button>
+          </div>
         );
       } else {
         // This is plain text, process for markdown
-        let processedPart = part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        processedPart = processedPart.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        let processedPart = part
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>');
         
         return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
       }
@@ -1394,5 +1400,3 @@ const PaymentOptions = () => {
         </div>
     )
 }
-
-    
