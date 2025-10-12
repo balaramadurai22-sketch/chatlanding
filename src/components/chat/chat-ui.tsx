@@ -916,11 +916,6 @@ export default function ChatUI({
     navigator.clipboard.writeText(text);
     toast({
       title: 'Copied to clipboard!',
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{text.slice(0, 100)}...</code>
-        </pre>
-      ),
     });
   };
   
@@ -930,6 +925,7 @@ export default function ChatUI({
     return parts.map((part, index) => {
         if (part.startsWith('```') && part.endsWith('```')) {
             const code = part.slice(3, -3).trim();
+            // This is a code block
             return (
                 <div key={index} className="bg-black text-white rounded-md my-2 relative">
                     <pre className="p-4 text-sm overflow-x-auto">
@@ -945,13 +941,15 @@ export default function ChatUI({
                     </Button>
                 </div>
             );
-        } else {
+        } else if (part.trim()) {
+            // This is plain text
              const processedPart = part
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.*?)\*/g, '<em>$1</em>');
             
             return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
         }
+        return null;
     });
   };
 
@@ -1398,4 +1396,5 @@ const PaymentOptions = () => {
         </div>
     )
 }
+
 
