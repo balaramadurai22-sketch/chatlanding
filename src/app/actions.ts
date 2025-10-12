@@ -12,26 +12,21 @@ export interface ChatMessage {
   content: string;
   agentUsed?: string;
   modelUsed?: string;
-  timestamp?: string;
+  timestamp: string;
 }
 
 export interface ContinueChatRequest {
     history: ChatMessage[];
     selectedAgents?: Agent[];
+    sessionId: string;
 }
 
-export async function continueChat({history, selectedAgents}: ContinueChatRequest): Promise<ReadableStream<string>> {
+export async function continueChat({history, selectedAgents, sessionId}: ContinueChatRequest): Promise<ReadableStream<string>> {
     
-    const requestPayload = {
+    const requestPayload: AIChatInput = {
         history: history.map(m => ({role: m.role, content: m.content})),
-        selectedAgents: selectedAgents?.map(a => ({
-            id: a.id,
-            name: a.name,
-            model: a.model,
-            description: a.description,
-            purpose: a.purpose
-        })),
-        sessionId: 'session_123', // This should be dynamically managed
+        selectedAgents: selectedAgents,
+        sessionId: sessionId,
         timestamp: new Date().toISOString()
     };
 

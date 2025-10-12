@@ -20,15 +20,26 @@ export default function ChatPage() {
   const [input, setInput] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [selectedAgents, setSelectedAgents] = React.useState<Agent[]>([]);
+  const [sessionId] = React.useState(uuidv4());
+
 
   const processStream = async (stream: ReadableStream<string>) => {
     let fullResponse = '';
     const reader = stream.getReader();
     const decoder = new TextDecoder();
     const responseId = uuidv4();
+    const agentName = selectedAgents.length > 0 ? selectedAgents.map(a => a.name).join(', ') : 'TECHismust AI';
+    const modelName = selectedAgents.length > 0 ? selectedAgents[0].model : 'Gemini 1.5';
 
     // Add an empty assistant message to start
-    setMessages(prev => [...prev, { id: responseId, role: 'assistant', content: '' }]);
+    setMessages(prev => [...prev, { 
+        id: responseId, 
+        role: 'assistant', 
+        content: '',
+        agentUsed: agentName,
+        modelUsed: modelName,
+        timestamp: new Date().toISOString()
+    }]);
 
     while (true) {
         try {
@@ -44,7 +55,7 @@ export default function ChatPage() {
             );
         } catch (error) {
              toast({
-                title: "An error occurred.",
+                title: "⚠️ Something went wrong",
                 description: "Sorry, I encountered a streaming error. Please try again.",
                 variant: "destructive",
             });
@@ -56,17 +67,22 @@ export default function ChatPage() {
   };
   
   const handleInitialQuery = React.useCallback(async (query: string) => {
-    const userMessage: ChatMessage = { id: uuidv4(), role: 'user', content: query };
+    const userMessage: ChatMessage = { 
+        id: uuidv4(), 
+        role: 'user', 
+        content: query,
+        timestamp: new Date().toISOString()
+    };
     const newMessages: ChatMessage[] = [userMessage];
     setMessages(newMessages);
     setIsLoading(true);
 
     try {
-      const stream = await continueChat({history: newMessages, selectedAgents});
+      const stream = await continueChat({history: newMessages, selectedAgents, sessionId});
       await processStream(stream);
     } catch (error) {
       toast({
-        title: "An error occurred.",
+        title: "⚠️ Something went wrong",
         description: "Sorry, I couldn’t reach the server. Please try again.",
         variant: "destructive",
       });
@@ -75,7 +91,7 @@ export default function ChatPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast, selectedAgents]);
+  }, [toast, selectedAgents, sessionId]);
 
 
   React.useEffect(() => {
@@ -90,7 +106,12 @@ export default function ChatPage() {
     const messageContent = currentInput || input;
     if (!messageContent.trim() || isLoading) return;
 
-    const userMessage: ChatMessage = { id: uuidv4(), role: 'user', content: messageContent };
+    const userMessage: ChatMessage = { 
+        id: uuidv4(), 
+        role: 'user', 
+        content: messageContent,
+        timestamp: new Date().toISOString()
+    };
     const newMessages: ChatMessage[] = [...messages, userMessage];
     setMessages(newMessages);
     if (!currentInput) {
@@ -99,11 +120,11 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const stream = await continueChat({history: newMessages, selectedAgents});
+      const stream = await continueChat({history: newMessages, selectedAgents, sessionId});
       await processStream(stream);
     } catch (error) {
        toast({
-        title: "An error occurred.",
+        title: "⚠️ Something went wrong",
         description: "Sorry, I couldn’t reach the server. Please try again.",
         variant: "destructive",
       });
@@ -118,18 +139,18 @@ export default function ChatPage() {
       const messageIndex = messages.findIndex(msg => msg.id === messageId);
       if (messageIndex === -1 || messages[messageIndex].role !== 'assistant') return;
 
-      const userMessageIndex = messageIndex -1;
-      if (userMessageIndex < 0 || messages[userMessageIndex].role !== 'user') return;
+      const userMessageIndex = messages.slice(0, messageIndex).reverse().findIndex(msg => msg.role === 'user');
+      if (userMessageIndex === -1) return;
       
-      const historyToResend = messages.slice(0, userMessageIndex + 1);
-      const lastUserMessage = messages[userMessageIndex];
+      const lastUserMessageIndex = messageIndex - 1 - userMessageIndex;
+      const historyToResend = messages.slice(0, lastUserMessageIndex + 1);
 
-      // Remove the old assistant response
-      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+      // Remove the old assistant response and any subsequent messages
+      setMessages(prev => prev.slice(0, messageIndex));
 
       setIsLoading(true);
        try {
-            const stream = await continueChat({ history: historyToResend, selectedAgents });
+            const stream = await continueChat({ history: historyToResend, selectedAgents, sessionId });
             await processStream(stream);
         } catch (error) {
             toast({

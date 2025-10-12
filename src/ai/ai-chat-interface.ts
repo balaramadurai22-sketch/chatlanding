@@ -17,9 +17,11 @@ const MessageSchema = z.object({
   content: z.string(),
 });
 
-const AIChatInputSchema = z.object({
+export const AIChatInputSchema = z.object({
   history: z.array(MessageSchema).describe('The chat history.'),
   selectedAgents: z.array(z.any()).optional().describe('An array of selected agent objects to provide context.'),
+  sessionId: z.string().describe('A unique identifier for the user session.'),
+  timestamp: z.string().describe('The ISO timestamp of the request.'),
 });
 export type AIChatInput = z.infer<typeof AIChatInputSchema>;
 
@@ -35,39 +37,27 @@ export async function aiChat(input: AIChatInput): Promise<ReadableStream<string>
     promptText = `You are a helpful AI assistant from TECHismust. You must use the context from the following selected agents to formulate your response.\n\n--- AGENT CONTEXT ---\n${agentContext}\n---------------------\n\nAnswer the user's question based on this context.`;
   }
 
-  const {stream} = await ai.generateStream({
-      model: 'googleai/gemini-2.5-flash',
+  const {stream, response} = await ai.generateStream({
+      model: 'googleai/gemini-1.5-flash',
       prompt: promptText,
-      history: input.history.map(m => ({...m, content: [{text: m.content}]})),
+      history: input.history.map(m => ({role: m.role, content: [{text: m.content}]})),
     });
     
-    const transformStream = new TransformStream<any, string>({
-        async transform(chunk, controller) {
-            if (chunk.text) {
-                // Simulate typing delay
-                for (const char of chunk.text) {
-                    controller.enqueue(char);
-                    await new Promise(resolve => setTimeout(resolve, 5)); // 5ms delay per character
+    // Use a simple ReadableStream that pushes decoded chunks.
+    return new ReadableStream({
+        async start(controller) {
+            try {
+                for await (const chunk of stream) {
+                    if (chunk.text) {
+                       controller.enqueue(chunk.text);
+                    }
                 }
+            } catch (e) {
+                 console.error('Streaming error:', e);
+                 controller.error(e);
+            } finally {
+                controller.close();
             }
         },
     });
-
-    (async () => {
-        const writer = transformStream.writable.getWriter();
-        try {
-            for await (const chunk of stream) {
-                if (chunk.text) {
-                    await writer.write(chunk.text);
-                }
-            }
-        } catch (e) {
-            console.error('Streaming error:', e);
-            writer.abort(e);
-        } finally {
-            writer.close();
-        }
-    })();
-    
-    return transformStream.readable;
 }

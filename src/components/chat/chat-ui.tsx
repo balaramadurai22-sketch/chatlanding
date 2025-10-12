@@ -284,7 +284,7 @@ const getSymbolicVisual = (category: Agent['category']) => {
 const TypingEffect = ({ text }: { text: string }) => {
   const [displayedText, setDisplayedText] = React.useState('');
   const ref = React.useRef(null);
-  const isInView = useInView(ref, { once: true }); // `once: true` makes it fire only once when it enters view
+  const isInView = useInView(ref, { once: true });
 
   React.useEffect(() => {
     if (isInView) {
@@ -296,12 +296,11 @@ const TypingEffect = ({ text }: { text: string }) => {
         } else {
           clearInterval(interval);
         }
-      }, 50); // Adjust speed here
+      }, 50);
       return () => clearInterval(interval);
     }
   }, [isInView, text]);
 
-  // Reset when it goes out of view, to replay when it comes back
   React.useEffect(() => {
     if (!isInView) {
       setDisplayedText('');
@@ -596,71 +595,69 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                               <DialogDescription>Configure and launch a new AI agent into your library.</DialogDescription>
                             </DialogHeader>
                             <Form {...newAgentForm}>
-                                <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="flex-1 overflow-y-auto pr-2 space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                        {/* Container 1: Agent Information */}
-                                        <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm flex flex-col">
-                                            <h3 className="font-bold text-sm uppercase text-black/60">Agent Information</h3>
-                                            <FormField name="name" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. Code Reviewer" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField control={newAgentForm.control} name="purpose" render={({ field }) => (
-                                                <FormItem><FormLabel>Task / Role</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. Automates design workflow" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="description" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem className="flex-1 flex flex-col"><FormLabel>Description</FormLabel><FormControl><Textarea {...field} className="border-black min-h-[100px] flex-1" placeholder="Briefly describe the agent's purpose and how it works." /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                        </div>
-
-                                        {/* Container 2: Model & Category */}
-                                        <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
-                                            <h3 className="font-bold text-sm uppercase text-black/60">Model & Category</h3>
-                                            <FormField name="model" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Model</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a model" /></SelectTrigger></FormControl><SelectContent><SelectItem value="GPT-4">GPT-4</SelectItem><SelectItem value="Gemini 1.5">Gemini 1.5</SelectItem><SelectItem value="Claude 3">Claude 3</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="category" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Coding">Coding</SelectItem><SelectItem value="Analysis">Analysis</SelectItem><SelectItem value="Creative">Creative</SelectItem><SelectItem value="Productivity">Productivity</SelectItem><SelectItem value="Research">Research</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                                            )} />
-                                        </div>
-
-                                        {/* Container 3: Tools & Memory */}
-                                        <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
-                                            <h3 className="font-bold text-sm uppercase text-black/60">Tools & Memory</h3>
-                                            <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Allowed Tools / Access</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="memory" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Memory / Context Options</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                        </div>
-
-                                        {/* Container 4: Creator & Support */}
-                                        <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm">
-                                            <h3 className="font-bold text-sm uppercase text-black/60">Creator & Support</h3>
-                                            <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Creator Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="linkedin" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="github" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="twitter" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="paypal" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>PayPal Email (Optional)</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="upi" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>UPI ID (Optional)</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                            <FormField name="btc" control={newAgentForm.control} render={({ field }) => (
-                                                <FormItem><FormLabel>BTC Wallet Address (Optional)</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
-                                            )} />
-                                        </div>
+                                <form onSubmit={newAgentForm.handleSubmit(onNewAgentSubmit)} className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 overflow-y-auto pr-2 py-4">
+                                    {/* Container 1: Agent Information */}
+                                    <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm flex flex-col lg:col-span-1">
+                                        <h3 className="font-bold text-sm uppercase text-black/60">Agent Information</h3>
+                                        <FormField name="name" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Agent Name</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. Code Reviewer" /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField control={newAgentForm.control} name="purpose" render={({ field }) => (
+                                            <FormItem><FormLabel>Task / Role</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g. Automates design workflow" /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="description" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem className="flex-1 flex flex-col"><FormLabel>Description</FormLabel><FormControl><Textarea {...field} className="border-black min-h-[100px] flex-1" placeholder="Briefly describe the agent's purpose and how it works." /></FormControl><FormMessage /></FormItem>
+                                        )} />
                                     </div>
-                                    <DialogFooter className="pt-6 sticky bottom-0 bg-white pb-2">
+
+                                    {/* Container 2: Model & Category */}
+                                    <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm lg:col-span-1">
+                                        <h3 className="font-bold text-sm uppercase text-black/60">Model & Category</h3>
+                                        <FormField name="model" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Model</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a model" /></SelectTrigger></FormControl><SelectContent><SelectItem value="GPT-4">GPT-4</SelectItem><SelectItem value="Gemini 1.5">Gemini 1.5</SelectItem><SelectItem value="Claude 3">Claude 3</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="category" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange}><FormControl><SelectTrigger className="border-black"><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Coding">Coding</SelectItem><SelectItem value="Analysis">Analysis</SelectItem><SelectItem value="Creative">Creative</SelectItem><SelectItem value="Productivity">Productivity</SelectItem><SelectItem value="Research">Research</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                                        )} />
+                                    </div>
+
+                                    {/* Container 3: Tools & Memory */}
+                                    <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm lg:col-span-1">
+                                        <h3 className="font-bold text-sm uppercase text-black/60">Tools & Memory</h3>
+                                        <FormField name="tools" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Allowed Tools / Access</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="memory" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Memory / Context Options</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                    </div>
+
+                                    {/* Container 4: Creator & Support */}
+                                    <div className="space-y-4 p-4 border rounded-lg bg-white shadow-sm lg:col-span-1">
+                                        <h3 className="font-bold text-sm uppercase text-black/60">Creator & Support</h3>
+                                        <FormField name="creatorName" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Creator Name</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="linkedin" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="github" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="twitter" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="paypal" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>PayPal Email (Optional)</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="upi" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>UPI ID (Optional)</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="btc" control={newAgentForm.control} render={({ field }) => (
+                                            <FormItem><FormLabel>BTC Wallet Address (Optional)</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                    </div>
+                                    <DialogFooter className="lg:col-span-4 pt-6 sticky bottom-0 bg-white pb-2 flex justify-end">
                                         <Button type="button" variant="outline" onClick={() => setIsAddAgentOpen(false)}>Cancel</Button>
                                         <Button type="submit" className="bg-black text-white">Create Agent</Button>
                                     </DialogFooter>
@@ -749,10 +746,10 @@ export default function ChatUI({
   }, []);
 
   React.useEffect(() => {
-    if (!isUserScrolledUp.current) {
+    if (!isUserScrolledUp.current && !isLoading) {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
 
   const bugReportForm = useForm<BugReportFormValues>({
@@ -914,49 +911,42 @@ export default function ChatUI({
     </div>
   );
 
-  const renderMessageContent = (content: string) => {
-    const codeBlockRegex = /```([\s\S]*?)```/g;
-    const parts = content.split(codeBlockRegex);
-  
-    const handleCopy = (text: string) => {
+  const handleCopy = (text: string) => {
       navigator.clipboard.writeText(text);
       toast({ title: 'Copied to clipboard!' });
     };
-  
-    return parts.map((part, index) => {
-      if (index % 2 === 1) {
-        // This is a code block
-        return (
-            <div key={index} className="bg-black text-white rounded-md my-2 relative">
-                <pre className="p-4 text-sm overflow-x-auto">
-                    <code>{part}</code>
-                </pre>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
-                    onClick={() => handleCopy(part)}
-                >
-                    <Clipboard className="w-4 h-4" />
-                </Button>
-            </div>
-        );
-      } else {
-        // This is plain text
-        let processedPart = part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        processedPart = processedPart.replace(/\*(.*?)\*/g, '<em>$1</em>');
-        
-        const lines = processedPart.split('\n').map((line, i, arr) => (
-            <React.Fragment key={i}>
-                {line}
-                {i < arr.length - 1 && <br />}
-            </React.Fragment>
-        ));
 
-        return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
-      }
+  const renderMessageContent = (content: string) => {
+    const codeBlockRegex = /```([\s\S]*?)```/g;
+    const parts = content.split(codeBlockRegex);
+
+    return parts.map((part, index) => {
+        if (index % 2 === 1) {
+            // This is a code block
+            return (
+                <div key={index} className="bg-black text-white rounded-md my-2 relative">
+                    <pre className="p-4 text-sm overflow-x-auto">
+                        <code>{part}</code>
+                    </pre>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
+                        onClick={() => handleCopy(part)}
+                    >
+                        <Clipboard className="w-4 h-4" />
+                    </Button>
+                </div>
+            );
+        } else {
+            // This is plain text
+            let processedPart = part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            processedPart = processedPart.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            
+            return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
+        }
     });
-  };
+};
 
   const ChatView = () => (
     <>
@@ -989,9 +979,14 @@ export default function ChatUI({
                             <Badge variant="outline" className="text-xs">{m.modelUsed || 'Gemini 1.5'}</Badge>
                         </div>
                     )}
-                    <div className="text-base break-words">{renderMessageContent(m.content)}</div>
+                    <div className="text-base break-words">
+                        {m.role === 'assistant' && isLoading && i === messages.length - 1 && m.content.length === 0 
+                            ? <TypingIndicator /> 
+                            : renderMessageContent(m.content)
+                        }
+                    </div>
                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-2 flex items-center gap-2">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { navigator.clipboard.writeText(m.content); toast({ title: 'Copied!' }); }}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopy(m.content)}>
                             <Clipboard className="w-4 h-4" />
                         </Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toast({title: 'Rating submitted!'})}>
@@ -1011,16 +1006,6 @@ export default function ChatUI({
                   )}
                 </motion.div>
               ))}
-              {isLoading && (messages.length === 0 || messages[messages.length - 1].role === 'user') && (
-                <div className="flex justify-start">
-                    <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center mr-3 flex-shrink-0">
-                        <Bot className="w-5 h-5" />
-                    </div>
-                  <div className="max-w-xl p-4 border border-black rounded-lg bg-white">
-                    <TypingIndicator />
-                  </div>
-                </div>
-              )}
                <div ref={messagesEndRef} />
             </div>
           )}
@@ -1400,5 +1385,3 @@ const PaymentOptions = () => {
         </div>
     )
 }
-
-    
