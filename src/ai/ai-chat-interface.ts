@@ -17,7 +17,7 @@ const MessageSchema = z.object({
   content: z.string(),
 });
 
-export const AIChatInputSchema = z.object({
+const AIChatInputSchema = z.object({
   history: z.array(MessageSchema).describe('The chat history.'),
   selectedAgents: z.array(z.any()).optional().describe('An array of selected agent objects to provide context.'),
   sessionId: z.string().describe('A unique identifier for the user session.'),
