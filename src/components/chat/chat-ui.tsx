@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -921,8 +922,10 @@ export default function ChatUI({
     const parts = content.split(codeBlockRegex);
 
     return parts.map((part, index) => {
-      // It's a code block
-      if (index % 2 === 1) {
+      const isCodeBlock = index % 2 === 1;
+
+      if (isCodeBlock) {
+        // This is a code block
         return (
           <div key={index} className="bg-black text-white rounded-md my-2 relative">
             <pre className="p-4 text-sm overflow-x-auto">
@@ -938,13 +941,13 @@ export default function ChatUI({
             </Button>
           </div>
         );
+      } else {
+        // This is plain text, process for markdown
+        let processedPart = part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        processedPart = processedPart.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
       }
-
-      // It's plain text
-      let processedPart = part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      processedPart = processedPart.replace(/\*(.*?)\*/g, '<em>$1</em>');
-      
-      return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
     });
   };
 
@@ -1026,17 +1029,16 @@ export default function ChatUI({
               </Button>
               <Textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value.slice(0, 1))}
+                onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     handleSendMessage(e);
                   }
                 }}
-                placeholder={isLoading ? "Waiting for reply..." : "Type a character and press Enter..."}
+                placeholder={isLoading ? "Waiting for reply..." : "Type your message..."}
                 className="flex-1 resize-none border-0 bg-transparent px-4 py-2 text-base focus-visible:ring-0 shadow-none"
                 disabled={isLoading}
-                maxLength={1}
                 rows={1}
               />
               <Button type="submit" variant="outline" className="p-2 h-auto rounded-md border-black bg-black text-white hover:bg-white hover:text-black" disabled={isLoading || !input.trim()}>
