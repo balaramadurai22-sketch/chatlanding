@@ -309,7 +309,7 @@ const TypingEffect = ({ text }: { text: string }) => {
 
 
   return (
-    <p ref={ref} className="text-xs text-black/80 min-h-[56px]">
+    <p ref={ref} className="text-xs text-black/80">
       {displayedText}
       <span className="animate-pulse">|</span>
     </p>
@@ -644,7 +644,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                         <FormField name="github" control={newAgentForm.control} render={({ field }) => (
                                             <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                                         )} />
-                                        <FormField name="twitter" control={newAgent_form.control} render={({ field }) => (
+                                        <FormField name="twitter" control={newAgentForm.control} render={({ field }) => (
                                             <FormItem><FormLabel>Twitter/X URL</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                                         )} />
                                         <FormField name="paypal" control={newAgentForm.control} render={({ field }) => (
@@ -912,17 +912,17 @@ export default function ChatUI({
   );
 
   const handleCopy = (text: string) => {
-      navigator.clipboard.writeText(text);
-      toast({ title: 'Copied to clipboard!' });
-    };
+    navigator.clipboard.writeText(text);
+    toast({ title: 'Copied to clipboard!' });
+  };
 
   const renderMessageContent = (content: string) => {
     const codeBlockRegex = /```([\s\S]*?)```/g;
     const parts = content.split(codeBlockRegex);
 
     return parts.map((part, index) => {
+      // It's a code block
       if (index % 2 === 1) {
-        // This is a code block
         return (
           <div key={index} className="bg-black text-white rounded-md my-2 relative">
             <pre className="p-4 text-sm overflow-x-auto">
@@ -938,15 +938,15 @@ export default function ChatUI({
             </Button>
           </div>
         );
-      } else {
-        // This is plain text
-        let processedPart = part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        processedPart = processedPart.replace(/\*(.*?)\*/g, '<em>$1</em>');
-        
-        return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
       }
+
+      // It's plain text
+      let processedPart = part.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      processedPart = processedPart.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      
+      return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
     });
-};
+  };
 
   const ChatView = () => (
     <>
@@ -1026,11 +1026,18 @@ export default function ChatUI({
               </Button>
               <Textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(e); }}}
-                placeholder={isLoading ? "Waiting for reply..." : "Ask Le Chat anything..."}
+                onChange={(e) => setInput(e.target.value.slice(0, 1))}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage(e);
+                  }
+                }}
+                placeholder={isLoading ? "Waiting for reply..." : "Type a character and press Enter..."}
                 className="flex-1 resize-none border-0 bg-transparent px-4 py-2 text-base focus-visible:ring-0 shadow-none"
                 disabled={isLoading}
+                maxLength={1}
+                rows={1}
               />
               <Button type="submit" variant="outline" className="p-2 h-auto rounded-md border-black bg-black text-white hover:bg-white hover:text-black" disabled={isLoading || !input.trim()}>
                 <Send className="w-5 h-5" />
