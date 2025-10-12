@@ -927,19 +927,19 @@ export default function ChatUI({
       if (isCodeBlock) {
         // This is a code block
         return (
-          <div key={index} className="bg-black text-white rounded-md my-2 relative">
-            <pre className="p-4 text-sm overflow-x-auto">
-              <code>{part}</code>
-            </pre>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
-              onClick={() => handleCopy(part)}
-            >
-              <Clipboard className="w-4 h-4" />
-            </Button>
-          </div>
+            <div key={index} className="bg-black text-white rounded-md my-2 relative">
+                <pre className="p-4 text-sm overflow-x-auto">
+                    <code>{part}</code>
+                </pre>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
+                  onClick={() => handleCopy(part)}
+                >
+                  <Clipboard className="w-4 h-4" />
+                </Button>
+            </div>
         );
       } else {
         // This is plain text, process for markdown
@@ -1033,7 +1033,7 @@ export default function ChatUI({
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    handleSendMessage(e);
+                    if (!isLoading) handleSendMessage(e);
                   }
                 }}
                 placeholder={isLoading ? "Waiting for reply..." : "Type your message..."}
@@ -1394,3 +1394,5 @@ const PaymentOptions = () => {
         </div>
     )
 }
+
+    
