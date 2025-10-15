@@ -99,6 +99,8 @@ interface ChatUIProps {
   selectedAgents: Agent[];
   setSelectedAgents: (agents: Agent[]) => void;
   handleRegenerate: (messageId: string) => void;
+  allAgents: Agent[];
+  setAllAgents: (agents: Agent[]) => void;
 }
 
 const TypingIndicator = () => (
@@ -513,7 +515,8 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
     const [isAddAgentOpen, setIsAddAgentOpen] = React.useState(false);
 
     const filteredAgents = useMemo(() => {
-        return agents.filter(agent => {
+        if (!agents) return { pinnedAgents: [], unpinnedAgents: [] };
+        const filtered = agents.filter(agent => {
             const categoryMatch = filter === 'All' || agent.category === filter;
             const searchMatch = searchTerm === '' || 
                 agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -521,10 +524,11 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                 agent.model.toLowerCase().includes(searchTerm.toLowerCase());
             return categoryMatch && searchMatch;
         });
+        const pinnedAgents = filtered.filter(a => a.pinned);
+        const unpinnedAgents = filtered.filter(a => !a.pinned);
+        return { pinnedAgents, unpinnedAgents, all: filtered };
     }, [agents, filter, searchTerm]);
 
-    const pinnedAgents = useMemo(() => filteredAgents.filter(a => a.pinned), [filteredAgents]);
-    const unpinnedAgents = useMemo(() => filteredAgents.filter(a => !a.pinned), [filteredAgents]);
 
     const categories = ['All', 'Coding', 'Analysis', 'Creative', 'Productivity', 'Research'];
 
@@ -558,6 +562,14 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
     const handleAgentUpdate = (updatedAgent: Agent) => {
         setAgents(agents.map(a => a.id === updatedAgent.id ? updatedAgent : a));
     };
+
+    if (!agents) {
+      return (
+        <div className="flex flex-col h-full p-4 md:p-6 bg-white items-center justify-center">
+          <p className="text-black/60">Loading agents...</p>
+        </div>
+      );
+    }
 
     return (
         <div className="flex flex-col h-full p-4 md:p-6 bg-white">
@@ -629,7 +641,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                             <FormItem><FormLabel>Allowed Tools / Access</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
                                         )} />
                                         <FormField name="memory" control={newAgentForm.control} render={({ field }) => (
-                                            <FormItem><FormLabel>Memory / Context Options</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormItem>
+                                            <FormItem><FormLabel>Memory / Context Options</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormMessage /></FormItem>
                                         )} />
                                     </div>
 
@@ -671,7 +683,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
             
             <div className="flex-1 overflow-y-auto">
                 <AnimatePresence>
-                    {pinnedAgents.length > 0 && (
+                    {filteredAgents.pinnedAgents.length > 0 && (
                         <motion.div
                             key="pinned-section"
                             initial={{ opacity: 0 }}
@@ -681,13 +693,13 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                         >
                             <h2 className="font-bold text-sm uppercase text-black/60 mb-2">Pinned</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                {pinnedAgents.map(agent => (
+                                {filteredAgents.pinnedAgents.map(agent => (
                                     <AgentCard key={agent.id} agent={agent} onUpdate={handleAgentUpdate} />
                                 ))}
                             </div>
                         </motion.div>
                     )}
-                    {unpinnedAgents.length > 0 && (
+                    {filteredAgents.unpinnedAgents.length > 0 && (
                          <motion.div
                             key="all-agents-section"
                             initial={{ opacity: 0 }}
@@ -696,14 +708,14 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                          >
                             <h2 className="font-bold text-sm uppercase text-black/60 mb-2">All Agents</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                               {unpinnedAgents.map(agent => (
+                               {filteredAgents.unpinnedAgents.map(agent => (
                                     <AgentCard key={agent.id} agent={agent} onUpdate={handleAgentUpdate} />
                                 ))}
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
-                 {filteredAgents.length === 0 && (
+                 {filteredAgents.all.length === 0 && (
                     <div className="text-center py-16 text-black/60">
                         <p>No agents found.</p>
                         <p className="text-sm">Try adjusting your search or filter.</p>
@@ -724,13 +736,14 @@ export default function ChatUI({
   setMessages,
   selectedAgents,
   setSelectedAgents,
-  handleRegenerate
+  handleRegenerate,
+  allAgents,
+  setAllAgents,
 }: ChatUIProps) {
   const isMobile = useIsMobile();
   const [isSidebarOpen, setSidebarOpen] = React.useState(!isMobile);
   const { toast } = useToast();
   const [activeView, setActiveView] = React.useState('chat');
-  const [agents, setAgents] = React.useState<Agent[]>(allAgents);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const isUserScrolledUp = useRef(false);
 
@@ -797,14 +810,14 @@ export default function ChatUI({
         <Button
           variant={activeView === 'chat' ? 'default' : 'ghost'}
           onClick={() => setActiveView('chat')}
-          className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[variant=default]:bg-black data-[variant=default]:text-white"
+          className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[state=active]:bg-black data-[state=active]:text-white"
         >
           <MessageCircle className="mr-3" /> Chat
         </Button>
         <Button
           variant={activeView === 'agents' ? 'default' : 'ghost'}
           onClick={() => setActiveView('agents')}
-          className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[variant=default]:bg-black data-[variant=default]:text-white"
+          className="w-full justify-start text-base font-bold border border-black hover:bg-black hover:text-white data-[state=active]:bg-black data-[state=active]:text-white"
         >
           <Sparkles className="mr-3" /> Agents
         </Button>
@@ -957,12 +970,18 @@ export default function ChatUI({
     <>
       <main className="flex-1 overflow-y-auto p-4 md:p-6">
         <div className="max-w-4xl mx-auto h-full">
-          {messages.length === 0 && !isLoading ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <PixelLogo />
-              <h1 className="text-2xl font-bold mt-6">Ask Le Chat anything</h1>
-            </div>
-          ) : (
+           <AnimatePresence initial={false}>
+            {messages.length === 0 && !isLoading ? (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-center justify-center h-full text-center"
+              >
+                <PixelLogo />
+                <h1 className="text-2xl font-bold mt-6">Ask Le Chat anything</h1>
+              </motion.div>
+            ) : (
             <div className="space-y-6">
               {messages.map((m, i) => (
                 <motion.div 
@@ -1014,13 +1033,14 @@ export default function ChatUI({
                <div ref={messagesEndRef} />
             </div>
           )}
+          </AnimatePresence>
         </div>
       </main>
 
       <footer className="p-4 md:p-6 bg-white">
         <div className="max-w-4xl mx-auto">
             <AgentSelectionPanel 
-                allAgents={agents}
+                allAgents={allAgents || []}
                 selectedAgents={selectedAgents}
                 setSelectedAgents={setSelectedAgents}
             />
@@ -1039,7 +1059,7 @@ export default function ChatUI({
                   }
                 }}
                 placeholder={isLoading ? "Waiting for reply..." : "Type your message..."}
-                className="flex-1 resize-none border-0 bg-transparent px-4 py-2 text-base focus-visible:ring-0 shadow-none"
+                className="flex-1 border-0 bg-transparent px-4 py-0 text-base focus-visible:ring-0 shadow-none leading-tight"
                 disabled={isLoading}
                 rows={1}
               />
@@ -1132,7 +1152,7 @@ export default function ChatUI({
                     transition={{ duration: 0.2 }}
                     className="h-full flex flex-col"
                 >
-                    <AgentsView agents={agents} setAgents={setAgents} />
+                    <AgentsView agents={allAgents} setAgents={setAllAgents} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1396,5 +1416,6 @@ const PaymentOptions = () => {
         </div>
     )
 }
+
 
 
