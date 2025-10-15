@@ -85,7 +85,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '../ui/switch';
-import { agents as allAgents, type Agent } from '@/lib/agents-data';
+import { agents as allAgentsData, type Agent } from '@/lib/agents-data';
 import { useMemo, useRef } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 
@@ -515,7 +515,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
     const [isAddAgentOpen, setIsAddAgentOpen] = React.useState(false);
 
     const filteredAgents = useMemo(() => {
-        if (!agents) return { pinnedAgents: [], unpinnedAgents: [] };
+        if (!agents) return { pinnedAgents: [], unpinnedAgents: [], all: [] };
         const filtered = agents.filter(agent => {
             const categoryMatch = filter === 'All' || agent.category === filter;
             const searchMatch = searchTerm === '' || 
@@ -564,12 +564,13 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
     };
 
     if (!agents) {
-      return (
-        <div className="flex flex-col h-full p-4 md:p-6 bg-white items-center justify-center">
-          <p className="text-black/60">Loading agents...</p>
-        </div>
-      );
+        return (
+            <div className="flex flex-col h-full p-4 md:p-6 bg-white items-center justify-center">
+                <p className="text-black/60">Loading agents...</p>
+            </div>
+        );
     }
+
 
     return (
         <div className="flex flex-col h-full p-4 md:p-6 bg-white">
@@ -737,7 +738,7 @@ export default function ChatUI({
   selectedAgents,
   setSelectedAgents,
   handleRegenerate,
-  allAgents,
+  allAgents = [],
   setAllAgents,
 }: ChatUIProps) {
   const isMobile = useIsMobile();
@@ -926,10 +927,19 @@ export default function ChatUI({
   );
 
   const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copied to clipboard!',
-    });
+    try {
+      navigator.clipboard.writeText(text);
+      toast({
+        title: 'Copied to clipboard!',
+      });
+    } catch (err) {
+      toast({
+        title: 'Failed to copy!',
+        description: 'Could not copy text to clipboard.',
+        variant: 'destructive',
+      });
+      console.error('Failed to copy text: ', err);
+    }
   };
   
   const renderMessageContent = (content: string) => {
@@ -1040,7 +1050,7 @@ export default function ChatUI({
       <footer className="p-4 md:p-6 bg-white">
         <div className="max-w-4xl mx-auto">
             <AgentSelectionPanel 
-                allAgents={allAgents || []}
+                allAgents={allAgentsData}
                 selectedAgents={selectedAgents}
                 setSelectedAgents={setSelectedAgents}
             />
@@ -1360,8 +1370,7 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
                                 <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} className="border-black" /></FormControl><FormMessage /></FormItem>
                             )} />
                             <PaymentOptions />
-                            <Button type="submit" className="w-full bg-black text-white">Submit Payment</Button>
-                        </form>
+                            <Button type="submit" className="w-full bg-black text-white">Submit Payment</Button>                        </form>
                       </Form>
                 </DialogContent>
             </Dialog>
@@ -1416,6 +1425,3 @@ const PaymentOptions = () => {
         </div>
     )
 }
-
-
-
