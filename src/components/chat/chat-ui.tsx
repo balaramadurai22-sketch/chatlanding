@@ -99,7 +99,7 @@ interface ChatUIProps {
   selectedAgents: Agent[];
   setSelectedAgents: (agents: Agent[]) => void;
   handleRegenerate: (messageId: string) => void;
-  allAgents: Agent[];
+  allAgents?: Agent[];
   setAllAgents: (agents: Agent[]) => void;
 }
 
