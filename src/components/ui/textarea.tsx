@@ -5,38 +5,42 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 export interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+  extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
+    onValueChange?: (value: string) => void;
+}
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, onChange, ...props }, ref) => {
+  ({ className, onValueChange, value: controlledValue, ...props }, ref) => {
     const internalRef = React.useRef<HTMLTextAreaElement>(null);
-    const [value, setValue] = React.useState(props.value || props.defaultValue || '');
+    const [internalValue, setInternalValue] = React.useState(controlledValue || '');
 
     React.useImperativeHandle(ref, () => internalRef.current as HTMLTextAreaElement);
 
-    const adjustHeight = () => {
-      if (internalRef.current) {
-        internalRef.current.style.height = 'auto';
-        internalRef.current.style.height = `${internalRef.current.scrollHeight}px`;
+    const adjustHeight = React.useCallback(() => {
+      const textarea = internalRef.current;
+      if (textarea) {
+        textarea.style.height = 'auto'; // Reset height
+        textarea.style.height = `${textarea.scrollHeight}px`; // Set to scroll height
       }
-    };
+    }, []);
 
+    // Effect for handling controlled value changes from parent
+    React.useEffect(() => {
+        if (controlledValue !== undefined && controlledValue !== internalValue) {
+            setInternalValue(controlledValue as string);
+        }
+    }, [controlledValue]);
+
+    // Effect for adjusting height when value changes
     React.useEffect(() => {
         adjustHeight();
-    }, [value]);
-
-    // This handles the initial value from props
-    React.useEffect(() => {
-        if (props.value !== undefined && props.value !== value) {
-            setValue(props.value);
-        }
-    }, [props.value]);
-
+    }, [internalValue, adjustHeight]);
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setValue(e.target.value);
-      if (onChange) {
-        onChange(e);
+      const newValue = e.target.value;
+      setInternalValue(newValue);
+      if (onValueChange) {
+        onValueChange(newValue);
       }
     };
 
@@ -47,7 +51,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           className
         )}
         ref={internalRef}
-        value={value}
+        value={internalValue}
         onChange={handleChange}
         {...props}
       />

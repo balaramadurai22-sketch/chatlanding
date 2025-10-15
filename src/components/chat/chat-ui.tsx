@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import * as React from 'react';
@@ -1059,7 +1060,7 @@ export default function ChatUI({
               </Button>
               <Textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onValueChange={setInput}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
