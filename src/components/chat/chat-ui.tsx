@@ -565,7 +565,7 @@ const AgentsView = ({agents = [], setAgents}: {agents: Agent[], setAgents: (agen
         return (
             <div className="flex flex-col h-full p-4 md:p-6 bg-white items-center justify-center">
                 <p className="text-black/60">Loading agents...</p>
-            </div>>
+            </div>
         );
     }
     
@@ -1190,7 +1190,7 @@ const subscriptionSchema = z.object({
 type SubscriptionFormValues = z.infer<typeof subscriptionSchema>;
 
 
-const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: { allAgents: Agent[], selectedAgents: Agent[], setSelectedAgents: (agents: Agent[]) => void}) => {
+const AgentSelectionPanel = ({ allAgents = [], selectedAgents, setSelectedAgents }: { allAgents: Agent[], selectedAgents: Agent[], setSelectedAgents: (agents: Agent[]) => void}) => {
     const { toast } = useToast();
     const [isSubscriptionModalOpen, setSubscriptionModalOpen] = React.useState(false);
     const [isPaymentModalOpen, setPaymentModalOpen] = React.useState(false);
@@ -1256,7 +1256,7 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
         setSelectedAgents(selectedAgents.filter(a => a.id !== agent.id));
     };
 
-    const enabledAgents = (allAgents || []).filter(a => a.active);
+    const enabledAgents = allAgents.filter(a => a.active);
 
     return (
         <>
