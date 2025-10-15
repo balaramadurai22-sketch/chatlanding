@@ -1,6 +1,5 @@
 
 
-
 'use client';
 
 import * as React from 'react';
@@ -991,57 +990,57 @@ export default function ChatUI({
                 <h1 className="text-2xl font-bold mt-6">Ask Le Chat anything</h1>
               </motion.div>
             ) : (
-            <div className="space-y-6">
-              {messages.map((m, i) => (
-                <motion.div 
-                    key={m.id} 
-                    className={cn('flex group', m.role === 'user' ? 'justify-end' : 'justify-start')}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                >
-                  {m.role === 'assistant' && (
-                      <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center mr-3 flex-shrink-0">
-                          <Bot className="w-5 h-5" />
-                      </div>
-                  )}
-                  <div className={cn('max-w-xl p-4 border rounded-lg', m.role === 'user' ? 'bg-gray-100 text-black border-gray-200' : 'bg-white border-black')}>
-                    {m.role === 'assistant' && (
-                        <div className="font-bold mb-2 flex items-center gap-2">
-                            <span>{m.agentUsed || 'Assistant'}</span>
-                            <Badge variant="outline" className="text-xs">{m.modelUsed || 'Gemini 1.5'}</Badge>
-                        </div>
-                    )}
-                    <div className="text-base break-words">
-                        {m.role === 'assistant' && isLoading && i === messages.length - 1 && m.content.length === 0 
-                            ? <TypingIndicator /> 
-                            : renderMessageContent(m.content)
-                        }
-                    </div>
-                     <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-2 flex items-center gap-2">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopy(m.content)}>
-                            <Clipboard className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toast({title: 'Rating submitted!'})}>
-                            <Star className="w-4 h-4" />
-                        </Button>
+                <div className="space-y-6">
+                  {messages.map((m, i) => (
+                    <motion.div 
+                        key={m.id} 
+                        className={cn('flex group', m.role === 'user' ? 'justify-end' : 'justify-start')}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                      {m.role === 'assistant' && (
+                          <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center mr-3 flex-shrink-0">
+                              <Bot className="w-5 h-5" />
+                          </div>
+                      )}
+                      <div className={cn('max-w-xl p-4 border rounded-lg', m.role === 'user' ? 'bg-gray-100 text-black border-gray-200' : 'bg-white border-black')}>
                         {m.role === 'assistant' && (
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRegenerate(m.id)}>
-                                <RefreshCw className="w-4 h-4" />
-                            </Button>
+                            <div className="font-bold mb-2 flex items-center gap-2">
+                                <span>{m.agentUsed || 'Assistant'}</span>
+                                <Badge variant="outline" className="text-xs">{m.modelUsed || 'Gemini 1.5'}</Badge>
+                            </div>
                         )}
-                    </div>
-                  </div>
-                  {m.role === 'user' && (
-                      <div className="w-8 h-8 rounded-full bg-gray-200 text-black flex items-center justify-center ml-3 flex-shrink-0">
-                          <User className="w-5 h-5" />
+                        <div className="text-base break-words">
+                            {m.role === 'assistant' && isLoading && i === messages.length - 1 && m.content.length === 0 
+                                ? <TypingIndicator /> 
+                                : renderMessageContent(m.content)
+                            }
+                        </div>
+                         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-2 flex items-center gap-2">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopy(m.content)}>
+                                <Clipboard className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toast({title: 'Rating submitted!'})}>
+                                <Star className="w-4 h-4" />
+                            </Button>
+                            {m.role === 'assistant' && (
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRegenerate(m.id)}>
+                                    <RefreshCw className="w-4 h-4" />
+                                </Button>
+                            )}
+                        </div>
                       </div>
-                  )}
-                </motion.div>
-              ))}
-               <div ref={messagesEndRef} />
-            </div>
-          )}
+                      {m.role === 'user' && (
+                          <div className="w-8 h-8 rounded-full bg-gray-200 text-black flex items-center justify-center ml-3 flex-shrink-0">
+                              <User className="w-5 h-5" />
+                          </div>
+                      )}
+                    </motion.div>
+                  ))}
+                   <div ref={messagesEndRef} />
+                </div>
+            )}
           </AnimatePresence>
         </div>
       </main>
@@ -1060,7 +1059,7 @@ export default function ChatUI({
               </Button>
               <Textarea
                 value={input}
-                onValueChange={setInput}
+                onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
