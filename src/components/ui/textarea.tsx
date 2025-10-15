@@ -8,36 +8,29 @@ export interface TextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, onChange, ...props }, ref) => {
+  ({ className, value, onChange, ...props }, ref) => {
     const internalRef = React.useRef<HTMLTextAreaElement>(null);
-    React.useImperativeHandle(ref, () => internalRef.current!);
 
-    const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-      if (internalRef.current) {
-        internalRef.current.style.height = 'auto';
-        internalRef.current.style.height = `${internalRef.current.scrollHeight}px`;
-      }
-      if (onChange) {
-        onChange(event);
-      }
-    };
-
+    // This effect handles the auto-resizing
     React.useEffect(() => {
-      if (internalRef.current) {
-        internalRef.current.style.height = 'auto';
-        internalRef.current.style.height = `${internalRef.current.scrollHeight}px`;
+      const textarea = internalRef.current;
+      if (textarea) {
+        textarea.style.height = 'auto'; // Reset height to recalculate
+        const scrollHeight = textarea.scrollHeight;
+        textarea.style.height = `${scrollHeight}px`;
       }
-    }, [props.value]);
+    }, [value]); // Depend only on `value` to resize when content changes
 
     return (
       <textarea
+        ref={internalRef}
+        value={value}
+        onChange={onChange}
         className={cn(
-          'flex w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 overflow-y-auto',
+          'flex w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 overflow-y-hidden',
           'min-h-[40px]',
           className
         )}
-        ref={internalRef}
-        onChange={handleInput}
         {...props}
       />
     );

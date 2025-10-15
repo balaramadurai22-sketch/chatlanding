@@ -88,13 +88,12 @@ import { Switch } from '../ui/switch';
 import { agents as allAgentsData, type Agent } from '@/lib/agents-data';
 import { useMemo, useRef } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ChatUIProps {
   messages: ChatMessage[];
-  input: string;
   isLoading: boolean;
-  handleSendMessage: (e: React.FormEvent) => void;
-  setInput: (input: string) => void;
+  handleSendMessage: (inputValue: string) => void;
   setMessages: (messages: ChatMessage[]) => void;
   selectedAgents: Agent[];
   setSelectedAgents: (agents: Agent[]) => void;
@@ -507,7 +506,7 @@ const AgentCard = ({ agent, onUpdate }: { agent: Agent, onUpdate: (agent: Agent)
     );
 };
 
-const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: Agent[]) => void}) => {
+const AgentsView = ({agents = [], setAgents}: {agents: Agent[], setAgents: (agents: Agent[]) => void}) => {
     const [filter, setFilter] = React.useState('All');
     const [searchTerm, setSearchTerm] = React.useState('');
     const newAgentForm = useForm<NewAgentFormValues>({ resolver: zodResolver(newAgentSchema) });
@@ -515,7 +514,6 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
     const [isAddAgentOpen, setIsAddAgentOpen] = React.useState(false);
 
     const filteredAgents = useMemo(() => {
-        if (!agents) return { pinnedAgents: [], unpinnedAgents: [], all: [] };
         const filtered = agents.filter(agent => {
             const categoryMatch = filter === 'All' || agent.category === filter;
             const searchMatch = searchTerm === '' || 
@@ -567,9 +565,10 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
         return (
             <div className="flex flex-col h-full p-4 md:p-6 bg-white items-center justify-center">
                 <p className="text-black/60">Loading agents...</p>
-            </div>
+            </div>>
         );
     }
+    
     return (
         <div className="flex flex-col h-full p-4 md:p-6 bg-white">
             <header className="mb-6">
@@ -728,10 +727,8 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
 
 export default function ChatUI({
   messages,
-  input,
   isLoading,
   handleSendMessage,
-  setInput,
   setMessages,
   selectedAgents,
   setSelectedAgents,
@@ -743,27 +740,6 @@ export default function ChatUI({
   const [isSidebarOpen, setSidebarOpen] = React.useState(!isMobile);
   const { toast } = useToast();
   const [activeView, setActiveView] = React.useState('chat');
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const isUserScrolledUp = useRef(false);
-
-  React.useEffect(() => {
-    const chatContainer = messagesEndRef.current?.parentElement;
-    const handleScroll = () => {
-        if (chatContainer) {
-            const { scrollTop, scrollHeight, clientHeight } = chatContainer;
-            isUserScrolledUp.current = scrollTop + clientHeight < scrollHeight - 30;
-        }
-    };
-    chatContainer?.addEventListener('scroll', handleScroll);
-    return () => chatContainer?.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  React.useEffect(() => {
-    if (!isUserScrolledUp.current && !isLoading) {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, isLoading]);
-
 
   const bugReportForm = useForm<BugReportFormValues>({
     resolver: zodResolver(bugReportSchema),
@@ -924,162 +900,195 @@ export default function ChatUI({
     </div>
   );
 
-  const handleCopy = (text: string) => {
-    try {
-      navigator.clipboard.writeText(text);
-      toast({
-        title: 'Copied to clipboard!',
-      });
-    } catch (err) {
-      toast({
-        title: 'Failed to copy!',
-        description: 'Could not copy text to clipboard.',
-        variant: 'destructive',
-      });
-      console.error('Failed to copy text: ', err);
-    }
-  };
-  
-  const renderMessageContent = (content: string) => {
-    const parts = content.split(/(```[\s\S]*?```)/);
-    
-    return parts.map((part, index) => {
-        if (part.startsWith('```') && part.endsWith('```')) {
-            const code = part.slice(3, -3).trim();
-            // This is a code block
-            return (
-                <div key={index} className="bg-black text-white rounded-md my-2 relative">
-                    <pre className="p-4 text-sm overflow-x-auto">
-                        <code>{code}</code>
-                    </pre>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
-                        onClick={() => handleCopy(code)}
-                    >
-                        <Clipboard className="w-4 h-4" />
-                    </Button>
-                </div>
-            );
-        } else if (part.trim()) {
-            // This is plain text
-             const processedPart = part
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>');
-            
-            return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
-        }
-        return null;
-    });
-  };
+  const ChatView = () => {
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
+    const isUserScrolledUp = useRef(false);
+    const [input, setInput] = React.useState('');
 
-  const ChatView = () => (
-    <>
-      <main className="flex-1 overflow-y-auto p-4 md:p-6">
-        <div className="max-w-4xl mx-auto h-full">
-           <AnimatePresence initial={false}>
-            {messages.length === 0 && !isLoading ? (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center h-full text-center"
-              >
-                <PixelLogo />
-                <h1 className="text-2xl font-bold mt-6">Ask Le Chat anything</h1>
-              </motion.div>
-            ) : (
-                <div className="space-y-6">
-                  {messages.map((m, i) => (
-                    <motion.div 
-                        key={m.id} 
-                        className={cn('flex group', m.role === 'user' ? 'justify-end' : 'justify-start')}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                      {m.role === 'assistant' && (
-                          <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center mr-3 flex-shrink-0">
-                              <Bot className="w-5 h-5" />
-                          </div>
-                      )}
-                      <div className={cn('max-w-xl p-4 border rounded-lg', m.role === 'user' ? 'bg-gray-100 text-black border-gray-200' : 'bg-white border-black')}>
+    const formRef = React.useRef<HTMLFormElement>(null);
+
+    const onSendMessage = (e: React.FormEvent) => {
+        e.preventDefault();
+        handleSendMessage(input);
+        setInput('');
+    }
+
+    React.useEffect(() => {
+        const chatContainer = messagesEndRef.current?.parentElement;
+        const handleScroll = () => {
+            if (chatContainer) {
+                const { scrollTop, scrollHeight, clientHeight } = chatContainer;
+                isUserScrolledUp.current = scrollTop + clientHeight < scrollHeight - 30;
+            }
+        };
+        chatContainer?.addEventListener('scroll', handleScroll);
+        return () => chatContainer?.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    React.useEffect(() => {
+        if (!isUserScrolledUp.current && !isLoading) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages, isLoading]);
+
+    const handleCopy = (text: string) => {
+        try {
+            navigator.clipboard.writeText(text);
+            toast({
+                title: 'Copied to clipboard!',
+            });
+        } catch (err) {
+            toast({
+                title: 'Failed to copy!',
+                description: 'Could not copy text to clipboard.',
+                variant: 'destructive',
+            });
+            console.error('Failed to copy text: ', err);
+        }
+    };
+    
+    const renderMessageContent = (content: string) => {
+        const parts = content.split(/(```[\s\S]*?```)/);
+        
+        return parts.map((part, index) => {
+            if (part.startsWith('```') && part.endsWith('```')) {
+                const code = part.slice(3, -3).trim();
+                // This is a code block
+                return (
+                    <div key={index} className="bg-black text-white rounded-md my-2 relative">
+                        <pre className="p-4 text-sm overflow-x-auto">
+                            <code>{code}</code>
+                        </pre>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-2 right-2 h-7 w-7 text-white hover:bg-gray-700"
+                            onClick={() => handleCopy(code)}
+                        >
+                            <Clipboard className="w-4 h-4" />
+                        </Button>
+                    </div>
+                );
+            } else if (part.trim()) {
+                // This is plain text
+                 const processedPart = part
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+                
+                return <div key={index} dangerouslySetInnerHTML={{ __html: processedPart.replace(/\n/g, '<br />') }} />;
+            }
+            return null;
+        });
+    };
+    return (
+        <>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            <div className="max-w-4xl mx-auto h-full">
+            <AnimatePresence initial={false}>
+                {messages.length === 0 && !isLoading ? (
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex flex-col items-center justify-center h-full text-center"
+                >
+                    <PixelLogo />
+                    <h1 className="text-2xl font-bold mt-6">Ask Le Chat anything</h1>
+                </motion.div>
+                ) : (
+                    <div className="space-y-6">
+                    {messages.map((m, i) => (
+                        <motion.div 
+                            key={m.id} 
+                            className={cn('flex group', m.role === 'user' ? 'justify-end' : 'justify-start')}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                        >
                         {m.role === 'assistant' && (
-                            <div className="font-bold mb-2 flex items-center gap-2">
-                                <span>{m.agentUsed || 'Assistant'}</span>
-                                <Badge variant="outline" className="text-xs">{m.modelUsed || 'Gemini 1.5'}</Badge>
+                            <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center mr-3 flex-shrink-0">
+                                <Bot className="w-5 h-5" />
                             </div>
                         )}
-                        <div className="text-base break-words">
-                            {m.role === 'assistant' && isLoading && i === messages.length - 1 && m.content.length === 0 
-                                ? <TypingIndicator /> 
-                                : renderMessageContent(m.content)
-                            }
-                        </div>
-                         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-2 flex items-center gap-2">
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopy(m.content)}>
-                                <Clipboard className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toast({title: 'Rating submitted!'})}>
-                                <Star className="w-4 h-4" />
-                            </Button>
+                        <div className={cn('max-w-xl p-4 border rounded-lg', m.role === 'user' ? 'bg-gray-100 text-black border-gray-200' : 'bg-white border-black')}>
                             {m.role === 'assistant' && (
-                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRegenerate(m.id)}>
-                                    <RefreshCw className="w-4 h-4" />
-                                </Button>
+                                <div className="font-bold mb-2 flex items-center gap-2">
+                                    <span>{m.agentUsed || 'Assistant'}</span>
+                                    <Badge variant="outline" className="text-xs">{m.modelUsed || 'Gemini 1.5'}</Badge>
+                                </div>
                             )}
+                            <div className="text-base break-words">
+                                {m.role === 'assistant' && isLoading && i === messages.length - 1 && m.content.length === 0 
+                                    ? <TypingIndicator /> 
+                                    : renderMessageContent(m.content)
+                                }
+                            </div>
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-2 flex items-center gap-2">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopy(m.content)}>
+                                    <Clipboard className="w-4 h-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toast({title: 'Rating submitted!'})}>
+                                    <Star className="w-4 h-4" />
+                                </Button>
+                                {m.role === 'assistant' && (
+                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRegenerate(m.id)}>
+                                        <RefreshCw className="w-4 h-4" />
+                                    </Button>
+                                )}
+                            </div>
                         </div>
-                      </div>
-                      {m.role === 'user' && (
-                          <div className="w-8 h-8 rounded-full bg-gray-200 text-black flex items-center justify-center ml-3 flex-shrink-0">
-                              <User className="w-5 h-5" />
-                          </div>
-                      )}
-                    </motion.div>
-                  ))}
-                   <div ref={messagesEndRef} />
-                </div>
-            )}
-          </AnimatePresence>
-        </div>
-      </main>
-
-      <footer className="p-4 md:p-6 bg-white">
-        <div className="max-w-4xl mx-auto">
-            <AgentSelectionPanel 
-                allAgents={allAgentsData}
-                selectedAgents={selectedAgents}
-                setSelectedAgents={setSelectedAgents}
-            />
-          <form onSubmit={handleSendMessage} className="relative">
-            <div className="relative flex items-center p-2 border border-black rounded-lg bg-white shadow-sm focus-within:ring-2 focus-within:ring-black">
-              <Button type="button" variant="ghost" className="p-2 h-auto rounded-md border-black hover:bg-black hover:text-white">
-                <Plus className="w-5 h-5" />
-              </Button>
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    if (!isLoading) handleSendMessage(e);
-                  }
-                }}
-                placeholder={isLoading ? "Waiting for reply..." : "Type your message..."}
-                className="flex-1 border-0 bg-transparent px-4 py-0 text-base focus-visible:ring-0 shadow-none leading-tight"
-                disabled={isLoading}
-                rows={1}
-              />
-              <Button type="submit" variant="outline" className="p-2 h-auto rounded-md border-black bg-black text-white hover:bg-white hover:text-black" disabled={isLoading || !input.trim()}>
-                <Send className="w-5 h-5" />
-              </Button>
+                        {m.role === 'user' && (
+                            <div className="w-8 h-8 rounded-full bg-gray-200 text-black flex items-center justify-center ml-3 flex-shrink-0">
+                                <User className="w-5 h-5" />
+                            </div>
+                        )}
+                        </motion.div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                    </div>
+                )}
+            </AnimatePresence>
             </div>
-          </form>
-        </div>
-      </footer>
-    </>
-  );
+        </main>
+
+        <footer className="p-4 md:p-6 bg-white">
+            <div className="max-w-4xl mx-auto">
+                <AgentSelectionPanel 
+                    allAgents={allAgentsData}
+                    selectedAgents={selectedAgents}
+                    setSelectedAgents={setSelectedAgents}
+                />
+            <form ref={formRef} onSubmit={onSendMessage} className="relative">
+                <div className="relative flex items-center p-2 border border-black rounded-lg bg-white shadow-sm focus-within:ring-2 focus-within:ring-black">
+                <Button type="button" variant="ghost" className="p-2 h-auto rounded-md border-black hover:bg-black hover:text-white">
+                    <Plus className="w-5 h-5" />
+                </Button>
+                <Textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if (!isLoading && input.trim()) {
+                            formRef.current?.requestSubmit();
+                        }
+                    }
+                    }}
+                    placeholder={isLoading ? "Waiting for reply..." : "Type your message..."}
+                    className="flex-1 border-0 bg-transparent px-4 py-0 text-base focus-visible:ring-0 shadow-none leading-tight"
+                    disabled={isLoading}
+                    rows={1}
+                />
+                <Button type="submit" variant="outline" className="p-2 h-auto rounded-md border-black bg-black text-white hover:bg-white hover:text-black" disabled={isLoading || !input.trim()}>
+                    <Send className="w-5 h-5" />
+                </Button>
+                </div>
+            </form>
+            </div>
+        </footer>
+        </>
+    );
+  }
 
   return (
     <>
@@ -1247,7 +1256,7 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
         setSelectedAgents(selectedAgents.filter(a => a.id !== agent.id));
     };
 
-    const enabledAgents = allAgents.filter(a => a.active);
+    const enabledAgents = (allAgents || []).filter(a => a.active);
 
     return (
         <>
@@ -1265,7 +1274,7 @@ const AgentSelectionPanel = ({ allAgents, selectedAgents, setSelectedAgents }: {
                                         {selectedAgents.length > 0 ? selectedAgents.map(a => (
                                             <Badge key={a.id} variant="secondary" className="bg-gray-200 text-black">
                                                 {a.name}
-                                                <button onClick={(e) => handleRemoveAgent(e, a)} className="ml-1.5 rounded-full hover:bg-gray-300 p-0.5">
+                                                <button type="button" onClick={(e) => handleRemoveAgent(e, a)} className="ml-1.5 rounded-full hover:bg-gray-300 p-0.5">
                                                     <X className="w-3 h-3"/>
                                                 </button>
                                             </Badge>

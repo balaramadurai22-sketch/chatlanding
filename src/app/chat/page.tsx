@@ -8,6 +8,7 @@ import type { ChatMessage } from '@/app/actions';
 import ChatUI from '@/components/chat/chat-ui';
 import { useToast } from '@/hooks/use-toast';
 import type { Agent } from '@/lib/agents-data';
+import { agents as allAgentsData } from '@/lib/agents-data';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -17,10 +18,10 @@ export default function ChatPage() {
   const { toast } = useToast();
   
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
-  const [input, setInput] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [selectedAgents, setSelectedAgents] = React.useState<Agent[]>([]);
   const [sessionId] = React.useState(uuidv4());
+  const [allAgents, setAllAgents] = React.useState<Agent[]>(allAgentsData);
 
 
   const processStream = async (stream: ReadableStream<string>) => {
@@ -100,19 +101,17 @@ export default function ChatPage() {
   }, [initialQuery, messages.length, isLoading, handleInitialQuery]);
   
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  const handleSendMessage = async (inputValue: string) => {
+    if (!inputValue.trim() || isLoading) return;
 
     const userMessage: ChatMessage = { 
         id: uuidv4(), 
         role: 'user', 
-        content: input,
+        content: inputValue,
         timestamp: new Date().toISOString()
     };
     const newMessages: ChatMessage[] = [...messages, userMessage];
     setMessages(newMessages);
-    setInput('');
     setIsLoading(true);
 
     try {
@@ -164,14 +163,14 @@ export default function ChatPage() {
   return (
     <ChatUI
       messages={messages}
-      input={input}
       isLoading={isLoading}
       handleSendMessage={handleSendMessage}
-      setInput={setInput}
       setMessages={setMessages}
       selectedAgents={selectedAgents}
       setSelectedAgents={setSelectedAgents}
       handleRegenerate={handleRegenerate}
+      allAgents={allAgents}
+      setAllAgents={setAllAgents}
     />
   );
 }
