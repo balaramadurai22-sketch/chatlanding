@@ -570,8 +570,6 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
             </div>
         );
     }
-
-
     return (
         <div className="flex flex-col h-full p-4 md:p-6 bg-white">
             <header className="mb-6">
@@ -642,7 +640,7 @@ const AgentsView = ({agents, setAgents}: {agents: Agent[], setAgents: (agents: A
                                             <FormItem><FormLabel>Allowed Tools / Access</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., calculator, web_search" /></FormControl><FormMessage /></FormItem>
                                         )} />
                                         <FormField name="memory" control={newAgentForm.control} render={({ field }) => (
-                                            <FormItem><FormLabel>Memory / Context Options</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl><FormMessage /></FormMessage /></FormItem>
+                                            <FormItem><FormLabel>Memory / Context Options</FormLabel><FormControl><Input {...field} className="border-black" placeholder="e.g., short-term, long-term" /></FormControl></FormItem>
                                         )} />
                                     </div>
 
